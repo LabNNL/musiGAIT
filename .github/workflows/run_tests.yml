@@ -1,0 +1,40 @@
+name: Run the tests
+
+on: [pull_request]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            prefix: /usr/share/miniconda3/envs/neurobio
+          - os: macos-latest
+            prefix: /Users/runner/miniconda3/envs/neurobio
+          - os: windows-latest
+            prefix: C:\Miniconda3\envs\neurobio
+    name: Tests on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash -l {0}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup environment
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          miniforge-version: latest
+          activate-environment: neurobio
+          environment-file: etc/example-environment.yml
+          channels: conda-forge
+          mamba-version: "*"
+
+      - name: Print conda info
+        run: |
+          conda info
+          conda list
+
