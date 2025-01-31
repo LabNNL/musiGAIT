@@ -23,13 +23,15 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          submodules: 'true'
 
       - name: Setup environment
         uses: conda-incubator/setup-miniconda@v3
         with:
           miniforge-version: latest
           activate-environment: neurobio
-          environment-file: etc/example-environment.yml
+          environment-file: external/neurobiomech_software/backend/environment.yml
           channels: conda-forge
           mamba-version: "*"
 
