@@ -20,8 +20,8 @@ python3 -m pip install --upgrade pip
 pip install python-osc
 
 # Run TCP2OSC.py script
-echo "Launching TCP2OSC.py..."
-python3 TCP2OSC.py
+echo "Launching tcp_to_osc.py..."
+python3 tcp_to_osc.py
 
 # Deactivate virtual environment
 deactivate

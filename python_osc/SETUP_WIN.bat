@@ -16,8 +16,8 @@ python.exe -m pip install --upgrade pip
 pip install python-osc
 
 :: Run TCP2OSC.py script
-echo Launching TCP2OSC.py...
-python TCP2OSC.py
+echo Launching tcp_to_osc.py...
+python tcp_to_osc.py
 
 :: Deactivate virtual environment
 deactivate
