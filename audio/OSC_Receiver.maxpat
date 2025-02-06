@@ -45,7 +45,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 0,
 					"patching_rect" : [ 687.5, 186.0, 63.0, 20.0 ],
-					"text" : "Great!"
+					"text" : "Too fast"
 				}
 
 			}
@@ -119,7 +119,7 @@
 						}
 ,
 						"classnamespace" : "box",
-						"rect" : [ 394.0, 187.0, 762.0, 696.0 ],
+						"rect" : [ 125.0, 176.0, 762.0, 696.0 ],
 						"bglocked" : 0,
 						"openinpresentation" : 0,
 						"default_fontsize" : 12.0,
@@ -148,6 +148,18 @@
 						"subpatcher_template" : "",
 						"assistshowspatchername" : 0,
 						"boxes" : [ 							{
+								"box" : 								{
+									"id" : "obj-2",
+									"maxclass" : "newobj",
+									"numinlets" : 1,
+									"numoutlets" : 1,
+									"outlettype" : [ "" ],
+									"patching_rect" : [ 269.0, 270.0, 77.0, 22.0 ],
+									"text" : "loadmess 10"
+								}
+
+							}
+, 							{
 								"box" : 								{
 									"id" : "obj-36",
 									"maxclass" : "newobj",
@@ -370,7 +382,7 @@
 									"numinlets" : 1,
 									"numoutlets" : 2,
 									"outlettype" : [ "bang", "float" ],
-									"patching_rect" : [ 322.0, 322.0, 29.5, 22.0 ],
+									"patching_rect" : [ 359.0, 322.0, 29.5, 22.0 ],
 									"text" : "t b f"
 								}
 
@@ -382,7 +394,7 @@
 									"numinlets" : 2,
 									"numoutlets" : 1,
 									"outlettype" : [ "" ],
-									"patching_rect" : [ 244.0, 367.0, 107.0, 22.0 ],
+									"patching_rect" : [ 244.0, 367.0, 144.5, 22.0 ],
 									"text" : "expr abs($f1 - $f2)"
 								}
 
@@ -420,7 +432,7 @@
 									"numinlets" : 0,
 									"numoutlets" : 1,
 									"outlettype" : [ "" ],
-									"patching_rect" : [ 322.0, 25.0, 30.0, 30.0 ]
+									"patching_rect" : [ 359.0, 25.0, 30.0, 30.0 ]
 								}
 
 							}
@@ -668,6 +680,13 @@
 							}
 , 							{
 								"patchline" : 								{
+									"destination" : [ "obj-5", 0 ],
+									"source" : [ "obj-2", 0 ]
+								}
+
+							}
+, 							{
+								"patchline" : 								{
 									"destination" : [ "obj-23", 0 ],
 									"source" : [ "obj-22", 0 ]
 								}
@@ -830,7 +849,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 0,
 					"patching_rect" : [ 622.0, 208.0, 107.0, 20.0 ],
-					"text" : "~0.985 step/sec"
+					"text" : "~0.000 step/sec"
 				}
 
 			}
@@ -1404,8 +1423,7 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 96.0, 95.0, 65.0, 22.0 ],
-					"text" : "100.0945"
+					"patching_rect" : [ 96.0, 95.0, 65.0, 22.0 ]
 				}
 
 			}
