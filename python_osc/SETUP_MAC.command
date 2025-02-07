@@ -28,4 +28,4 @@ deactivate
 
 # Keep the terminal open to see output
 echo "Press Enter to close..."
-read
+read -r

@@ -1,5 +1,6 @@
 from pythonosc.udp_client import SimpleUDPClient
 import threading
+import datetime
 import struct
 import socket
 import json
@@ -13,6 +14,11 @@ osc_client = SimpleUDPClient(OSC_IP, OSC_PORT)
 DATA_CHANNELS = [16]
 EMG_HOST, EMG_PORTS = "127.0.0.1", [5123, 5124, 5125]
 
+
+def log_message(message, level="INFO"):
+    """Print messages with a timestamp and log level."""
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+    print(f"[{timestamp}] [{level}]: {message}")
 
 def to_packet(command_int):
     """Create an 8-byte packet with version and command information."""
@@ -28,9 +34,9 @@ def connect_and_handshake(host, ports):
         try:
             sock = socket.create_connection((host, port))
             sockets.append(sock)
-            print(f"Connected to {host}:{port}")
+            log_message(f"Connected to {host}:{port}")
         except Exception as e:
-            print(f"Error connecting to {host}:{port}: {e}")
+            log_message(f"Error connecting to {host}:{port}: {e}", "ERROR")
             return False
 
     # Perform handshake
@@ -39,17 +45,17 @@ def connect_and_handshake(host, ports):
         sockets[0].sendall(handshake_message)
         response = sockets[0].recv(4)
         if struct.unpack('<I', response)[0] != 1:
-            print("Handshake failed")
+            log_message("Handshake failed", "ERROR")
             return False
 
-    print("Handshake successful")
+    log_message("Handshake successful")
     return sockets
 
 
 def send_command(sock, command):
     """Send a command packet to the server."""
     sock.sendall(to_packet(command))
-    print(f"Command {command} sent")
+    log_message(f"Command {command} sent")
 
 
 def parse_data_length(data):
@@ -63,7 +69,7 @@ def listen_to_live_data(sock):
     expected_length = None
     sent_timestamps = set()
 
-    print("Listening for live data...")
+    log_message(f"Serving live data on {OSC_IP}:{OSC_PORT}")
 
     while True:
         try:
@@ -104,21 +110,21 @@ def listen_to_live_data(sock):
                         osc_client.send_message(f'/sensor_{channel}', values)
 
                 except json.JSONDecodeError:
-                    print("JSON decode error. Resetting buffer.")
+                    log_message("JSON decode error. Resetting buffer.", "ERROR")
                     buffer.clear()
         except Exception as e:
-            print(f"Error receiving data: {e}")
+            log_message(f"Error processing data: {e}", "ERROR")
             break
 
     sock.close()
-    print("Live data connection closed")
+    log_message("Live data connection closed")
 
 
 def main():
     """Main function to establish connections and start data processing."""
     sockets = connect_and_handshake(EMG_HOST, EMG_PORTS)
     if not sockets:
-        print("Failed to establish all connections. Exiting...")
+        log_message("Failed to establish all connections. Exiting...", "ERROR")
         return
 
     send_command(sockets[0], 11)  # Send CONNECT_DELSYS_EMG command
@@ -127,14 +133,14 @@ def main():
     data_thread.start()
 
     try:
-        print("Connections established. Running... Press Ctrl+C to exit.")
+        log_message("Connections established. Running... Press Ctrl+C to exit.")
         threading.Event().wait()
     except KeyboardInterrupt:
-        print("\nShutting down...")
+        log_message("\nShutting down...")
     finally:
         for sock in sockets:
             sock.close()
-        print("Connections closed")
+        log_message("Connections closed")
 
 
 if __name__ == "__main__":
