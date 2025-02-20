@@ -11,7 +11,7 @@ OSC_IP, OSC_PORT = "127.0.0.1", 8000
 osc_client = SimpleUDPClient(OSC_IP, OSC_PORT)
 
 # EMG configuration
-DATA_CHANNELS = [16]
+DATA_CHANNELS = list(range(1, 17))
 EMG_HOST, EMG_PORTS = "127.0.0.1", [5123, 5124, 5125]
 
 
