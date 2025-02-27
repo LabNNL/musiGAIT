@@ -10,7 +10,7 @@
 		}
 ,
 		"classnamespace" : "box",
-		"rect" : [ 276.0, 143.0, 697.0, 557.0 ],
+		"rect" : [ 265.0, 335.0, 697.0, 557.0 ],
 		"bglocked" : 0,
 		"openinpresentation" : 0,
 		"default_fontsize" : 12.0,
@@ -39,6 +39,23 @@
 		"subpatcher_template" : "",
 		"assistshowspatchername" : 0,
 		"boxes" : [ 			{
+				"box" : 				{
+					"fontsize" : 21.588099243767481,
+					"id" : "obj-45",
+					"linecount" : 10,
+					"maxclass" : "comment",
+					"numinlets" : 1,
+					"numoutlets" : 0,
+					"patching_rect" : [ 34.0, 332.0, 241.0, 248.0 ],
+					"presentation" : 1,
+					"presentation_linecount" : 6,
+					"presentation_rect" : [ 29.0, 175.0, 401.0, 151.0 ],
+					"text" : "ROUGE: 1 seul capteur pour le feedback\n\nJAUNES + Afficher les autres capteurs\n\nCAPTEUR 14 + 15 = Foot switch\n16 = Gopniometre = Angle",
+					"textcolor" : [ 1.0, 0.0, 0.0, 1.0 ]
+				}
+
+			}
+, 			{
 				"box" : 				{
 					"fontsize" : 16.0,
 					"id" : "obj-92",
