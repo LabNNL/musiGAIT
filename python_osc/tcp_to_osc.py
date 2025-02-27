@@ -5,6 +5,19 @@ import struct
 import socket
 import json
 
+# Version
+VERSION = 1
+
+# OSC configuration
+OSC_IP, OSC_PORT = "127.0.0.1", 8000
+osc_client = SimpleUDPClient(OSC_IP, OSC_PORT)
+
+# EMG configuration
+EMG_HOST, EMG_PORTS = "127.0.0.1", [5123, 5124, 5125, 5126]
+DATA_CHANNELS = list(range(1, 17))
+
+# Data multiplier
+DATA_MULTIPLIER = 10000
 
 # OSC configuration
 OSC_IP, OSC_PORT = "127.0.0.1", 8000
