@@ -130,6 +130,9 @@ def send_command(sock, command: Command):
     The command is structured as:
     - 4 bytes (little-endian) for protocol version
     - 4 bytes (little-endian) for the command
+
+    Returns:
+        bool: True if the command was successful, False otherwise.
     """
     if not isinstance(command, Command):
         log_message(f"Invalid command {command}", "ERROR")
