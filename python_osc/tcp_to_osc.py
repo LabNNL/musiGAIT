@@ -13,6 +13,7 @@ VERSION = 1
 # OSC configuration
 OSC_IP, OSC_PORT = "127.0.0.1", 8000
 osc_client = SimpleUDPClient(OSC_IP, OSC_PORT)
+osc_lock = threading.Lock()
 
 # EMG configuration
 EMG_HOST, EMG_PORTS = "127.0.0.1", [5123, 5124, 5125, 5126]  # Command, Response, Data, Analyses
@@ -254,7 +255,11 @@ def parse_data_length(data):
     return struct.unpack('<I', data[12:16])[0]
 
 
-def listen_to_live_data(sock):
+def send_osc_message(address: str, value: float) -> None:
+    """Thread-safe function to send OSC messages."""
+    with osc_lock:
+        osc_client.send_message(address, value)
+
     """Listen for live data packets and send them via OSC."""
     buffer = bytearray()
     expected_length = None
@@ -293,7 +298,7 @@ def listen_to_live_data(sock):
                                 for channel in DATA_CHANNELS:
                                     if channel <= len(channels):
                                         # Send data via OSC
-                                        osc_client.send_message(f'/sensor_{channel}',
+                                        send_osc_message(f'/sensor_{channel}', channels[channel-1] * DATA_MULTIPLIER)
                                                                 channels[channel-1] * DATA_MULTIPLIER)
 
                 except json.JSONDecodeError:
@@ -342,7 +347,7 @@ def listen_to_live_analyses(sock):
                                 extracted_data = analysis[1]  # Extract the analysis data
 
                                 # Send data via OSC
-                                osc_client.send_message(f'/{key.replace(" ", "_")}', extracted_data)
+                                send_osc_message(f'/{key.replace(" ", "_")}', extracted_data)
 
                             else:
                                 log_message(f"Unexpected format in '{key}' data", "ERROR")
