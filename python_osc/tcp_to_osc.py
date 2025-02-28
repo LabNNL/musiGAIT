@@ -45,7 +45,7 @@ class Command(Enum):
 analyzer_config = {
     "name": "Right Foot",
     "analyzer_type": "cyclic_timed_events",
-    "time_reference_device": "DelsysAnalogDataCollector",
+    "time_reference_device": "DelsysEmgDataCollector",
     "learning_rate": 0.5,
     "initial_phase_durations": [400, 600],
     "events": [
@@ -53,18 +53,18 @@ analyzer_config = {
             "name": "heel_strike",
             "previous": "toe_off",
             "start_when": [
-                {"type": "threshold", "device": "DelsysAnalogDataCollector", "channel": 0, "comparator": "<=",
+                {"type": "threshold", "device": "DelsysEmgDataCollector", "channel": 0, "comparator": "<=",
                  "value": 0.2},
-                {"type": "direction", "device": "DelsysAnalogDataCollector", "channel": 0, "direction": "negative"}
+                {"type": "direction", "device": "DelsysEmgDataCollector", "channel": 0, "direction": "negative"}
             ]
         },
         {
             "name": "toe_off",
             "previous": "heel_strike",
             "start_when": [
-                {"type": "threshold", "device": "DelsysAnalogDataCollector", "channel": 0, "comparator": ">=",
+                {"type": "threshold", "device": "DelsysEmgDataCollector", "channel": 0, "comparator": ">=",
                  "value": -0.2},
-                {"type": "direction", "device": "DelsysAnalogDataCollector", "channel": 0, "direction": "positive"}
+                {"type": "direction", "device": "DelsysEmgDataCollector", "channel": 0, "direction": "positive"}
             ]
         }
     ]
@@ -155,9 +155,6 @@ def send_command(sock, command: Command):
             log_message(f"Response interpretation error: {parsed_response['error']}", "ERROR")
             return False
 
-        # Log the response
-        log_message(f"Response received: {parsed_response}")
-
         # Check if response is OK (1) or NOK (0)
         if parsed_response["status"] != 1:
             log_message(f"Command {command.name} failed", "ERROR")
@@ -170,25 +167,49 @@ def send_command(sock, command: Command):
         return False
 
 
-# def send_analyzer_data(sock, response_sock, analyzer_data):
-#     data_json = json.dumps(analyzer_data)
-#     data_bytes = data_json.encode('utf-8')
-#     header = struct.pack('<II', VERSION, len(data_bytes))
-#     response_sock.sendall(header + data_bytes)
-#     log_message("Analyzer data sent")
-#
-#     response = sock.recv(16)
-#     parsed_response = interpret_response(response)
-#
-#
-#     protocol_version, timestamp, status = struct.unpack('<I Q I', response)
-#
-#     if status != 1:
-#         log_message("Analyzer data transmission failed", "ERROR")
-#         return False
-#
-#     return True
-#
+def send_extra_data(sock, response_sock, extra_data: dict):
+    """
+    Sends extra data in the correct format.
+
+    Format:
+    - 4 bytes: Protocol version (little-endian, should be == VERSION)
+    - 4 bytes: Length of the JSON string (little-endian)
+    - Remaining bytes: The JSON string itself
+
+    Returns:
+        bool: True if extra data was sent successfully, False otherwise.
+    """
+
+    try:
+        # Serialize extra data as JSON
+        json_data = json.dumps(extra_data).encode('utf-8')
+        data_length = len(json_data)
+
+        # Create the header (VERSION, DATA SIZE)
+        header = struct.pack('<II', VERSION, data_length)
+
+        # Send the header and JSON data
+        sock.sendall(header + json_data)
+
+        # Wait for the response
+        response = response_sock.recv(16)
+        parsed_response = interpret_response(response)
+
+        if "error" in parsed_response:
+            log_message(f"Error in extra data response: {parsed_response['error']}", "ERROR")
+            return False
+
+        if parsed_response["status"] != 1:
+            log_message(f"Extra data failed (NOK received)", "ERROR")
+            return False
+
+        log_message(f"Extra data sent successfully")
+        return True
+
+    except socket.error as e:
+        log_message(f"Socket error while sending extra data: {e}", "ERROR")
+        return False
+
 
 def connect_and_handshake(host, ports):
     """
@@ -234,12 +255,12 @@ def parse_data_length(data):
 
 
 def listen_to_live_data(sock):
-    """Listen for live data packets and process them."""
+    """Listen for live data packets and send them via OSC."""
     buffer = bytearray()
     expected_length = None
     sent_timestamps = set()
 
-    log_message(f"Serving live data on {OSC_IP}:{OSC_PORT}")
+    log_message(f"Sending live data via OSC on {OSC_IP}:{OSC_PORT}")
 
     while True:
         try:
@@ -248,15 +269,15 @@ def listen_to_live_data(sock):
                 break
             buffer.extend(data)
 
-            # Read header to determine packet length
+            # Read header to determine packet length if not set
             if expected_length is None and len(buffer) >= 16:
-                expected_length = parse_data_length(buffer)
-                del buffer[:16]
+                expected_length = parse_data_length(buffer[:16])
+                buffer = buffer[16:]
 
             # Process full packets
             while expected_length and len(buffer) >= expected_length:
                 raw_data = buffer[:expected_length]
-                del buffer[:expected_length]
+                buffer = buffer[expected_length:]
                 expected_length = None
 
                 try:
@@ -271,11 +292,12 @@ def listen_to_live_data(sock):
 
                                 for channel in DATA_CHANNELS:
                                     if channel <= len(channels):
+                                        # Send data via OSC
                                         osc_client.send_message(f'/sensor_{channel}',
-                                                                channels[channel - 1] * DATA_MULTIPLIER)
+                                                                channels[channel-1] * DATA_MULTIPLIER)
 
                 except json.JSONDecodeError:
-                    log_message("JSON decode error. Resetting buffer.", "ERROR")
+                    log_message("JSON decode error in live data. Resetting buffer.", "ERROR")
                     buffer.clear()
 
         except Exception as e:
@@ -287,20 +309,52 @@ def listen_to_live_data(sock):
 
 
 def listen_to_live_analyses(sock):
-    """Listen for live analyses packets and process them."""
-    log_message(f"Serving live analyses on {OSC_IP}:{OSC_PORT}")
+    """Listen for live analyses packets and send them via OSC."""
+    buffer = bytearray()
+    expected_length = None
+
+    log_message(f"Sending live analyses via OSC on {OSC_IP}:{OSC_PORT}")
 
     while True:
         try:
             data = sock.recv(4096)
             if not data:
                 break
-            decoded_data = json.loads(data.decode('utf-8'))
-            log_message(f"Analysis data received: {decoded_data}")
-            osc_client.send_message("/analysis", decoded_data)
+            buffer.extend(data)
+
+            # Read header to determine packet length if not set
+            if expected_length is None and len(buffer) >= 16:
+                expected_length = parse_data_length(buffer[:16])
+                buffer = buffer[16:]
+
+            # Process full packets
+            while expected_length and len(buffer) >= expected_length:
+                raw_data = buffer[:expected_length]
+                buffer = buffer[expected_length:]
+                expected_length = None
+
+                try:
+                    decoded_data = json.loads(raw_data.decode('utf-8'))
+
+                    if "data" in decoded_data:
+                        for key, analysis in decoded_data["data"].items():
+                            if isinstance(analysis, list) and len(analysis) >= 2 and isinstance(analysis[1], list):
+                                extracted_data = analysis[1]  # Extract the analysis data
+
+                                # Send data via OSC
+                                osc_client.send_message(f'/{key.replace(" ", "_")}', extracted_data)
+
+                            else:
+                                log_message(f"Unexpected format in '{key}' data", "ERROR")
+
+                except json.JSONDecodeError:
+                    log_message("JSON decode error in analysis data. Resetting buffer.", "ERROR")
+                    buffer.clear()
+
         except Exception as e:
             log_message(f"Error processing analysis data: {e}", "ERROR")
             break
+
     sock.close()
     log_message("Live analysis connection closed")
 
@@ -326,6 +380,11 @@ def main():
     # Send ADD_ANALYZER command
     if not send_command(sockets[0], Command.ADD_ANALYZER):
         log_message("Failed to send ADD_ANALYZER command. Exiting...", "ERROR")
+        return
+
+    # Send the analyzer configuration
+    if not send_extra_data(sockets[1], sockets[0], analyzer_config):
+        log_message("Failed to send analyzer configuration. Exiting...", "ERROR")
         return
 
     # Start live analyses listener thread
