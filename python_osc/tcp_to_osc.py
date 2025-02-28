@@ -307,18 +307,28 @@ def listen_to_live_analyses(sock):
 
 def main():
     """Main function to establish connections and start data processing."""
+
+    # Establish connections with handshake
     sockets = connect_and_handshake(EMG_HOST, EMG_PORTS)
     if not sockets:
         log_message("Failed to establish all connections. Exiting...", "ERROR")
         return
 
     # Send CONNECT_DELSYS_EMG command
-    send_command(sockets[0], 11)
+    if not send_command(sockets[0], Command.CONNECT_DELSYS_EMG):
+        log_message("Failed to send CONNECT_DELSYS_EMG command. Exiting...", "ERROR")
+        return
+
+    # Start live data listener thread
     data_thread = threading.Thread(target=listen_to_live_data, args=(sockets[2],), daemon=True)
     data_thread.start()
 
-    # send ADD_ANALYZER command
-    send_command(sockets[0], 50)
+    # Send ADD_ANALYZER command
+    if not send_command(sockets[0], Command.ADD_ANALYZER):
+        log_message("Failed to send ADD_ANALYZER command. Exiting...", "ERROR")
+        return
+
+    # Start live analyses listener thread
     analyses_thread = threading.Thread(target=listen_to_live_analyses, args=(sockets[3],), daemon=True)
     analyses_thread.start()
 
