@@ -43,10 +43,11 @@ class Command(Enum):
 
 
 # Analyzer configuration
+reference_device = "DelsysEmgDataCollector"
 analyzer_config = {
-    "name": "Right Foot",
+    "name": "foot_cycle",
     "analyzer_type": "cyclic_timed_events",
-    "time_reference_device": "DelsysEmgDataCollector",
+    "time_reference_device": reference_device,
     "learning_rate": 0.5,
     "initial_phase_durations": [400, 600],
     "events": [
@@ -54,36 +55,41 @@ analyzer_config = {
             "name": "heel_strike",
             "previous": "toe_off",
             "start_when": [
-                {"type": "threshold", "device": "DelsysEmgDataCollector", "channel": 0, "comparator": "<=",
-                 "value": 0.2},
-                {"type": "direction", "device": "DelsysEmgDataCollector", "channel": 0, "direction": "negative"}
+                {"type": "threshold", "device": reference_device, "channel": 0,
+                 "comparator": "<=", "value": 0.2},
+                {"type": "direction", "device": reference_device, "channel": 0, "direction": "negative"}
             ]
         },
         {
             "name": "toe_off",
             "previous": "heel_strike",
             "start_when": [
-                {"type": "threshold", "device": "DelsysEmgDataCollector", "channel": 0, "comparator": ">=",
-                 "value": -0.2},
-                {"type": "direction", "device": "DelsysEmgDataCollector", "channel": 0, "direction": "positive"}
+                {"type": "threshold", "device": reference_device, "channel": 0,
+                 "comparator": ">=", "value": -0.2},
+                {"type": "direction", "device": reference_device, "channel": 0, "direction": "positive"}
             ]
         }
     ]
 }
 
 
-def log_message(message, level="INFO"):
+def log_message(message, level="INFO") -> None:
     """Print messages with a timestamp and log level."""
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
     print(f"[{timestamp}] [{level}]: {message}")
 
 
-def to_packet(command_int):
-    """Create an 8-byte packet: 4 bytes for version + 4 bytes for command."""
+def to_packet(command_int: int) -> bytes:
+    """
+    Create an 8-byte packet: 4 bytes for version + 4 bytes for command.
+
+    Returns:
+        bytes: Packed 8-byte packet (little-endian).
+    """
     return struct.pack("<II", VERSION, command_int)
 
 
-def interpret_response(response: bytes):
+def interpret_response(response: bytes) -> dict:
     """
     Interpret a 16-byte response from the server.
 
@@ -124,7 +130,7 @@ def interpret_response(response: bytes):
     }
 
 
-def send_command(sock, command: Command):
+def send_command(sock, command: Command) -> bool:
     """
     Send a command to the server using the required protocol format.
 
@@ -168,7 +174,7 @@ def send_command(sock, command: Command):
         return False
 
 
-def send_extra_data(sock, response_sock, extra_data: dict):
+def send_extra_data(sock, response_sock, extra_data: dict) -> bool:
     """
     Sends extra data in the correct format.
 
@@ -212,7 +218,7 @@ def send_extra_data(sock, response_sock, extra_data: dict):
         return False
 
 
-def connect_and_handshake(host, ports):
+def connect_and_handshake(host: str, ports: list[int]) -> list[socket.socket] | bool:
     """
     Connects to all ports and performs a handshake.
 
@@ -250,7 +256,7 @@ def connect_and_handshake(host, ports):
     return sockets
 
 
-def parse_data_length(data):
+def parse_data_length(data: bytes) -> int:
     """Extract expected data length from header bytes 12-15."""
     return struct.unpack('<I', data[12:16])[0]
 
@@ -260,6 +266,8 @@ def send_osc_message(address: str, value: float) -> None:
     with osc_lock:
         osc_client.send_message(address, value)
 
+
+def listen_to_live_data(sock: socket) -> None:
     """Listen for live data packets and send them via OSC."""
     buffer = bytearray()
     expected_length = None
@@ -299,7 +307,6 @@ def send_osc_message(address: str, value: float) -> None:
                                     if channel <= len(channels):
                                         # Send data via OSC
                                         send_osc_message(f'/sensor_{channel}', channels[channel-1] * DATA_MULTIPLIER)
-                                                                channels[channel-1] * DATA_MULTIPLIER)
 
                 except json.JSONDecodeError:
                     log_message("JSON decode error in live data. Resetting buffer.", "ERROR")
@@ -313,7 +320,7 @@ def send_osc_message(address: str, value: float) -> None:
     log_message("Live data connection closed")
 
 
-def listen_to_live_analyses(sock):
+def listen_to_live_analyses(sock: socket) -> None:
     """Listen for live analyses packets and send them via OSC."""
     buffer = bytearray()
     expected_length = None
