@@ -43,7 +43,7 @@ def setup_venv():
             sys.exit(1)
 
 
-def download_audio(youtube_url, output_path="output_audio.wav"):
+def download_audio(youtube_url, output_path="output_audio"):
     """Downloads audio from a YouTube video and converts it to WAV."""
     import yt_dlp
     from imageio_ffmpeg import get_ffmpeg_exe
