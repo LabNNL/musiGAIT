@@ -243,12 +243,29 @@
 , 			{
 				"box" : 				{
 					"id" : "obj-12",
-					"maxclass" : "newobj",
+					"maxclass" : "live.numbox",
 					"numinlets" : 1,
-					"numoutlets" : 1,
-					"outlettype" : [ "float" ],
-					"patching_rect" : [ 580.0, 274.0, 29.0, 22.0 ],
-					"text" : "thru"
+					"numoutlets" : 2,
+					"outlettype" : [ "", "float" ],
+					"parameter_enable" : 1,
+					"patching_rect" : [ 580.0, 274.0, 44.0, 15.0 ],
+					"presentation" : 1,
+					"presentation_rect" : [ 211.0, 30.0, 44.0, 15.0 ],
+					"saved_attribute_attributes" : 					{
+						"valueof" : 						{
+							"parameter_initial" : [ 0.0 ],
+							"parameter_initial_enable" : 1,
+							"parameter_longname" : "live.numbox",
+							"parameter_mmax" : 1.0,
+							"parameter_modmode" : 3,
+							"parameter_shortname" : "live.numbox",
+							"parameter_type" : 0,
+							"parameter_unitstyle" : 1
+						}
+
+					}
+,
+					"varname" : "live.numbox"
 				}
 
 			}
@@ -1228,6 +1245,7 @@
 			}
  ],
 		"parameters" : 		{
+			"obj-12" : [ "live.numbox", "live.numbox", 0 ],
 			"obj-57" : [ "live.text[1]", "live.text", 0 ],
 			"parameterbanks" : 			{
 				"0" : 				{
