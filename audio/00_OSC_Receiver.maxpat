@@ -4,13 +4,13 @@
 		"appversion" : 		{
 			"major" : 8,
 			"minor" : 6,
-			"revision" : 4,
+			"revision" : 5,
 			"architecture" : "x64",
 			"modernui" : 1
 		}
 ,
 		"classnamespace" : "box",
-		"rect" : [ 275.0, 142.0, 1245.0, 700.0 ],
+		"rect" : [ 275.0, 142.0, 937.0, 700.0 ],
 		"bglocked" : 0,
 		"openinpresentation" : 1,
 		"default_fontsize" : 12.0,
@@ -273,7 +273,7 @@
 						"appversion" : 						{
 							"major" : 8,
 							"minor" : 6,
-							"revision" : 4,
+							"revision" : 5,
 							"architecture" : "x64",
 							"modernui" : 1
 						}
@@ -822,9 +822,9 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 28.0, 348.0, 254.0, 25.0 ],
+					"patching_rect" : [ 28.0, 348.0, 254.0, 24.0 ],
 					"presentation" : 1,
-					"presentation_rect" : [ 148.0, 231.0, 304.0, 25.0 ],
+					"presentation_rect" : [ 148.0, 231.0, 304.0, 24.0 ],
 					"text" : "Sonification",
 					"textjustification" : 1
 				}
@@ -886,7 +886,7 @@
 						"appversion" : 						{
 							"major" : 8,
 							"minor" : 6,
-							"revision" : 4,
+							"revision" : 5,
 							"architecture" : "x64",
 							"modernui" : 1
 						}
@@ -1242,9 +1242,9 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 880.0, 506.0, 158.0, 25.0 ],
+					"patching_rect" : [ 880.0, 506.0, 158.0, 24.0 ],
 					"presentation" : 1,
-					"presentation_rect" : [ 427.0, 40.999997511506081, 250.0, 25.0 ],
+					"presentation_rect" : [ 427.0, 40.999997511506081, 250.0, 24.0 ],
 					"text" : "Others",
 					"textjustification" : 1
 				}
@@ -1280,9 +1280,9 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 382.0, 506.0, 158.0, 25.0 ],
+					"patching_rect" : [ 382.0, 506.0, 158.0, 24.0 ],
 					"presentation" : 1,
-					"presentation_rect" : [ 75.0, 41.0, 341.0, 25.0 ],
+					"presentation_rect" : [ 75.0, 41.0, 341.0, 24.0 ],
 					"text" : "Sonified Sensor",
 					"textjustification" : 1
 				}
@@ -1704,9 +1704,9 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 92.0, 27.0, 166.0, 25.0 ],
+					"patching_rect" : [ 92.0, 27.0, 166.0, 24.0 ],
 					"presentation" : 1,
-					"presentation_rect" : [ 4.0, 5.0, 166.0, 25.0 ],
+					"presentation_rect" : [ 4.0, 5.0, 166.0, 24.0 ],
 					"text" : "Paste a YouTube URL",
 					"textjustification" : 1
 				}
@@ -1866,7 +1866,7 @@
 						"appversion" : 						{
 							"major" : 8,
 							"minor" : 6,
-							"revision" : 4,
+							"revision" : 5,
 							"architecture" : "x64",
 							"modernui" : 1
 						}
@@ -1912,7 +1912,7 @@
 										"appversion" : 										{
 											"major" : 8,
 											"minor" : 6,
-											"revision" : 4,
+											"revision" : 5,
 											"architecture" : "x64",
 											"modernui" : 1
 										}
@@ -2076,13 +2076,13 @@
 										"appversion" : 										{
 											"major" : 8,
 											"minor" : 6,
-											"revision" : 4,
+											"revision" : 5,
 											"architecture" : "x64",
 											"modernui" : 1
 										}
 ,
 										"classnamespace" : "box",
-										"rect" : [ 1013.0, 189.0, 487.0, 319.0 ],
+										"rect" : [ 328.0, 215.0, 666.0, 489.0 ],
 										"bglocked" : 0,
 										"openinpresentation" : 0,
 										"default_fontsize" : 12.0,
@@ -2112,12 +2112,61 @@
 										"assistshowspatchername" : 0,
 										"boxes" : [ 											{
 												"box" : 												{
+													"id" : "obj-19",
+													"maxclass" : "newobj",
+													"numinlets" : 2,
+													"numoutlets" : 2,
+													"outlettype" : [ "bang", "" ],
+													"patching_rect" : [ 50.0, 210.0, 82.0, 22.0 ],
+													"text" : "sel macintosh"
+												}
+
+											}
+, 											{
+												"box" : 												{
+													"id" : "obj-16",
+													"maxclass" : "newobj",
+													"numinlets" : 0,
+													"numoutlets" : 1,
+													"outlettype" : [ "" ],
+													"patching_rect" : [ 50.0, 175.0, 54.0, 22.0 ],
+													"text" : "r system"
+												}
+
+											}
+, 											{
+												"box" : 												{
+													"id" : "obj-15",
+													"linecount" : 2,
+													"maxclass" : "message",
+													"numinlets" : 2,
+													"numoutlets" : 1,
+													"outlettype" : [ "" ],
+													"patching_rect" : [ 50.0, 126.0, 131.0, 35.0 ],
+													"text" : ";\rmax getsystem system"
+												}
+
+											}
+, 											{
+												"box" : 												{
+													"id" : "obj-4",
+													"maxclass" : "message",
+													"numinlets" : 2,
+													"numoutlets" : 1,
+													"outlettype" : [ "" ],
+													"patching_rect" : [ 50.0, 247.0, 418.0, 22.0 ],
+													"text" : "sh -c \"command -v python3 >/dev/null 2>&1 && echo python3 || echo python\""
+												}
+
+											}
+, 											{
+												"box" : 												{
 													"id" : "obj-2",
 													"maxclass" : "newobj",
 													"numinlets" : 2,
 													"numoutlets" : 1,
 													"outlettype" : [ "" ],
-													"patching_rect" : [ 50.0, 211.0, 406.0, 22.0 ],
+													"patching_rect" : [ 50.0, 362.0, 526.0, 22.0 ],
 													"text" : "join"
 												}
 
@@ -2129,7 +2178,7 @@
 													"numinlets" : 1,
 													"numoutlets" : 2,
 													"outlettype" : [ "bang", "" ],
-													"patching_rect" : [ 50.0, 93.0, 406.0, 22.0 ],
+													"patching_rect" : [ 50.0, 93.0, 526.0, 22.0 ],
 													"text" : "t b l"
 												}
 
@@ -2142,10 +2191,9 @@
 													"numinlets" : 1,
 													"numoutlets" : 2,
 													"outlettype" : [ "", "bang" ],
-													"patching_rect" : [ 50.0, 172.0, 33.0, 22.0 ],
+													"patching_rect" : [ 50.0, 324.0, 33.0, 22.0 ],
 													"saved_object_attributes" : 													{
-														"shell" : "(default)",
-														"wd" : "D:/musiGAIT/audio/"
+														"shell" : "(default)"
 													}
 ,
 													"text" : "shell"
@@ -2159,7 +2207,7 @@
 													"numinlets" : 2,
 													"numoutlets" : 1,
 													"outlettype" : [ "" ],
-													"patching_rect" : [ 50.0, 137.0, 372.0, 22.0 ],
+													"patching_rect" : [ 113.0, 281.0, 372.0, 22.0 ],
 													"text" : "python3 -c print('python3') 2> NUL || python -c print('python') 2> NUL"
 												}
 
@@ -2185,14 +2233,14 @@
 													"maxclass" : "outlet",
 													"numinlets" : 1,
 													"numoutlets" : 0,
-													"patching_rect" : [ 50.0, 255.0, 30.0, 30.0 ]
+													"patching_rect" : [ 50.0, 406.0, 30.0, 30.0 ]
 												}
 
 											}
  ],
 										"lines" : [ 											{
 												"patchline" : 												{
-													"destination" : [ "obj-11", 0 ],
+													"destination" : [ "obj-15", 0 ],
 													"source" : [ "obj-1", 0 ]
 												}
 
@@ -2213,8 +2261,36 @@
 											}
 , 											{
 												"patchline" : 												{
+													"destination" : [ "obj-19", 0 ],
+													"source" : [ "obj-16", 0 ]
+												}
+
+											}
+, 											{
+												"patchline" : 												{
+													"destination" : [ "obj-11", 0 ],
+													"source" : [ "obj-19", 1 ]
+												}
+
+											}
+, 											{
+												"patchline" : 												{
+													"destination" : [ "obj-4", 0 ],
+													"source" : [ "obj-19", 0 ]
+												}
+
+											}
+, 											{
+												"patchline" : 												{
 													"destination" : [ "obj-10", 0 ],
 													"source" : [ "obj-2", 0 ]
+												}
+
+											}
+, 											{
+												"patchline" : 												{
+													"destination" : [ "obj-7", 0 ],
+													"source" : [ "obj-4", 0 ]
 												}
 
 											}
@@ -2474,7 +2550,7 @@
 									"patching_rect" : [ 168.0, 202.0, 94.0, 22.0 ],
 									"saved_object_attributes" : 									{
 										"shell" : "(default)",
-										"wd" : "D:/musiGAIT/audio/"
+										"wd" : "~/onSite/musiGAIT/audio/"
 									}
 ,
 									"text" : "shell"
@@ -2737,7 +2813,7 @@
 						"appversion" : 						{
 							"major" : 8,
 							"minor" : 6,
-							"revision" : 4,
+							"revision" : 5,
 							"architecture" : "x64",
 							"modernui" : 1
 						}
@@ -2795,7 +2871,7 @@
 										"appversion" : 										{
 											"major" : 8,
 											"minor" : 6,
-											"revision" : 4,
+											"revision" : 5,
 											"architecture" : "x64",
 											"modernui" : 1
 										}
@@ -3312,7 +3388,7 @@
 										"appversion" : 										{
 											"major" : 8,
 											"minor" : 6,
-											"revision" : 4,
+											"revision" : 5,
 											"architecture" : "x64",
 											"modernui" : 1
 										}
@@ -4930,7 +5006,7 @@
 										"appversion" : 										{
 											"major" : 8,
 											"minor" : 6,
-											"revision" : 4,
+											"revision" : 5,
 											"architecture" : "x64",
 											"modernui" : 1
 										}
@@ -5575,7 +5651,7 @@
 						"appversion" : 						{
 							"major" : 8,
 							"minor" : 6,
-							"revision" : 4,
+							"revision" : 5,
 							"architecture" : "x64",
 							"modernui" : 1
 						}
@@ -5622,7 +5698,7 @@
 										"appversion" : 										{
 											"major" : 8,
 											"minor" : 6,
-											"revision" : 4,
+											"revision" : 5,
 											"architecture" : "x64",
 											"modernui" : 1
 										}
@@ -5916,7 +5992,7 @@
 										"appversion" : 										{
 											"major" : 8,
 											"minor" : 6,
-											"revision" : 4,
+											"revision" : 5,
 											"architecture" : "x64",
 											"modernui" : 1
 										}
@@ -6178,7 +6254,7 @@
 										"appversion" : 										{
 											"major" : 8,
 											"minor" : 6,
-											"revision" : 4,
+											"revision" : 5,
 											"architecture" : "x64",
 											"modernui" : 1
 										}
@@ -6573,7 +6649,7 @@
 						"appversion" : 						{
 							"major" : 8,
 							"minor" : 6,
-							"revision" : 4,
+							"revision" : 5,
 							"architecture" : "x64",
 							"modernui" : 1
 						}
@@ -7314,32 +7390,32 @@
 ,
 		"dependency_cache" : [ 			{
 				"name" : "cpu.maxpat",
-				"bootpath" : "D:/musiGAIT/audio",
+				"bootpath" : "~/onSite/musiGAIT/audio",
 				"patcherrelativepath" : ".",
 				"type" : "JSON",
 				"implicit" : 1
 			}
 , 			{
-				"name" : "fluid.stats.mxe64",
-				"type" : "mx64"
+				"name" : "fluid.stats.mxo",
+				"type" : "iLaX"
 			}
 , 			{
 				"name" : "guiSliders.maxpat",
-				"bootpath" : "D:/musiGAIT/audio",
+				"bootpath" : "~/onSite/musiGAIT/audio",
 				"patcherrelativepath" : ".",
 				"type" : "JSON",
 				"implicit" : 1
 			}
 , 			{
 				"name" : "pSine.maxpat",
-				"bootpath" : "D:/musiGAIT/audio",
+				"bootpath" : "~/onSite/musiGAIT/audio",
 				"patcherrelativepath" : ".",
 				"type" : "JSON",
 				"implicit" : 1
 			}
 , 			{
-				"name" : "shell.mxe64",
-				"type" : "mx64"
+				"name" : "shell.mxo",
+				"type" : "iLaX"
 			}
 , 			{
 				"name" : "thru.maxpat",
