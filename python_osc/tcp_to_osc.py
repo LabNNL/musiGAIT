@@ -20,7 +20,60 @@ EMG_HOST, EMG_PORTS = "127.0.0.1", [5123, 5124, 5125, 5126]  # Command, Response
 DATA_CHANNELS = list(range(1, 17))
 
 # Data multiplier
-DATA_MULTIPLIER = 1
+DATA_MULTIPLIER = 10000
+
+# Analyzer configuration
+channel = 14
+device = "DelsysEmgDataCollector"
+time_reference_device = "DelsysEmgDataCollector"
+
+analyzer_config = {
+    "name": "foot_cycle",
+    "analyzer_type": "cyclic_timed_events",
+    "time_reference_device": time_reference_device,
+    "learning_rate": 0.5,
+    "initial_phase_durations": [400, 600],
+    "events": [
+        {
+            "name": "heel_strike",
+            "previous": "toe_off",
+            "start_when": [
+                {
+                    "type": "threshold",
+                    "device": device,
+                    "channel": channel,
+                    "comparator": "<=",
+                    "value": 0.2
+                },
+                {
+                    "type": "direction",
+                    "device": device,
+                    "channel": channel,
+                    "direction": "negative"
+                }
+            ]
+        },
+        {
+            "name": "toe_off",
+            "previous": "heel_strike",
+            "start_when": [
+                {
+                    "type": "threshold",
+                    "device": device,
+                    "channel": channel,
+                    "comparator": ">=",
+                    "value": -0.2
+                },
+                {
+                    "type": "direction",
+                    "device": device,
+                    "channel": channel,
+                    "direction": "positive"
+                }
+            ]
+        }
+    ]
+}
 
 
 # Commands
@@ -41,36 +94,6 @@ class Command(Enum):
     REMOVE_ANALYZER = 51
     FAILED = 100
 
-
-# Analyzer configuration
-reference_device = "DelsysEmgDataCollector"
-analyzer_config = {
-    "name": "foot_cycle",
-    "analyzer_type": "cyclic_timed_events",
-    "time_reference_device": reference_device,
-    "learning_rate": 0.5,
-    "initial_phase_durations": [400, 600],
-    "events": [
-        {
-            "name": "heel_strike",
-            "previous": "toe_off",
-            "start_when": [
-                {"type": "threshold", "device": reference_device, "channel": 0,
-                 "comparator": "<=", "value": 0.2},
-                {"type": "direction", "device": reference_device, "channel": 0, "direction": "negative"}
-            ]
-        },
-        {
-            "name": "toe_off",
-            "previous": "heel_strike",
-            "start_when": [
-                {"type": "threshold", "device": reference_device, "channel": 0,
-                 "comparator": ">=", "value": -0.2},
-                {"type": "direction", "device": reference_device, "channel": 0, "direction": "positive"}
-            ]
-        }
-    ]
-}
 
 
 def log_message(message, level="INFO") -> None:
