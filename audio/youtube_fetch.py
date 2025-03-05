@@ -5,13 +5,23 @@ import os
 
 VENV_DIR = ".venv"
 PYTHON_EXEC = os.path.join(VENV_DIR, "Scripts" if os.name == "nt" else "bin", "python")
+PIP_EXEC = os.path.join(VENV_DIR, "Scripts" if os.name == "nt" else "bin", "pip")
 
 DEPENDENCIES = ["yt-dlp", "imageio[ffmpeg]"]
 
 
 def is_installed(package):
-    """Check if a package is installed in the current Python environment."""
-    return importlib.util.find_spec(package.replace("-", "_")) is not None
+    """Check if a package is installed inside the virtual environment."""
+    try:
+        result = subprocess.run(
+            [PIP_EXEC, "show", package.split("[")[0]],  # Extract package name if using extras
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
+        )
+        return result.returncode == 0
+    except Exception:
+        return False
 
 
 def setup_venv():
@@ -85,11 +95,14 @@ if __name__ == "__main__":
 
     video_url = sys.argv[1]
 
-    if os.path.exists(VENV_DIR) and sys.prefix != sys.base_prefix:
+    # Check if already running inside the virtual environment
+    if os.path.exists(VENV_DIR) and sys.prefix == os.path.abspath(VENV_DIR):
         download_audio(video_url)
     else:
         # Step 1: Setup Virtual Environment & Install Dependencies
         setup_venv()
 
-        # Step 2: Restart the script inside the virtual environment
+        # Step 2: Restart the script inside the virtual environment **only once**
+        print("Restarting inside virtual environment...")
         subprocess.run([PYTHON_EXEC, __file__, video_url], check=True)
+        sys.exit(0)
