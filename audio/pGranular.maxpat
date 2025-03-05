@@ -290,6 +290,7 @@
 			}
 , 			{
 				"box" : 				{
+					"appearance" : 2,
 					"id" : "obj-12",
 					"maxclass" : "live.numbox",
 					"numinlets" : 1,
@@ -702,24 +703,20 @@
 			}
 , 			{
 				"box" : 				{
-					"bgcolor" : [ 0.2, 0.2, 0.2, 0.02 ],
-					"elementcolor" : [ 0.349019607843137, 0.349019607843137, 0.349019607843137, 0.0 ],
-					"floatoutput" : 1,
+					"bgcolor" : [ 0.2, 0.2, 0.2, 0.0 ],
 					"id" : "obj-56",
 					"ignoreclick" : 1,
-					"knobcolor" : [ 1.0, 0.0, 0.0, 1.0 ],
-					"knobshape" : 5,
-					"maxclass" : "slider",
+					"maxclass" : "multislider",
 					"numinlets" : 1,
-					"numoutlets" : 1,
-					"orientation" : 1,
-					"outlettype" : [ "" ],
+					"numoutlets" : 2,
+					"orientation" : 0,
+					"outlettype" : [ "", "" ],
 					"parameter_enable" : 0,
 					"patching_rect" : [ 369.0, 180.0, 254.0, 60.0 ],
 					"presentation" : 1,
-					"presentation_rect" : [ 1.0, 30.0, 254.0, 60.0 ],
-					"size" : 1.0,
-					"thickness" : 35.0
+					"presentation_rect" : [ 1.0, 30.500001758337021, 254.0, 59.0 ],
+					"setminmax" : [ 0.0, 1.0 ],
+					"slidercolor" : [ 1.0, 0.0, 0.0, 1.0 ]
 				}
 
 			}
