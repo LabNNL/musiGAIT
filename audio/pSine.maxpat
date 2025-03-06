@@ -40,6 +40,61 @@
 		"assistshowspatchername" : 0,
 		"boxes" : [ 			{
 				"box" : 				{
+					"id" : "obj-8",
+					"maxclass" : "comment",
+					"numinlets" : 1,
+					"numoutlets" : 0,
+					"patching_rect" : [ 104.0, 183.0, 80.0, 20.0 ],
+					"presentation" : 1,
+					"presentation_rect" : [ 1.0, 67.0, 66.0, 20.0 ],
+					"text" : "Current",
+					"textjustification" : 2
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"activeslidercolor" : [ 1.0, 0.694117647058824, 0.0, 1.0 ],
+					"annotation" : "",
+					"appearance" : 2,
+					"fontsize" : 12.0,
+					"id" : "obj-7",
+					"maxclass" : "live.numbox",
+					"numinlets" : 1,
+					"numoutlets" : 2,
+					"outlettype" : [ "", "float" ],
+					"parameter_enable" : 1,
+					"patching_rect" : [ 50.0, 184.0, 53.0, 18.0 ],
+					"presentation" : 1,
+					"presentation_rect" : [ 69.0, 68.0, 53.0, 18.0 ],
+					"prototypename" : "freq",
+					"saved_attribute_attributes" : 					{
+						"activeslidercolor" : 						{
+							"expression" : ""
+						}
+,
+						"valueof" : 						{
+							"parameter_exponent" : 3.333333,
+							"parameter_initial" : [ 60 ],
+							"parameter_initial_enable" : 1,
+							"parameter_linknames" : 1,
+							"parameter_longname" : "live.numbox[2]",
+							"parameter_mmax" : 10000.0,
+							"parameter_mmin" : 20.0,
+							"parameter_modmode" : 0,
+							"parameter_shortname" : "Freq",
+							"parameter_type" : 0,
+							"parameter_unitstyle" : 3
+						}
+
+					}
+,
+					"varname" : "live.numbox[2]"
+				}
+
+			}
+, 			{
+				"box" : 				{
 					"comment" : "",
 					"id" : "obj-4",
 					"index" : 0,
@@ -193,7 +248,7 @@
 					"numinlets" : 2,
 					"numoutlets" : 2,
 					"outlettype" : [ "signal", "bang" ],
-					"patching_rect" : [ 50.0, 219.0, 58.0, 22.0 ],
+					"patching_rect" : [ 50.0, 258.0, 58.0, 22.0 ],
 					"text" : "line~ 440"
 				}
 
@@ -217,7 +272,7 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 50.0, 184.0, 45.0, 22.0 ],
+					"patching_rect" : [ 50.0, 223.0, 45.0, 22.0 ],
 					"text" : "$1 100"
 				}
 
@@ -273,7 +328,7 @@
 			}
 , 			{
 				"patchline" : 				{
-					"destination" : [ "obj-39", 0 ],
+					"destination" : [ "obj-7", 0 ],
 					"source" : [ "obj-40", 0 ]
 				}
 
@@ -301,10 +356,18 @@
 				}
 
 			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-39", 0 ],
+					"source" : [ "obj-7", 0 ]
+				}
+
+			}
  ],
 		"parameters" : 		{
 			"obj-2" : [ "live.numbox", "Freq", 0 ],
 			"obj-3" : [ "live.numbox[1]", "Freq", 0 ],
+			"obj-7" : [ "live.numbox[2]", "Freq", 0 ],
 			"parameterbanks" : 			{
 				"0" : 				{
 					"index" : 0,
