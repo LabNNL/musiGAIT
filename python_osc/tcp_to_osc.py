@@ -41,15 +41,15 @@ analyzer_config = {
                 {
                     "type": "threshold",
                     "device": device,
-                    "channel": channel,
-                    "comparator": "<=",
+                    "channel": channel-1,
+                    "comparator": ">=",
                     "value": 0.2
                 },
                 {
                     "type": "direction",
                     "device": device,
-                    "channel": channel,
-                    "direction": "negative"
+                    "channel": channel-1,
+                    "direction": "positive"
                 }
             ]
         },
@@ -60,15 +60,15 @@ analyzer_config = {
                 {
                     "type": "threshold",
                     "device": device,
-                    "channel": channel,
-                    "comparator": ">=",
+                    "channel": channel-1,
+                    "comparator": "<=",
                     "value": -0.2
                 },
                 {
                     "type": "direction",
                     "device": device,
-                    "channel": channel,
-                    "direction": "positive"
+                    "channel": channel-1,
+                    "direction": "negative"
                 }
             ]
         }
