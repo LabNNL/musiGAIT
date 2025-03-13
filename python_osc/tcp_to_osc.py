@@ -23,14 +23,16 @@ DATA_CHANNELS = list(range(1, 17))
 DATA_MULTIPLIER = 10000
 
 # Analyzer configuration
-channel = 14
-device = "DelsysEmgDataCollector"
-time_reference_device = "DelsysEmgDataCollector"
+ANALYZER_CHANNEL = 14
+ANALYZER_THRESHOLD = 5
+
+ANALYZER_DEVICE = "DelsysEmgDataCollector"
+ANALYZER_REFERENCE = "DelsysEmgDataCollector"
 
 analyzer_config = {
     "name": "foot_cycle",
     "analyzer_type": "cyclic_timed_events",
-    "time_reference_device": time_reference_device,
+    "time_reference_device": ANALYZER_REFERENCE,
     "learning_rate": 0.5,
     "initial_phase_durations": [400, 600],
     "events": [
@@ -40,16 +42,10 @@ analyzer_config = {
             "start_when": [
                 {
                     "type": "threshold",
-                    "device": device,
-                    "channel": channel-1,
+                    "device": ANALYZER_DEVICE,
+                    "channel": ANALYZER_CHANNEL-1,
                     "comparator": ">=",
-                    "value": 0.2
-                },
-                {
-                    "type": "direction",
-                    "device": device,
-                    "channel": channel-1,
-                    "direction": "positive"
+                    "value": ANALYZER_THRESHOLD
                 }
             ]
         },
@@ -59,16 +55,10 @@ analyzer_config = {
             "start_when": [
                 {
                     "type": "threshold",
-                    "device": device,
-                    "channel": channel-1,
-                    "comparator": "<=",
-                    "value": -0.2
-                },
-                {
-                    "type": "direction",
-                    "device": device,
-                    "channel": channel-1,
-                    "direction": "negative"
+                    "device": ANALYZER_DEVICE,
+                    "channel": ANALYZER_CHANNEL-1,
+                    "comparator": "<",
+                    "value": ANALYZER_THRESHOLD
                 }
             ]
         }
