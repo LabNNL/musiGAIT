@@ -1,2 +1,6 @@
 **/.DS_Store
 **/.idea
+
+# Binary and config files of the video folder
+video/config.json
+video/*.toe
