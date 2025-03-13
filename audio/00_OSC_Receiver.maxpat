@@ -4764,7 +4764,8 @@
 							"parameter_modmode" : 3,
 							"parameter_shortname" : "live.numbox[5]",
 							"parameter_type" : 0,
-							"parameter_unitstyle" : 5
+							"parameter_units" : "%.0f%",
+							"parameter_unitstyle" : 9
 						}
 
 					}
@@ -4794,7 +4795,8 @@
 							"parameter_modmode" : 3,
 							"parameter_shortname" : "live.numbox[5]",
 							"parameter_type" : 0,
-							"parameter_unitstyle" : 5
+							"parameter_units" : "%.0f%",
+							"parameter_unitstyle" : 9
 						}
 
 					}
