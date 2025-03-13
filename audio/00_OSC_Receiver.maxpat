@@ -103,7 +103,7 @@
 					"patching_rect" : [ 323.0, 1010.0, 121.0, 24.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 6.00000011920929, 196.000001668930054, 61.0, 24.0 ],
-					"text" : "014%",
+					"text" : "100%",
 					"textcolor" : [ 1.0, 0.423529411764706, 0.513725490196078, 1.0 ]
 				}
 
@@ -218,7 +218,7 @@
 					"patching_rect" : [ 376.0, 903.0, 100.0, 20.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 130.0, 416.0, 115.0, 20.0 ],
-					"text" : "Deviation: -035%",
+					"text" : "Deviation: 050%",
 					"textjustification" : 2
 				}
 
@@ -403,7 +403,7 @@
 					"patching_rect" : [ 262.0, 903.0, 100.0, 20.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 6.0, 416.0, 115.0, 20.0 ],
-					"text" : "Real: 015%"
+					"text" : "Real: 100%"
 				}
 
 			}
@@ -960,7 +960,7 @@
 													"numoutlets" : 2,
 													"outlettype" : [ "", "" ],
 													"patching_rect" : [ 113.0, 133.0, 185.0, 22.0 ],
-													"text" : "zl.stream 500 @zlmaxsize 32767"
+													"text" : "zl.stream 100 @zlmaxsize 32767"
 												}
 
 											}
@@ -1196,7 +1196,7 @@
 													"numoutlets" : 2,
 													"outlettype" : [ "", "" ],
 													"patching_rect" : [ 113.0, 133.0, 185.0, 22.0 ],
-													"text" : "zl.stream 500 @zlmaxsize 32767"
+													"text" : "zl.stream 100 @zlmaxsize 32767"
 												}
 
 											}
@@ -3236,7 +3236,7 @@
 					"patching_rect" : [ 1157.0, 1251.0, 94.0, 20.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 7.0, 525.0, 239.416662991046906, 20.0 ],
-					"text" : "~0.3 Step/Sec",
+					"text" : "~0.0 Step/Sec",
 					"textjustification" : 1
 				}
 
@@ -10699,7 +10699,7 @@
 													"numoutlets" : 2,
 													"outlettype" : [ "", "" ],
 													"patching_rect" : [ 113.0, 133.0, 185.0, 22.0 ],
-													"text" : "zl.stream 500 @zlmaxsize 32767"
+													"text" : "zl.stream 100 @zlmaxsize 32767"
 												}
 
 											}
@@ -10956,7 +10956,7 @@
 													"numoutlets" : 2,
 													"outlettype" : [ "", "" ],
 													"patching_rect" : [ 113.0, 133.0, 185.0, 22.0 ],
-													"text" : "zl.stream 500 @zlmaxsize 32767"
+													"text" : "zl.stream 100 @zlmaxsize 32767"
 												}
 
 											}
