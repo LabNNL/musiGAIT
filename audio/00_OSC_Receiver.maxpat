@@ -42,15 +42,15 @@
 				"box" : 				{
 					"fontsize" : 25.016977225672871,
 					"id" : "obj-102",
-					"linecount" : 4,
+					"linecount" : 9,
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 895.0, 278.0, 253.0, 118.0 ],
+					"patching_rect" : [ 895.0, 278.0, 253.0, 258.0 ],
 					"presentation" : 1,
-					"presentation_linecount" : 4,
-					"presentation_rect" : [ 895.0, 248.800000000000011, 296.0, 118.0 ],
-					"text" : "FONCTION AVEC DES ANGLES POUR COMPARAISON DANS LE TEMPS"
+					"presentation_linecount" : 8,
+					"presentation_rect" : [ 895.0, 248.800000000000011, 296.0, 230.0 ],
+					"text" : "FONCTION AVEC DES ANGLES POUR COMPARAISON DANS LE TEMPS (coll en fonction de goot_cycle qui va chercher des angles coherent pour le foot cycle actuel)"
 				}
 
 			}
@@ -75,7 +75,7 @@
 					"patching_rect" : [ 1369.0, 1251.0, 99.0, 20.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 53.416662991046906, 525.0, 193.0, 20.0 ],
-					"text" : "Deviation: -1.50",
+					"text" : "Deviation: -20.00",
 					"textjustification" : 2
 				}
 
@@ -169,7 +169,7 @@
 					"patching_rect" : [ 323.0, 1047.0, 121.0, 24.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 6.00000011920929, 196.000001668930054, 61.0, 24.0 ],
-					"text" : "098%",
+					"text" : "000%",
 					"textcolor" : [ 1.0, 0.423529411764706, 0.513725490196078, 1.0 ]
 				}
 
@@ -284,7 +284,7 @@
 					"patching_rect" : [ 376.0, 903.0, 100.0, 20.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 130.0, 416.0, 115.0, 20.0 ],
-					"text" : "Deviation: 048%",
+					"text" : "Deviation: -050%",
 					"textjustification" : 2
 				}
 
@@ -469,7 +469,7 @@
 					"patching_rect" : [ 262.0, 903.0, 100.0, 20.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 6.0, 416.0, 115.0, 20.0 ],
-					"text" : "Real: 098%"
+					"text" : "Real: 000%"
 				}
 
 			}
@@ -3303,7 +3303,7 @@
 					"patching_rect" : [ 1157.0, 1251.0, 88.0, 33.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 7.0, 525.0, 193.0, 20.0 ],
-					"text" : "~18.5 Steps/Min"
+					"text" : "~0.0 Steps/Min"
 				}
 
 			}
