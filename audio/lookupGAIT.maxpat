@@ -10,7 +10,7 @@
 		}
 ,
 		"classnamespace" : "box",
-		"rect" : [ 34.0, 77.0, 1566.0, 921.0 ],
+		"rect" : [ 134.0, 134.0, 1280.0, 921.0 ],
 		"bglocked" : 0,
 		"openinpresentation" : 1,
 		"default_fontsize" : 12.0,
@@ -116,22 +116,6 @@
 ,
 					"text" : "Save",
 					"varname" : "live.text[1]"
-				}
-
-			}
-, 			{
-				"box" : 				{
-					"fontface" : 1,
-					"id" : "obj-161",
-					"linecount" : 16,
-					"maxclass" : "comment",
-					"numinlets" : 1,
-					"numoutlets" : 0,
-					"patching_rect" : [ 1351.0, 42.0, 384.0, 241.0 ],
-					"presentation" : 1,
-					"presentation_linecount" : 16,
-					"presentation_rect" : [ 3.0, 293.0, 384.0, 241.0 ],
-					"text" : "\n\n\nSTANCE\n\n\n\n\n              ----------------------------------------------------------------------------------\n\n\n\n\nSWING\n\n\n"
 				}
 
 			}
@@ -3649,7 +3633,7 @@
 							"parameter_shortname" : "live.numbox",
 							"parameter_type" : 0,
 							"parameter_units" : "+/- %d°",
-							"parameter_unitstyle" : 9
+							"parameter_unitstyle" : 5
 						}
 
 					}
@@ -3688,7 +3672,7 @@
 							"parameter_shortname" : "live.numbox",
 							"parameter_type" : 0,
 							"parameter_units" : "+/- %d°",
-							"parameter_unitstyle" : 9
+							"parameter_unitstyle" : 5
 						}
 
 					}
@@ -3727,7 +3711,7 @@
 							"parameter_shortname" : "live.numbox",
 							"parameter_type" : 0,
 							"parameter_units" : "+/- %d°",
-							"parameter_unitstyle" : 9
+							"parameter_unitstyle" : 5
 						}
 
 					}
@@ -3781,7 +3765,7 @@
 							"parameter_shortname" : "live.numbox",
 							"parameter_type" : 0,
 							"parameter_units" : "+/- %d°",
-							"parameter_unitstyle" : 9
+							"parameter_unitstyle" : 5
 						}
 
 					}
@@ -3820,7 +3804,7 @@
 							"parameter_shortname" : "live.numbox",
 							"parameter_type" : 0,
 							"parameter_units" : "+/- %d°",
-							"parameter_unitstyle" : 9
+							"parameter_unitstyle" : 5
 						}
 
 					}
@@ -3859,7 +3843,7 @@
 							"parameter_shortname" : "live.numbox",
 							"parameter_type" : 0,
 							"parameter_units" : "+/- %d°",
-							"parameter_unitstyle" : 9
+							"parameter_unitstyle" : 5
 						}
 
 					}
@@ -3898,7 +3882,7 @@
 							"parameter_shortname" : "live.numbox",
 							"parameter_type" : 0,
 							"parameter_units" : "+/- %d°",
-							"parameter_unitstyle" : 9
+							"parameter_unitstyle" : 5
 						}
 
 					}
@@ -4702,7 +4686,7 @@
 							"parameter_shortname" : "live.numbox",
 							"parameter_type" : 0,
 							"parameter_units" : "+/- %d°",
-							"parameter_unitstyle" : 9
+							"parameter_unitstyle" : 5
 						}
 
 					}
@@ -4787,6 +4771,22 @@
 					"parameter_enable" : 0,
 					"patching_rect" : [ 367.0, 653.0, 200.0, 100.0 ],
 					"range" : [ 0.0, 180.0 ]
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"fontface" : 1,
+					"id" : "obj-161",
+					"linecount" : 16,
+					"maxclass" : "comment",
+					"numinlets" : 1,
+					"numoutlets" : 0,
+					"patching_rect" : [ 1351.0, 42.0, 384.0, 241.0 ],
+					"presentation" : 1,
+					"presentation_linecount" : 16,
+					"presentation_rect" : [ 3.0, 293.0, 384.0, 241.0 ],
+					"text" : "\n\n\nSTANCE\n\n\n\n\n              ----------------------------------------------------------------------------------\n\n\n\n\nSWING\n\n\n"
 				}
 
 			}
