@@ -746,7 +746,7 @@
 					"patching_rect" : [ 1369.0, 1326.0, 99.0, 20.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 53.416662991046906, 525.0, 193.0, 20.0 ],
-					"text" : "Deviation: -1.50",
+					"text" : "Deviation: -20.00",
 					"textjustification" : 2
 				}
 
@@ -812,7 +812,7 @@
 					"patching_rect" : [ 1168.0, 1122.0, 121.0, 25.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 6.00000011920929, 196.000001668930054, 61.0, 25.0 ],
-					"text" : "139°",
+					"text" : "000°",
 					"textcolor" : [ 1.0, 0.694117647058824, 0.0, 1.0 ]
 				}
 
@@ -840,7 +840,7 @@
 					"patching_rect" : [ 323.0, 1122.0, 121.0, 25.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 6.00000011920929, 196.000001668930054, 61.0, 25.0 ],
-					"text" : "013%",
+					"text" : "000%",
 					"textcolor" : [ 1.0, 0.423529411764706, 0.513725490196078, 1.0 ]
 				}
 
@@ -955,7 +955,7 @@
 					"patching_rect" : [ 421.0, 978.0, 100.0, 20.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 130.0, 416.0, 115.0, 20.0 ],
-					"text" : "Deviation: -015%",
+					"text" : "Deviation: -050%",
 					"textjustification" : 2
 				}
 
@@ -1140,7 +1140,7 @@
 					"patching_rect" : [ 285.0, 978.0, 100.0, 20.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 6.0, 416.0, 115.0, 20.0 ],
-					"text" : "Real: 013%"
+					"text" : "Real: 000%"
 				}
 
 			}
@@ -3989,7 +3989,7 @@
 					"patching_rect" : [ 1130.0, 978.0, 100.0, 20.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 6.0, 416.0, 115.0, 20.0 ],
-					"text" : "Real: 139°"
+					"text" : "Real: 000°"
 				}
 
 			}
@@ -4032,7 +4032,7 @@
 					"patching_rect" : [ 1157.0, 1326.0, 102.0, 20.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 7.0, 525.0, 193.0, 20.0 ],
-					"text" : "~18.5 Steps/Min"
+					"text" : "~0.0 Steps/Min"
 				}
 
 			}
