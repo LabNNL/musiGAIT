@@ -19,7 +19,7 @@ osc_lock = threading.Lock()
 
 # EMG to Delsys server
 EMG_HOST, EMG_PORTS = "127.0.0.1", [5123, 5124, 5125, 5126]  # Command, Response, Data, Analyses
-DATA_CHANNELS = list(range(1, 17))
+CURRENT_SENSORS = []
 SOCKETS = []
 
 # OSC to change analyzer configuration
@@ -360,7 +360,7 @@ def listen_to_live_data(sock: socket) -> None:
                             if timestamp not in sent_timestamps:
                                 sent_timestamps.add(timestamp)
 
-                                for channel in DATA_CHANNELS:
+                                for channel in CURRENT_SENSORS:
                                     if channel <= len(channels):
                                         # Send data via OSC
                                         send_osc_message(f'/sensor_{channel}', channels[channel-1] * DATA_MULTIPLIER)
@@ -504,9 +504,24 @@ def send_analyzer_config():
     log_message("Analyzer configuration updated successfully.")
 
 
-def listen_to_analyzer_updates():
+def change_current_sensors(address: str, *args):
+    """Handles incoming OSC messages to change the current sensor."""
+    global CURRENT_SENSORS
+
+    try:
+        with osc_lock:
+            CURRENT_SENSORS = [int(arg) for arg in args]
+
+        log_message(f"Changed current sensors to {CURRENT_SENSORS}")
+
+    except (ValueError, IndexError) as e:
+        log_message(f"Error changing current sensor: {e}", "ERROR")
+
+
+def listen_to_osc_updates():
     """Starts an OSC server to listen for threshold and channel updates from Max/MSP."""
     dispatcher = Dispatcher()
+    dispatcher.map("/sensors", change_current_sensors)
     dispatcher.map("/analyzer_channels", analyzer_update_channels)
     dispatcher.map("/analyzer_thresholds", analyzer_update_thresholds)
 
@@ -550,7 +565,7 @@ def main():
     analyses_thread.start()
 
     # Start the OSC listener to change analyzer configuration
-    analyzer_update_thread = threading.Thread(target=listen_to_analyzer_updates, daemon=True)
+    analyzer_update_thread = threading.Thread(target=listen_to_osc_updates, daemon=True)
     analyzer_update_thread.start()
 
     try:
