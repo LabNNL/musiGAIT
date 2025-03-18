@@ -1,4 +1,6 @@
+from pythonosc.osc_server import BlockingOSCUDPServer
 from pythonosc.udp_client import SimpleUDPClient
+from pythonosc.dispatcher import Dispatcher
 from enum import Enum
 import threading
 import datetime
@@ -10,14 +12,18 @@ import time
 # Protocol Version
 VERSION = 1
 
-# OSC configuration
+# OSC send to MaxMSP
 OSC_IP, OSC_PORT = "127.0.0.1", 8000
 osc_client = SimpleUDPClient(OSC_IP, OSC_PORT)
 osc_lock = threading.Lock()
 
-# EMG configuration
+# EMG to Delsys server
 EMG_HOST, EMG_PORTS = "127.0.0.1", [5123, 5124, 5125, 5126]  # Command, Response, Data, Analyses
 DATA_CHANNELS = list(range(1, 17))
+sockets = []
+
+# OSC to change analyzer configuration
+ANALYZER_IP, ANALYZER_PORT = "127.0.0.1", 8001
 
 # Data multiplier
 DATA_MULTIPLIER = 10000
@@ -384,11 +390,102 @@ def listen_to_live_analyses(sock: socket) -> None:
     log_message("Live analysis connection closed")
 
 
+def osc_update_channel(address: str, *args):
+    """Handles incoming OSC messages to update ANALYZER_CHANNEL."""
+    global ANALYZER_CHANNEL, sockets
+
+    try:
+        new_channel = int(args[0])
+        with osc_lock:
+            ANALYZER_CHANNEL = new_channel
+
+        if sockets:
+            send_analyzer_config()
+            log_message(f"Updated ANALYZER_CHANNEL: {ANALYZER_CHANNEL}")
+        else:
+            log_message("Sockets not initialized yet, skipping config update.", "WARNING")
+
+    except (ValueError, IndexError) as e:
+        log_message(f"Error updating ANALYZER_CHANNEL: {e}", "ERROR")
+
+
+
+def osc_update_threshold(address: str, *args):
+    """Handles incoming OSC messages to update ANALYZER_THRESHOLD."""
+    global ANALYZER_THRESHOLD, sockets
+
+    try:
+        new_threshold = float(args[0])
+        with osc_lock:
+            ANALYZER_THRESHOLD = new_threshold
+
+        if sockets:
+            send_analyzer_config()
+            log_message(f"Updated ANALYZER_THRESHOLD: {ANALYZER_THRESHOLD}")
+        else:
+            log_message("Sockets not initialized yet, skipping config update.", "WARNING")
+
+    except (ValueError, IndexError) as e:
+        log_message(f"Error updating ANALYZER_THRESHOLD: {e}", "ERROR")
+
+
+def update_analyzer_config():
+    """Update the analyzer configuration dynamically before sending."""
+    global analyzer_config, ANALYZER_CHANNEL, ANALYZER_THRESHOLD
+
+    with osc_lock:  # Ensure thread safety
+        analyzer_config["events"][0]["start_when"][0]["channel"] = ANALYZER_CHANNEL - 1
+        analyzer_config["events"][0]["start_when"][0]["value"] = ANALYZER_THRESHOLD
+        analyzer_config["events"][1]["start_when"][0]["channel"] = ANALYZER_CHANNEL - 1
+        analyzer_config["events"][1]["start_when"][0]["value"] = ANALYZER_THRESHOLD
+
+
+def send_analyzer_config():
+    """Send the updated analyzer configuration to the server."""
+    global sockets
+
+    if not sockets or len(sockets) < 2:
+        log_message("Sockets not initialized, cannot send analyzer configuration.", "ERROR")
+        return
+
+    update_analyzer_config()
+
+    # Remove the existing analyzer
+    if not send_command(sockets[0], Command.REMOVE_ANALYZER):
+        log_message("Failed to remove existing analyzer. Exiting...", "ERROR")
+        return
+
+    # Send ADD_ANALYZER command
+    if not send_command(sockets[0], Command.ADD_ANALYZER):
+        log_message("Failed to send ADD_ANALYZER command. Exiting...", "ERROR")
+        return
+
+    # Send the analyzer configuration
+    if not send_extra_data(sockets[1], sockets[0], analyzer_config):
+        log_message("Failed to send analyzer configuration. Exiting...", "ERROR")
+        return
+
+    log_message("Analyzer configuration updated successfully.")
+
+
+def listen_to_osc_updates():
+    """Starts an OSC server to listen for threshold and channel updates from Max/MSP."""
+    dispatcher = Dispatcher()
+    dispatcher.map("/set_analyzer_channel", osc_update_channel)
+    dispatcher.map("/set_analyzer_threshold", osc_update_threshold)
+
+    server = BlockingOSCUDPServer((ANALYZER_IP, ANALYZER_PORT), dispatcher)
+    log_message(f"Listening for OSC updates on port {ANALYZER_PORT}...")
+    server.serve_forever()
+
+
 def main():
     """Main function to establish connections and start data processing."""
 
     # Establish connections with handshake
+    global sockets
     sockets = connect_and_handshake(EMG_HOST, EMG_PORTS)
+
     if not sockets:
         log_message("Failed to establish all connections. Exiting...", "ERROR")
         return
@@ -415,6 +512,10 @@ def main():
     # Start live analyses listener thread
     analyses_thread = threading.Thread(target=listen_to_live_analyses, args=(sockets[3],), daemon=True)
     analyses_thread.start()
+
+    # Start the OSC listener to change analyzer configuration
+    osc_thread = threading.Thread(target=listen_to_osc_updates, daemon=True)
+    osc_thread.start()
 
     try:
         log_message("Connections established. Running... Press Ctrl+C to exit.")
