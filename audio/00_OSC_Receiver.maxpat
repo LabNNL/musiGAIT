@@ -4,13 +4,13 @@
 		"appversion" : 		{
 			"major" : 8,
 			"minor" : 6,
-			"revision" : 4,
+			"revision" : 5,
 			"architecture" : "x64",
 			"modernui" : 1
 		}
 ,
 		"classnamespace" : "box",
-		"rect" : [ 148.0, 176.0, 1346.0, 753.0 ],
+		"rect" : [ 68.0, 173.0, 1346.0, 753.0 ],
 		"bglocked" : 0,
 		"openinpresentation" : 1,
 		"default_fontsize" : 12.0,
@@ -46,7 +46,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 217.0, 705.0, 150.0, 34.0 ],
+					"patching_rect" : [ 217.0, 705.0, 150.0, 33.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 6.0, 7.0, 199.0, 20.0 ],
 					"text" : "----------------------------------------------",
@@ -61,9 +61,9 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 107.0, 162.0, 167.0, 25.0 ],
+					"patching_rect" : [ 107.0, 162.0, 167.0, 24.0 ],
 					"presentation" : 1,
-					"presentation_rect" : [ 6.0, 5.0, 113.0, 25.0 ],
+					"presentation_rect" : [ 6.0, 5.0, 113.0, 24.0 ],
 					"text" : "Launch Server",
 					"textjustification" : 1
 				}
@@ -81,7 +81,7 @@
 						"appversion" : 						{
 							"major" : 8,
 							"minor" : 6,
-							"revision" : 4,
+							"revision" : 5,
 							"architecture" : "x64",
 							"modernui" : 1
 						}
@@ -352,7 +352,7 @@
 									"numoutlets" : 1,
 									"outlettype" : [ "" ],
 									"patching_rect" : [ 225.0, 118.0, 137.0, 36.0 ],
-									"text" : ";\r\nmax getsystem system2"
+									"text" : ";\rmax getsystem system2"
 								}
 
 							}
@@ -464,7 +464,7 @@
 									"patching_rect" : [ 225.0, 609.0, 33.0, 22.0 ],
 									"saved_object_attributes" : 									{
 										"shell" : "(default)",
-										"wd" : "D:/musiGAIT/python_osc"
+										"wd" : "~/onSite/musiGAIT/python_osc"
 									}
 ,
 									"text" : "shell"
@@ -794,7 +794,7 @@
 						"appversion" : 						{
 							"major" : 8,
 							"minor" : 6,
-							"revision" : 4,
+							"revision" : 5,
 							"architecture" : "x64",
 							"modernui" : 1
 						}
@@ -1002,7 +1002,7 @@
 						"appversion" : 						{
 							"major" : 8,
 							"minor" : 6,
-							"revision" : 4,
+							"revision" : 5,
 							"architecture" : "x64",
 							"modernui" : 1
 						}
@@ -1038,25 +1038,37 @@
 						"assistshowspatchername" : 0,
 						"boxes" : [ 							{
 								"box" : 								{
-									"id" : "obj-16",
+									"id" : "obj-3",
 									"maxclass" : "newobj",
 									"numinlets" : 1,
-									"numoutlets" : 2,
-									"outlettype" : [ "", "bang" ],
-									"patching_rect" : [ 225.0, 271.0, 152.0, 22.0 ],
-									"text" : "t s b"
+									"numoutlets" : 1,
+									"outlettype" : [ "" ],
+									"patching_rect" : [ 254.0, 306.0, 180.0, 22.0 ],
+									"text" : "prepend open -a TouchDesigner"
 								}
 
 							}
 , 							{
 								"box" : 								{
-									"id" : "obj-15",
+									"id" : "obj-8",
 									"maxclass" : "newobj",
-									"numinlets" : 2,
+									"numinlets" : 1,
+									"numoutlets" : 1,
+									"outlettype" : [ "" ],
+									"patching_rect" : [ 90.5, 192.0, 132.0, 22.0 ],
+									"text" : "sprintf symout %svideo"
+								}
+
+							}
+, 							{
+								"box" : 								{
+									"id" : "obj-1",
+									"maxclass" : "newobj",
+									"numinlets" : 1,
 									"numoutlets" : 2,
-									"outlettype" : [ "", "" ],
-									"patching_rect" : [ 225.0, 237.0, 38.0, 22.0 ],
-									"text" : "zl.reg"
+									"outlettype" : [ "", "int" ],
+									"patching_rect" : [ 90.5, 235.0, 128.0, 22.0 ],
+									"text" : "conformpath max boot"
 								}
 
 							}
@@ -1067,20 +1079,8 @@
 									"numinlets" : 2,
 									"numoutlets" : 1,
 									"outlettype" : [ "" ],
-									"patching_rect" : [ 358.0, 303.0, 79.0, 22.0 ],
+									"patching_rect" : [ 254.0, 277.0, 79.0, 22.0 ],
 									"text" : "00_MAIN.toe"
-								}
-
-							}
-, 							{
-								"box" : 								{
-									"id" : "obj-8",
-									"maxclass" : "newobj",
-									"numinlets" : 2,
-									"numoutlets" : 1,
-									"outlettype" : [ "" ],
-									"patching_rect" : [ 225.0, 336.0, 152.0, 22.0 ],
-									"text" : "sprintf symout %svideo/%s"
 								}
 
 							}
@@ -1091,20 +1091,8 @@
 									"numinlets" : 1,
 									"numoutlets" : 5,
 									"outlettype" : [ "", "", "", "", "" ],
-									"patching_rect" : [ 133.0, 190.0, 81.0, 22.0 ],
+									"patching_rect" : [ 75.0, 147.0, 81.0, 22.0 ],
 									"text" : "regexp (.+/).+"
-								}
-
-							}
-, 							{
-								"box" : 								{
-									"id" : "obj-1",
-									"maxclass" : "newobj",
-									"numinlets" : 1,
-									"numoutlets" : 2,
-									"outlettype" : [ "", "" ],
-									"patching_rect" : [ 75.0, 152.0, 77.0, 22.0 ],
-									"text" : "t s s"
 								}
 
 							}
@@ -1127,7 +1115,7 @@
 									"numinlets" : 1,
 									"numoutlets" : 1,
 									"outlettype" : [ "" ],
-									"patching_rect" : [ 75.0, 336.0, 71.0, 22.0 ],
+									"patching_rect" : [ 90.5, 277.0, 71.0, 22.0 ],
 									"text" : "prepend wd"
 								}
 
@@ -1153,10 +1141,10 @@
 									"numinlets" : 1,
 									"numoutlets" : 2,
 									"outlettype" : [ "", "bang" ],
-									"patching_rect" : [ 225.0, 382.0, 33.0, 22.0 ],
+									"patching_rect" : [ 254.0, 331.0, 33.0, 22.0 ],
 									"saved_object_attributes" : 									{
 										"shell" : "(default)",
-										"wd" : "D:/musiGAIT/audio/"
+										"wd" : "~/onSite/musiGAIT/video"
 									}
 ,
 									"text" : "shell"
@@ -1172,7 +1160,7 @@
 									"numinlets" : 0,
 									"numoutlets" : 1,
 									"outlettype" : [ "" ],
-									"patching_rect" : [ 225.0, 33.0, 30.0, 30.0 ]
+									"patching_rect" : [ 254.0, 33.0, 30.0, 30.0 ]
 								}
 
 							}
@@ -1187,13 +1175,6 @@
 , 							{
 								"patchline" : 								{
 									"destination" : [ "obj-2", 0 ],
-									"source" : [ "obj-1", 1 ]
-								}
-
-							}
-, 							{
-								"patchline" : 								{
-									"destination" : [ "obj-1", 0 ],
 									"source" : [ "obj-109", 1 ]
 								}
 
@@ -1214,42 +1195,21 @@
 							}
 , 							{
 								"patchline" : 								{
-									"destination" : [ "obj-8", 1 ],
+									"destination" : [ "obj-3", 0 ],
 									"source" : [ "obj-14", 0 ]
 								}
 
 							}
 , 							{
 								"patchline" : 								{
-									"destination" : [ "obj-16", 0 ],
-									"source" : [ "obj-15", 0 ]
-								}
-
-							}
-, 							{
-								"patchline" : 								{
-									"destination" : [ "obj-14", 0 ],
-									"source" : [ "obj-16", 1 ]
-								}
-
-							}
-, 							{
-								"patchline" : 								{
 									"destination" : [ "obj-8", 0 ],
-									"source" : [ "obj-16", 0 ]
-								}
-
-							}
-, 							{
-								"patchline" : 								{
-									"destination" : [ "obj-15", 1 ],
 									"source" : [ "obj-2", 1 ]
 								}
 
 							}
 , 							{
 								"patchline" : 								{
-									"destination" : [ "obj-15", 0 ],
+									"destination" : [ "obj-14", 0 ],
 									"source" : [ "obj-217", 0 ]
 								}
 
@@ -1257,6 +1217,13 @@
 , 							{
 								"patchline" : 								{
 									"destination" : [ "obj-216", 0 ],
+									"source" : [ "obj-3", 0 ]
+								}
+
+							}
+, 							{
+								"patchline" : 								{
+									"destination" : [ "obj-1", 0 ],
 									"source" : [ "obj-8", 0 ]
 								}
 
@@ -1349,7 +1316,7 @@
 						"appversion" : 						{
 							"major" : 8,
 							"minor" : 6,
-							"revision" : 4,
+							"revision" : 5,
 							"architecture" : "x64",
 							"modernui" : 1
 						}
@@ -2567,7 +2534,7 @@
 						"appversion" : 						{
 							"major" : 8,
 							"minor" : 6,
-							"revision" : 4,
+							"revision" : 5,
 							"architecture" : "x64",
 							"modernui" : 1
 						}
@@ -2828,10 +2795,10 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 488.0, 601.0, 150.0, 89.0 ],
+					"patching_rect" : [ 488.0, 601.0, 150.0, 87.0 ],
 					"presentation" : 1,
 					"presentation_linecount" : 3,
-					"presentation_rect" : [ 444.0, 629.0, 455.0, 48.0 ],
+					"presentation_rect" : [ 444.0, 629.0, 455.0, 47.0 ],
 					"text" : "target speed: ne pas définir nous meme, juste verifier en temps reel\n\nlaunch serveur + python connect from maxmsp"
 				}
 
@@ -2848,7 +2815,7 @@
 						"appversion" : 						{
 							"major" : 8,
 							"minor" : 6,
-							"revision" : 4,
+							"revision" : 5,
 							"architecture" : "x64",
 							"modernui" : 1
 						}
@@ -3178,7 +3145,7 @@
 						"appversion" : 						{
 							"major" : 8,
 							"minor" : 6,
-							"revision" : 4,
+							"revision" : 5,
 							"architecture" : "x64",
 							"modernui" : 1
 						}
@@ -3661,9 +3628,9 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 686.0, 23.857142857142861, 158.0, 25.0 ],
+					"patching_rect" : [ 686.0, 23.857142857142861, 158.0, 24.0 ],
 					"presentation" : 1,
-					"presentation_rect" : [ 497.0, 41.0, 130.0, 25.0 ],
+					"presentation_rect" : [ 497.0, 41.0, 130.0, 24.0 ],
 					"text" : "GAIT Cycle",
 					"textjustification" : 1
 				}
@@ -3696,7 +3663,7 @@
 						"appversion" : 						{
 							"major" : 8,
 							"minor" : 6,
-							"revision" : 4,
+							"revision" : 5,
 							"architecture" : "x64",
 							"modernui" : 1
 						}
@@ -4289,7 +4256,7 @@
 						"appversion" : 						{
 							"major" : 8,
 							"minor" : 6,
-							"revision" : 4,
+							"revision" : 5,
 							"architecture" : "x64",
 							"modernui" : 1
 						}
@@ -5303,7 +5270,7 @@
 						"appversion" : 						{
 							"major" : 8,
 							"minor" : 6,
-							"revision" : 4,
+							"revision" : 5,
 							"architecture" : "x64",
 							"modernui" : 1
 						}
@@ -5730,7 +5697,7 @@
 										"appversion" : 										{
 											"major" : 8,
 											"minor" : 6,
-											"revision" : 4,
+											"revision" : 5,
 											"architecture" : "x64",
 											"modernui" : 1
 										}
@@ -5966,7 +5933,7 @@
 										"appversion" : 										{
 											"major" : 8,
 											"minor" : 6,
-											"revision" : 4,
+											"revision" : 5,
 											"architecture" : "x64",
 											"modernui" : 1
 										}
@@ -6695,9 +6662,9 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 149.0, 1268.0, 158.0, 25.0 ],
+					"patching_rect" : [ 149.0, 1268.0, 158.0, 24.0 ],
 					"presentation" : 1,
-					"presentation_rect" : [ 134.0, 41.0, 182.0, 25.0 ],
+					"presentation_rect" : [ 134.0, 41.0, 182.0, 24.0 ],
 					"text" : "Sonified Sensor",
 					"textjustification" : 1
 				}
@@ -7059,7 +7026,7 @@
 						"appversion" : 						{
 							"major" : 8,
 							"minor" : 6,
-							"revision" : 4,
+							"revision" : 5,
 							"architecture" : "x64",
 							"modernui" : 1
 						}
@@ -7811,9 +7778,9 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 297.0, 1566.0, 52.0, 25.0 ],
+					"patching_rect" : [ 297.0, 1566.0, 52.0, 24.0 ],
 					"presentation" : 1,
-					"presentation_rect" : [ 956.0, 281.0, 80.166667267680168, 25.0 ],
+					"presentation_rect" : [ 956.0, 281.0, 80.166667267680168, 24.0 ],
 					"text" : "Video",
 					"textjustification" : 1
 				}
@@ -7879,7 +7846,7 @@
 						"appversion" : 						{
 							"major" : 8,
 							"minor" : 6,
-							"revision" : 4,
+							"revision" : 5,
 							"architecture" : "x64",
 							"modernui" : 1
 						}
@@ -8395,7 +8362,7 @@
 						"appversion" : 						{
 							"major" : 8,
 							"minor" : 6,
-							"revision" : 4,
+							"revision" : 5,
 							"architecture" : "x64",
 							"modernui" : 1
 						}
@@ -9448,9 +9415,9 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 669.0, 469.0, 99.299999999999955, 25.0 ],
+					"patching_rect" : [ 669.0, 469.0, 99.299999999999955, 24.0 ],
 					"presentation" : 1,
-					"presentation_rect" : [ 48.0, 281.0, 157.500013664364815, 25.0 ],
+					"presentation_rect" : [ 48.0, 281.0, 157.500013664364815, 24.0 ],
 					"text" : "Parameters",
 					"textjustification" : 1
 				}
@@ -9507,9 +9474,9 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 399.0, 1366.0, 270.0, 25.0 ],
+					"patching_rect" : [ 399.0, 1366.0, 270.0, 24.0 ],
 					"presentation" : 1,
-					"presentation_rect" : [ 257.0, 281.0, 609.0, 25.0 ],
+					"presentation_rect" : [ 257.0, 281.0, 609.0, 24.0 ],
 					"text" : "Sonification",
 					"textjustification" : 1
 				}
@@ -9588,9 +9555,9 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 1250.0, 509.0, 158.0, 25.0 ],
+					"patching_rect" : [ 1250.0, 509.0, 158.0, 24.0 ],
 					"presentation" : 1,
-					"presentation_rect" : [ 817.0, 41.0, 164.0, 25.0 ],
+					"presentation_rect" : [ 817.0, 41.0, 164.0, 24.0 ],
 					"text" : "Others",
 					"textjustification" : 1
 				}
@@ -9993,9 +9960,9 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 92.0, 147.0, 166.0, 25.0 ],
+					"patching_rect" : [ 92.0, 147.0, 166.0, 24.0 ],
 					"presentation" : 1,
-					"presentation_rect" : [ 217.0, 5.0, 166.0, 25.0 ],
+					"presentation_rect" : [ 217.0, 5.0, 166.0, 24.0 ],
 					"text" : "Paste a YouTube URL",
 					"textjustification" : 1
 				}
@@ -10137,7 +10104,7 @@
 						"appversion" : 						{
 							"major" : 8,
 							"minor" : 6,
-							"revision" : 4,
+							"revision" : 5,
 							"architecture" : "x64",
 							"modernui" : 1
 						}
@@ -10183,7 +10150,7 @@
 										"appversion" : 										{
 											"major" : 8,
 											"minor" : 6,
-											"revision" : 4,
+											"revision" : 5,
 											"architecture" : "x64",
 											"modernui" : 1
 										}
@@ -10366,7 +10333,7 @@
 										"appversion" : 										{
 											"major" : 8,
 											"minor" : 6,
-											"revision" : 4,
+											"revision" : 5,
 											"architecture" : "x64",
 											"modernui" : 1
 										}
@@ -10433,7 +10400,7 @@
 													"numoutlets" : 1,
 													"outlettype" : [ "" ],
 													"patching_rect" : [ 50.0, 126.0, 137.0, 36.0 ],
-													"text" : ";\r\nmax getsystem system1"
+													"text" : ";\rmax getsystem system1"
 												}
 
 											}
@@ -10840,7 +10807,7 @@
 									"patching_rect" : [ 168.0, 202.0, 94.0, 22.0 ],
 									"saved_object_attributes" : 									{
 										"shell" : "(default)",
-										"wd" : "D:/musiGAIT/audio/"
+										"wd" : "~/onSite/musiGAIT/audio/"
 									}
 ,
 									"text" : "shell"
@@ -11073,7 +11040,7 @@
 						"appversion" : 						{
 							"major" : 8,
 							"minor" : 6,
-							"revision" : 4,
+							"revision" : 5,
 							"architecture" : "x64",
 							"modernui" : 1
 						}
@@ -11169,7 +11136,7 @@
 										"appversion" : 										{
 											"major" : 8,
 											"minor" : 6,
-											"revision" : 4,
+											"revision" : 5,
 											"architecture" : "x64",
 											"modernui" : 1
 										}
@@ -12017,7 +11984,7 @@
 										"appversion" : 										{
 											"major" : 8,
 											"minor" : 6,
-											"revision" : 4,
+											"revision" : 5,
 											"architecture" : "x64",
 											"modernui" : 1
 										}
@@ -13964,7 +13931,7 @@
 						"appversion" : 						{
 							"major" : 8,
 							"minor" : 6,
-							"revision" : 4,
+							"revision" : 5,
 							"architecture" : "x64",
 							"modernui" : 1
 						}
@@ -14486,7 +14453,7 @@
 						"appversion" : 						{
 							"major" : 8,
 							"minor" : 6,
-							"revision" : 4,
+							"revision" : 5,
 							"architecture" : "x64",
 							"modernui" : 1
 						}
@@ -14913,7 +14880,7 @@
 										"appversion" : 										{
 											"major" : 8,
 											"minor" : 6,
-											"revision" : 4,
+											"revision" : 5,
 											"architecture" : "x64",
 											"modernui" : 1
 										}
@@ -15194,7 +15161,7 @@
 										"appversion" : 										{
 											"major" : 8,
 											"minor" : 6,
-											"revision" : 4,
+											"revision" : 5,
 											"architecture" : "x64",
 											"modernui" : 1
 										}
@@ -17776,72 +17743,72 @@
 ,
 		"dependency_cache" : [ 			{
 				"name" : "cpu.maxpat",
-				"bootpath" : "D:/musiGAIT/audio",
+				"bootpath" : "~/onSite/musiGAIT/audio",
 				"patcherrelativepath" : ".",
 				"type" : "JSON",
 				"implicit" : 1
 			}
 , 			{
 				"name" : "crossFade.maxpat",
-				"bootpath" : "D:/musiGAIT/audio",
+				"bootpath" : "~/onSite/musiGAIT/audio",
 				"patcherrelativepath" : ".",
 				"type" : "JSON",
 				"implicit" : 1
 			}
 , 			{
-				"name" : "fluid.chroma~.mxe64",
-				"type" : "mx64"
+				"name" : "fluid.chroma~.mxo",
+				"type" : "iLaX"
 			}
 , 			{
-				"name" : "fluid.spectralshape~.mxe64",
-				"type" : "mx64"
+				"name" : "fluid.spectralshape~.mxo",
+				"type" : "iLaX"
 			}
 , 			{
-				"name" : "fluid.stats.mxe64",
-				"type" : "mx64"
+				"name" : "fluid.stats.mxo",
+				"type" : "iLaX"
 			}
 , 			{
 				"name" : "guiSliders.maxpat",
-				"bootpath" : "D:/musiGAIT/audio",
+				"bootpath" : "~/onSite/musiGAIT/audio",
 				"patcherrelativepath" : ".",
 				"type" : "JSON",
 				"implicit" : 1
 			}
 , 			{
 				"name" : "lookupGAIT.maxpat",
-				"bootpath" : "D:/musiGAIT/audio",
+				"bootpath" : "~/onSite/musiGAIT/audio",
 				"patcherrelativepath" : ".",
 				"type" : "JSON",
 				"implicit" : 1
 			}
 , 			{
 				"name" : "pMatrix.maxpat",
-				"bootpath" : "D:/musiGAIT/audio",
+				"bootpath" : "~/onSite/musiGAIT/audio",
 				"patcherrelativepath" : ".",
 				"type" : "JSON",
 				"implicit" : 1
 			}
 , 			{
 				"name" : "pSimpleSine.maxpat",
-				"bootpath" : "D:/musiGAIT/audio",
+				"bootpath" : "~/onSite/musiGAIT/audio",
 				"patcherrelativepath" : ".",
 				"type" : "JSON",
 				"implicit" : 1
 			}
 , 			{
 				"name" : "pattrLookup.json",
-				"bootpath" : "D:/musiGAIT/audio",
+				"bootpath" : "~/onSite/musiGAIT/audio",
 				"patcherrelativepath" : ".",
 				"type" : "JSON",
 				"implicit" : 1
 			}
 , 			{
-				"name" : "shell.mxe64",
-				"type" : "mx64"
+				"name" : "shell.mxo",
+				"type" : "iLaX"
 			}
 , 			{
-				"name" : "sigmund~.mxe64",
-				"type" : "mx64"
+				"name" : "sigmund~.mxo",
+				"type" : "iLaX"
 			}
 , 			{
 				"name" : "thru.maxpat",
