@@ -18,7 +18,7 @@ osc_client = SimpleUDPClient(OSC_IP, OSC_PORT)
 osc_lock = threading.Lock()
 
 # EMG to Delsys server
-EMG_HOST, EMG_PORTS = "127.0.0.1", [5123, 5124, 5125, 5126]  # Command, Response, Data, Analyses
+EMG_HOST, EMG_PORTS = "127.0.0.1", [5000, 5001, 5002, 5003]  # Command, Response, Data, Analyses
 CURRENT_SENSORS = []
 SOCKETS = []
 
