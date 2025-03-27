@@ -19,6 +19,7 @@ osc_lock = threading.Lock()
 
 # EMG to Delsys server
 EMG_HOST, EMG_PORTS = "127.0.0.1", [5000, 5001, 5002, 5003]  # Command, Response, Data, Analyses
+# EMG_HOST, EMG_PORTS = "127.0.0.1", [5123, 5124, 5125, 5126]  # Command, Response, Data, Analyses
 CURRENT_SENSORS = []
 SOCKETS = []
 
@@ -35,6 +36,8 @@ ANALYZER_LEFT_THRESHOLD = 5
 ANALYZER_RIGHT_CHANNEL = 14
 ANALYZER_RIGHT_THRESHOLD = 5
 
+ANALYZER_LEARNING_RATE = 0.8
+
 ANALYZER_DEVICE = "DelsysEmgDataCollector"
 ANALYZER_REFERENCE = "DelsysEmgDataCollector"
 
@@ -42,7 +45,7 @@ analyzer_config_left = {
     "name": "foot_cycle_left",
     "analyzer_type": "cyclic_timed_events",
     "time_reference_device": ANALYZER_REFERENCE,
-    "learning_rate": 0.5,
+    "learning_rate": ANALYZER_LEARNING_RATE,
     "initial_phase_durations": [400, 600],
     "events": [
         {
@@ -78,7 +81,7 @@ analyzer_config_right = {
     "name": "foot_cycle_right",
     "analyzer_type": analyzer_config_left["analyzer_type"],
     "time_reference_device": ANALYZER_REFERENCE,
-    "learning_rate": analyzer_config_left["learning_rate"],
+    "learning_rate": ANALYZER_LEARNING_RATE,
     "initial_phase_durations": analyzer_config_left["initial_phase_durations"],
     "events": [
         {
@@ -457,7 +460,22 @@ def analyzer_update_thresholds(address: str, *args):
         log_message(f"Updated ANALYZER_THRESHOLDS: {ANALYZER_LEFT_THRESHOLD}, {ANALYZER_RIGHT_THRESHOLD}")
 
     except (ValueError, IndexError) as e:
-        log_message(f"Error updating ANALYZER_THRESHOLD: {e}", "ERROR")
+        log_message(f"Error updating ANALYZER_THRESHOLDS: {e}", "ERROR")
+
+
+def analyzer_update_learningrate(address: str, *args):
+    """Handles incoming OSC messages to update ANALYZER_LEARNING_RATE."""
+    global ANALYZER_LEARNING_RATE
+
+    try:
+        with osc_lock:
+            ANALYZER_LEARNING_RATE = float(args[0])
+
+        send_analyzer_config()
+        log_message(f"Updated ANALYZER_LEARNING_RATE: {ANALYZER_LEARNING_RATE}")
+
+    except (ValueError, IndexError) as e:
+        log_message(f"Error updating ANALYZER_LEARNING_RATE: {e}", "ERROR")
 
 
 def update_analyzer_config():
@@ -524,6 +542,7 @@ def listen_to_osc_updates():
     dispatcher.map("/sensors", change_current_sensors)
     dispatcher.map("/analyzer_channels", analyzer_update_channels)
     dispatcher.map("/analyzer_thresholds", analyzer_update_thresholds)
+    dispatcher.map("/analyzer_learningrate", analyzer_update_learningrate)
 
     server = BlockingOSCUDPServer((ANALYZER_IP, ANALYZER_PORT), dispatcher)
     log_message(f"Listening for OSC updates on port {ANALYZER_PORT}...")
