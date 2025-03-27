@@ -40,6 +40,30 @@
 		"assistshowspatchername" : 0,
 		"boxes" : [ 			{
 				"box" : 				{
+					"id" : "obj-145",
+					"maxclass" : "newobj",
+					"numinlets" : 1,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 366.0, 1861.0, 54.0, 22.0 ],
+					"text" : "deferlow"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-125",
+					"maxclass" : "newobj",
+					"numinlets" : 1,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 366.0, 1827.0, 70.0, 22.0 ],
+					"text" : "loadmess 1"
+				}
+
+			}
+, 			{
+				"box" : 				{
 					"bgcolor" : [ 1.0, 0.788235, 0.470588, 1.0 ],
 					"fontname" : "Arial Bold",
 					"hint" : "",
@@ -855,6 +879,7 @@
 									"patching_rect" : [ 146.0, 903.0, 33.0, 22.0 ],
 									"saved_object_attributes" : 									{
 										"shell" : "(default)",
+										"stderr" : 1,
 										"wd" : "~/onSite/musiGAIT/python_osc"
 									}
 ,
@@ -934,6 +959,7 @@
 									"patching_rect" : [ 671.0, 751.0, 33.0, 22.0 ],
 									"saved_object_attributes" : 									{
 										"shell" : "(default)",
+										"stderr" : 1,
 										"wd" : "~/onSite/musiGAIT/python_osc"
 									}
 ,
@@ -1278,6 +1304,7 @@
 									"patching_rect" : [ 335.0, 751.0, 33.0, 22.0 ],
 									"saved_object_attributes" : 									{
 										"shell" : "(default)",
+										"stderr" : 1,
 										"wd" : "~/onSite/musiGAIT/python_osc"
 									}
 ,
@@ -5868,7 +5895,7 @@
 					"patching_rect" : [ 1415.0, 1536.0, 99.0, 20.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 53.0, 590.0, 193.0, 20.0 ],
-					"text" : "Deviation: -49.10",
+					"text" : "Deviation: -37.50",
 					"textjustification" : 2
 				}
 
@@ -5933,7 +5960,7 @@
 					"patching_rect" : [ 1168.0, 1242.0, 145.0, 29.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 6.0, 239.0, 438.0, 29.0 ],
-					"text" : "751057°",
+					"text" : "1350922°",
 					"textcolor" : [ 1.0, 0.694117647058824, 0.0, 1.0 ]
 				}
 
@@ -9333,7 +9360,7 @@
 					"patching_rect" : [ 1130.0, 1098.0, 100.0, 20.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 6.0, 471.0, 115.0, 20.0 ],
-					"text" : "Real: 751057°"
+					"text" : "Real: 1350922°"
 				}
 
 			}
@@ -9346,7 +9373,7 @@
 					"patching_rect" : [ 1097.0, 1536.0, 102.0, 20.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 7.0, 590.0, 193.0, 20.0 ],
-					"text" : "~0.9 Steps/Min"
+					"text" : "~12.5 Steps/Min"
 				}
 
 			}
@@ -17273,6 +17300,13 @@
 			}
 , 			{
 				"patchline" : 				{
+					"destination" : [ "obj-145", 0 ],
+					"source" : [ "obj-125", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
 					"destination" : [ "obj-2", 0 ],
 					"source" : [ "obj-126", 3 ]
 				}
@@ -17440,6 +17474,13 @@
 				"patchline" : 				{
 					"destination" : [ "obj-32", 6 ],
 					"source" : [ "obj-144", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-81", 0 ],
+					"source" : [ "obj-145", 0 ]
 				}
 
 			}
