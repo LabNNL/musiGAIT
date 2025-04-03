@@ -10,7 +10,7 @@
 		}
 ,
 		"classnamespace" : "box",
-		"rect" : [ 339.0, 227.0, 1312.0, 625.0 ],
+		"rect" : [ 339.0, 227.0, 1004.0, 625.0 ],
 		"bglocked" : 0,
 		"openinpresentation" : 1,
 		"default_fontsize" : 12.0,
@@ -6884,7 +6884,7 @@
 					"patching_rect" : [ 1024.0, 1133.0, 158.0, 133.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 6.0, 91.0, 438.0, 177.0 ],
-					"setstyle" : 4,
+					"setstyle" : 5,
 					"slidercolor" : [ 1.0, 1.0, 1.0, 1.0 ]
 				}
 
@@ -8796,7 +8796,7 @@
 					"saved_attribute_attributes" : 					{
 						"valueof" : 						{
 							"parameter_enum" : [ "val1", "val2" ],
-							"parameter_longname" : "live.text",
+							"parameter_longname" : "live.text[7]",
 							"parameter_mmax" : 1,
 							"parameter_modmode" : 0,
 							"parameter_shortname" : "live.text",
@@ -17847,7 +17847,7 @@
 					"presentation" : 1,
 					"presentation_rect" : [ 6.0, 91.0, 438.0, 177.0 ],
 					"setminmax" : [ 0.0, 1.0 ],
-					"setstyle" : 4,
+					"setstyle" : 5,
 					"slidercolor" : [ 1.0, 1.0, 1.0, 1.0 ]
 				}
 
@@ -19569,7 +19569,7 @@
 			"obj-147::obj-85" : [ "live.numbox[32]", "Freq", 0 ],
 			"obj-147::obj-86" : [ "live.numbox[26]", "Freq", 0 ],
 			"obj-173" : [ "live.numbox[27]", "live.numbox[15]", 0 ],
-			"obj-185" : [ "live.text", "live.text", 0 ],
+			"obj-185" : [ "live.text[7]", "live.text", 0 ],
 			"obj-187" : [ "live.text[12]", "live.text", 0 ],
 			"obj-189" : [ "live.numbox[29]", "live.numbox", 0 ],
 			"obj-190" : [ "live.numbox[28]", "live.numbox", 0 ],
@@ -19593,6 +19593,7 @@
 			"obj-49" : [ "live.text[20]", "live.menu[1]", 0 ],
 			"obj-67" : [ "live.menu", "live.menu", 0 ],
 			"obj-74" : [ "live.numbox[11]", "live.numbox", 0 ],
+			"obj-85::obj-87" : [ "live.text", "live.text", 0 ],
 			"obj-95" : [ "radiogroup[1]", "radiogroup[1]", 0 ],
 			"obj-96" : [ "live.text[6]", "live.text[6]", 0 ],
 			"obj-97" : [ "live.text[3]", "live.text[3]", 0 ],

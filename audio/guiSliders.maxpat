@@ -5742,7 +5742,7 @@
 					"patching_rect" : [ 510.0, 2419.0, 396.0, 132.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 0.0, 0.0, 346.0, 201.0 ],
-					"setstyle" : 4,
+					"setstyle" : 5,
 					"slidercolor" : [ 0.502, 0.502, 0.0, 1.0 ]
 				}
 
@@ -5784,7 +5784,7 @@
 					"patching_rect" : [ 72.0, 2419.0, 396.0, 132.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 0.0, 0.0, 346.0, 201.0 ],
-					"setstyle" : 4,
+					"setstyle" : 5,
 					"slidercolor" : [ 0.863, 0.745, 1.0, 1.0 ]
 				}
 
@@ -5826,7 +5826,7 @@
 					"patching_rect" : [ 510.0, 2127.0, 396.0, 132.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 0.0, 0.0, 346.0, 201.0 ],
-					"setstyle" : 4,
+					"setstyle" : 5,
 					"slidercolor" : [ 0.667, 1.0, 0.765, 1.0 ]
 				}
 
@@ -5868,7 +5868,7 @@
 					"patching_rect" : [ 72.0, 2127.0, 396.0, 132.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 0.0, 0.0, 346.0, 201.0 ],
-					"setstyle" : 4,
+					"setstyle" : 5,
 					"slidercolor" : [ 1.0, 0.98, 0.784, 1.0 ]
 				}
 
@@ -5910,7 +5910,7 @@
 					"patching_rect" : [ 510.0, 1824.0, 396.0, 132.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 0.0, 0.0, 346.0, 201.0 ],
-					"setstyle" : 4,
+					"setstyle" : 5,
 					"slidercolor" : [ 1.0, 0.847, 0.694, 1.0 ]
 				}
 
@@ -5952,7 +5952,7 @@
 					"patching_rect" : [ 72.0, 1824.0, 396.0, 132.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 0.0, 0.0, 346.0, 201.0 ],
-					"setstyle" : 4,
+					"setstyle" : 5,
 					"slidercolor" : [ 0.98, 0.745, 0.831, 1.0 ]
 				}
 
@@ -5994,7 +5994,7 @@
 					"patching_rect" : [ 510.0, 1532.0, 396.0, 132.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 0.0, 0.0, 346.0, 201.0 ],
-					"setstyle" : 4,
+					"setstyle" : 5,
 					"slidercolor" : [ 0.663, 0.663, 0.663, 1.0 ]
 				}
 
@@ -6036,7 +6036,7 @@
 					"patching_rect" : [ 72.0, 1532.0, 396.0, 132.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 0.0, 0.0, 346.0, 201.0 ],
-					"setstyle" : 4,
+					"setstyle" : 5,
 					"slidercolor" : [ 0.941, 0.196, 0.902, 1.0 ]
 				}
 
@@ -6078,7 +6078,7 @@
 					"patching_rect" : [ 510.0, 1227.0, 396.0, 132.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 0.0, 0.0, 346.0, 201.0 ],
-					"setstyle" : 4,
+					"setstyle" : 5,
 					"slidercolor" : [ 0.569, 0.118, 0.706, 1.0 ]
 				}
 
@@ -6120,7 +6120,7 @@
 					"patching_rect" : [ 72.0, 1227.0, 396.0, 132.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 0.0, 0.0, 346.0, 201.0 ],
-					"setstyle" : 4,
+					"setstyle" : 5,
 					"slidercolor" : [ 0.263, 0.388, 0.847, 1.0 ]
 				}
 
@@ -6162,7 +6162,7 @@
 					"patching_rect" : [ 510.0, 935.0, 396.0, 132.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 0.0, 0.0, 346.0, 201.0 ],
-					"setstyle" : 4,
+					"setstyle" : 5,
 					"slidercolor" : [ 0.259, 0.831, 0.957, 1.0 ]
 				}
 
@@ -6204,7 +6204,7 @@
 					"patching_rect" : [ 72.0, 935.0, 396.0, 132.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 0.0, 0.0, 346.0, 201.0 ],
-					"setstyle" : 4,
+					"setstyle" : 5,
 					"slidercolor" : [ 0.235, 0.706, 0.294, 1.0 ]
 				}
 
@@ -6246,7 +6246,7 @@
 					"patching_rect" : [ 510.0, 632.0, 396.0, 132.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 0.0, 0.0, 346.0, 201.0 ],
-					"setstyle" : 4,
+					"setstyle" : 5,
 					"slidercolor" : [ 0.749, 0.937, 0.271, 1.0 ]
 				}
 
@@ -6288,7 +6288,7 @@
 					"patching_rect" : [ 72.0, 632.0, 396.0, 132.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 0.0, 0.0, 346.0, 201.0 ],
-					"setstyle" : 4,
+					"setstyle" : 5,
 					"slidercolor" : [ 1.0, 0.882, 0.098, 1.0 ]
 				}
 
@@ -6330,7 +6330,7 @@
 					"patching_rect" : [ 510.0, 340.0, 396.0, 132.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 0.0, 0.0, 346.0, 201.0 ],
-					"setstyle" : 4,
+					"setstyle" : 5,
 					"slidercolor" : [ 0.961, 0.51, 0.192, 1.0 ]
 				}
 
@@ -6372,7 +6372,7 @@
 					"patching_rect" : [ 72.0, 340.0, 396.0, 132.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 0.0, 0.0, 346.0, 201.0 ],
-					"setstyle" : 4,
+					"setstyle" : 5,
 					"slidercolor" : [ 0.902, 0.098, 0.294, 1.0 ]
 				}
 
