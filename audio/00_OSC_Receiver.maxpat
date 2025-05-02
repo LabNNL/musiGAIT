@@ -49,7 +49,7 @@
 					"patching_rect" : [ 1054.0, 1250.0, 145.0, 29.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 6.0, 239.0, 438.0, 29.0 ],
-					"text" : "-140°",
+					"text" : "068°",
 					"textcolor" : [ 0.847, 0.769, 0.357, 1.0 ]
 				}
 
@@ -5841,7 +5841,7 @@
 					"patching_rect" : [ 1011.0, 501.0, 92.0, 29.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 456.0, 239.0, 65.0, 29.0 ],
-					"text" : "6%",
+					"text" : "69%",
 					"textcolor" : [ 1.0, 1.0, 1.0, 1.0 ]
 				}
 
@@ -9546,7 +9546,7 @@
 					"patching_rect" : [ 1326.0, 1098.0, 100.0, 20.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 130.0, 471.0, 115.0, 20.0 ],
-					"text" : "Deviation: -144°",
+					"text" : "Deviation: 000°",
 					"textjustification" : 2
 				}
 
@@ -9816,7 +9816,7 @@
 					"id" : "obj-31",
 					"maxclass" : "live.tab",
 					"num_lines_patching" : 4,
-					"num_lines_presentation" : 4,
+					"num_lines_presentation" : 5,
 					"numinlets" : 1,
 					"numoutlets" : 3,
 					"outlettype" : [ "", "", "float" ],
@@ -9830,9 +9830,9 @@
 						}
 ,
 						"valueof" : 						{
-							"parameter_enum" : [ "Legs", "Circles", "Ball", "Rocket" ],
+							"parameter_enum" : [ "Legs", "Circles", "Ball", "Rocket", "Balloon" ],
 							"parameter_longname" : "live.menu[3]",
-							"parameter_mmax" : 3,
+							"parameter_mmax" : 4,
 							"parameter_modmode" : 0,
 							"parameter_shortname" : "live.tab",
 							"parameter_type" : 2,
@@ -10267,7 +10267,7 @@
 					"patching_rect" : [ 1190.0, 1098.0, 100.0, 20.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 6.0, 471.0, 115.0, 20.0 ],
-					"text" : "Real: -140°"
+					"text" : "Real: 068°"
 				}
 
 			}
