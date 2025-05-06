@@ -12946,7 +12946,7 @@
 					"parameter_enable" : 1,
 					"patching_rect" : [ 520.0, 787.0, 77.0, 28.0 ],
 					"presentation" : 1,
-					"presentation_rect" : [ 233.25, 0.0, 161.0, 23.0 ],
+					"presentation_rect" : [ 233.0, 0.0, 163.0, 23.0 ],
 					"saved_attribute_attributes" : 					{
 						"valueof" : 						{
 							"parameter_enum" : [ "val1", "val2" ],
@@ -14934,7 +14934,7 @@
 					"parameter_enable" : 1,
 					"patching_rect" : [ 175.0, 754.0, 95.0, 23.0 ],
 					"presentation" : 1,
-					"presentation_rect" : [ 1.0, 0.0, 230.25, 23.0 ],
+					"presentation_rect" : [ 1.0, 0.0, 230.0, 23.0 ],
 					"saved_attribute_attributes" : 					{
 						"valueof" : 						{
 							"parameter_enum" : [ "Simple", "Music Deformation", "Music Grains" ],
