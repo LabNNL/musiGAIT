@@ -10,7 +10,7 @@
 		}
 ,
 		"classnamespace" : "box",
-		"rect" : [ 180.0, 138.0, 950.0, 721.0 ],
+		"rect" : [ 530.0, 213.0, 950.0, 721.0 ],
 		"bglocked" : 0,
 		"openinpresentation" : 1,
 		"default_fontsize" : 12.0,
@@ -1821,7 +1821,7 @@
 					"numoutlets" : 0,
 					"patching_rect" : [ 1322.0, 121.0, 128.0, 128.0 ],
 					"presentation" : 1,
-					"presentation_rect" : [ 1.0, 179.0, 362.0, 57.0 ],
+					"presentation_rect" : [ 1.0, 179.0, 362.0, 47.0 ],
 					"proportion" : 0.5
 				}
 
@@ -12891,7 +12891,7 @@
 					"parameter_enable" : 0,
 					"patching_rect" : [ 1177.0, 921.0, 254.0, 60.0 ],
 					"presentation" : 1,
-					"presentation_rect" : [ 1.0, 179.0, 361.0, 57.0 ],
+					"presentation_rect" : [ 1.0, 179.0, 361.0, 47.0 ],
 					"setminmax" : [ 0.0, 1.0 ],
 					"slidercolor" : [ 1.0, 0.0, 0.0, 1.0 ]
 				}
@@ -18650,7 +18650,7 @@
 					"outlettype" : [ "" ],
 					"patching_rect" : [ 1177.0, 1047.0, 254.0, 58.0 ],
 					"presentation" : 1,
-					"presentation_rect" : [ 1.0, 179.0, 362.0, 57.0 ],
+					"presentation_rect" : [ 1.0, 179.0, 362.0, 50.0 ],
 					"subplots" : [ 						{
 							"color" : [ 0.968999981880188, 0.430999994277954, 0.430999994277954, 1.0 ],
 							"thickness" : 1.0,
