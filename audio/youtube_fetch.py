@@ -3,6 +3,8 @@ import subprocess
 import sys
 import os
 
+MUSIC_DIR = "audiofiles"
+
 VENV_DIR = ".venv"
 PYTHON_EXEC = os.path.join(VENV_DIR, "Scripts" if os.name == "nt" else "bin", "python")
 PIP_EXEC = os.path.join(VENV_DIR, "Scripts" if os.name == "nt" else "bin", "pip")
@@ -53,16 +55,29 @@ def setup_venv():
             sys.exit(1)
 
 
-def download_audio(youtube_url, output_path="output_audio"):
-    """Downloads audio from a YouTube video and converts it to WAV."""
+def download_audio(youtube_url):
+    """Downloads audio from a YouTube video and saves it as a WAV file named after the title."""
     import yt_dlp
     from imageio_ffmpeg import get_ffmpeg_exe
+    import re
 
-    # Automatically overwrite output file if it exists
-    if os.path.exists(output_path):
-        os.remove(output_path)
+    # Ensure audiofiles directory exists
+    os.makedirs("audiofiles", exist_ok=True)
 
-    # Verify ffmpeg availability
+    # Setup a temporary YDL instance to get video info
+    with yt_dlp.YoutubeDL({'quiet': True}) as ydl:
+        try:
+            info = ydl.extract_info(youtube_url, download=False)
+            title = info.get("title", "audio").strip()
+            # Sanitize title to be a valid filename
+            safe_title = re.sub(r'[\\/*?:"<>|]', "_", title)
+        except yt_dlp.utils.DownloadError as e:
+            print(f"Error fetching video info: {e}")
+            sys.exit(1)
+
+    output_path = os.path.join("audiofiles", f"{safe_title}.%(ext)s")
+
+    # Get FFmpeg path
     ffmpeg_path = get_ffmpeg_exe()
     if not os.path.exists(ffmpeg_path):
         print("FFmpeg not found. Please install it or ensure it's accessible.")
@@ -75,7 +90,7 @@ def download_audio(youtube_url, output_path="output_audio"):
             'key': 'FFmpegExtractAudio',
             'preferredcodec': 'wav',
         }],
-        'postprocessor_args': ['-ar', '44100', '-ac', '2'],  # Ensures 44.1kHz stereo WAV
+        'postprocessor_args': ['-ar', '44100', '-ac', '2'],
         'outtmpl': output_path,
         'ffmpeg_location': ffmpeg_path
     }
