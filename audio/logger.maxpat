@@ -149,7 +149,7 @@
 						}
 ,
 						"classnamespace" : "box",
-						"rect" : [ 677.0, 280.0, 358.0, 645.0 ],
+						"rect" : [ 902.0, 264.0, 353.0, 582.0 ],
 						"bglocked" : 0,
 						"openinpresentation" : 0,
 						"default_fontsize" : 12.0,
@@ -179,12 +179,30 @@
 						"assistshowspatchername" : 0,
 						"boxes" : [ 							{
 								"box" : 								{
+									"color" : [ 1.0, 0.694117647058824, 0.0, 1.0 ],
+									"id" : "obj-1",
+									"maxclass" : "newobj",
+									"numinlets" : 1,
+									"numoutlets" : 1,
+									"outlettype" : [ "" ],
+									"patching_rect" : [ 130.0, 136.0, 75.0, 22.0 ],
+									"saved_object_attributes" : 									{
+										"filename" : "getTime.js",
+										"parameter_enable" : 0
+									}
+,
+									"text" : "js getTime.js"
+								}
+
+							}
+, 							{
+								"box" : 								{
 									"id" : "obj-40",
 									"maxclass" : "newobj",
 									"numinlets" : 1,
 									"numoutlets" : 2,
 									"outlettype" : [ "bang", "" ],
-									"patching_rect" : [ 130.0, 261.0, 29.5, 22.0 ],
+									"patching_rect" : [ 130.0, 219.0, 29.5, 22.0 ],
 									"text" : "t b l"
 								}
 
@@ -196,7 +214,7 @@
 									"numinlets" : 2,
 									"numoutlets" : 2,
 									"outlettype" : [ "", "" ],
-									"patching_rect" : [ 67.0, 301.0, 38.0, 22.0 ],
+									"patching_rect" : [ 67.0, 259.0, 38.0, 22.0 ],
 									"text" : "zl.reg"
 								}
 
@@ -208,7 +226,7 @@
 									"numinlets" : 3,
 									"numoutlets" : 2,
 									"outlettype" : [ "", "" ],
-									"patching_rect" : [ 130.0, 225.0, 183.0, 22.0 ],
+									"patching_rect" : [ 130.0, 183.0, 183.0, 22.0 ],
 									"text" : "combine Time :: Key @triggers 2"
 								}
 
@@ -220,7 +238,7 @@
 									"numinlets" : 1,
 									"numoutlets" : 1,
 									"outlettype" : [ "" ],
-									"patching_rect" : [ 141.0, 303.0, 72.0, 22.0 ],
+									"patching_rect" : [ 141.0, 261.0, 72.0, 22.0 ],
 									"text" : "prepend set"
 								}
 
@@ -232,7 +250,7 @@
 									"numinlets" : 1,
 									"numoutlets" : 1,
 									"outlettype" : [ "" ],
-									"patching_rect" : [ 67.0, 346.0, 53.0, 22.0 ],
+									"patching_rect" : [ 67.0, 304.0, 53.0, 22.0 ],
 									"text" : "prepend"
 								}
 
@@ -244,7 +262,7 @@
 									"numinlets" : 1,
 									"numoutlets" : 2,
 									"outlettype" : [ "bang", "" ],
-									"patching_rect" : [ 67.0, 448.0, 29.5, 22.0 ],
+									"patching_rect" : [ 67.0, 406.0, 29.5, 22.0 ],
 									"text" : "t b l"
 								}
 
@@ -256,7 +274,7 @@
 									"numinlets" : 2,
 									"numoutlets" : 5,
 									"outlettype" : [ "dictionary", "", "", "", "" ],
-									"patching_rect" : [ 67.0, 488.0, 61.0, 22.0 ],
+									"patching_rect" : [ 67.0, 446.0, 61.0, 22.0 ],
 									"saved_object_attributes" : 									{
 										"embed" : 0,
 										"legacy" : 0,
@@ -275,7 +293,7 @@
 									"numinlets" : 2,
 									"numoutlets" : 2,
 									"outlettype" : [ "", "" ],
-									"patching_rect" : [ 50.0, 178.0, 55.0, 22.0 ],
+									"patching_rect" : [ 50.0, 136.0, 55.0, 22.0 ],
 									"text" : "zl.slice 1"
 								}
 
@@ -287,32 +305,8 @@
 									"numinlets" : 1,
 									"numoutlets" : 1,
 									"outlettype" : [ "" ],
-									"patching_rect" : [ 67.0, 402.0, 95.0, 22.0 ],
+									"patching_rect" : [ 67.0, 360.0, 95.0, 22.0 ],
 									"text" : "prepend replace"
-								}
-
-							}
-, 							{
-								"box" : 								{
-									"id" : "obj-9",
-									"maxclass" : "newobj",
-									"numinlets" : 3,
-									"numoutlets" : 1,
-									"outlettype" : [ "" ],
-									"patching_rect" : [ 130.0, 178.0, 175.0, 22.0 ],
-									"text" : "sprintf symout %.2d:%.2d:%.2d"
-								}
-
-							}
-, 							{
-								"box" : 								{
-									"id" : "obj-8",
-									"maxclass" : "newobj",
-									"numinlets" : 1,
-									"numoutlets" : 3,
-									"outlettype" : [ "list", "list", "int" ],
-									"patching_rect" : [ 119.0, 141.0, 40.0, 22.0 ],
-									"text" : "date"
 								}
 
 							}
@@ -323,7 +317,7 @@
 									"numinlets" : 1,
 									"numoutlets" : 2,
 									"outlettype" : [ "", "time" ],
-									"patching_rect" : [ 50.0, 100.0, 88.0, 22.0 ],
+									"patching_rect" : [ 50.0, 100.0, 99.0, 22.0 ],
 									"text" : "t l time"
 								}
 
@@ -349,12 +343,19 @@
 									"maxclass" : "outlet",
 									"numinlets" : 1,
 									"numoutlets" : 0,
-									"patching_rect" : [ 67.0, 548.0, 30.0, 30.0 ]
+									"patching_rect" : [ 67.0, 506.0, 30.0, 30.0 ]
 								}
 
 							}
  ],
 						"lines" : [ 							{
+								"patchline" : 								{
+									"destination" : [ "obj-32", 0 ],
+									"source" : [ "obj-1", 0 ]
+								}
+
+							}
+, 							{
 								"patchline" : 								{
 									"destination" : [ "obj-32", 2 ],
 									"source" : [ "obj-10", 0 ]
@@ -447,29 +448,15 @@
 							}
 , 							{
 								"patchline" : 								{
-									"destination" : [ "obj-10", 0 ],
-									"source" : [ "obj-7", 0 ]
-								}
-
-							}
-, 							{
-								"patchline" : 								{
-									"destination" : [ "obj-8", 0 ],
+									"destination" : [ "obj-1", 0 ],
 									"source" : [ "obj-7", 1 ]
 								}
 
 							}
 , 							{
 								"patchline" : 								{
-									"destination" : [ "obj-9", 0 ],
-									"source" : [ "obj-8", 1 ]
-								}
-
-							}
-, 							{
-								"patchline" : 								{
-									"destination" : [ "obj-32", 0 ],
-									"source" : [ "obj-9", 0 ]
+									"destination" : [ "obj-10", 0 ],
+									"source" : [ "obj-7", 0 ]
 								}
 
 							}
@@ -496,7 +483,7 @@
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
 					"patching_rect" : [ 114.0, 53.0, 245.0, 22.0 ],
-					"text" : "target_terminal_swing 100. 25. 100."
+					"text" : "target_terminal_swing 100. 5. 100."
 				}
 
 			}
@@ -504,11 +491,11 @@
 				"box" : 				{
 					"id" : "obj-20",
 					"maxclass" : "newobj",
-					"numinlets" : 4,
+					"numinlets" : 3,
 					"numoutlets" : 1,
 					"outlettype" : [ "dictionary" ],
-					"patching_rect" : [ 26.0, 204.0, 239.0, 22.0 ],
-					"text" : "dict.pack Infos: Logs: Data: @triggers 0 1 2"
+					"patching_rect" : [ 26.0, 204.0, 197.0, 22.0 ],
+					"text" : "dict.pack Infos: Logs: @triggers 0 1"
 				}
 
 			}
@@ -3200,7 +3187,14 @@
 			"inherited_shortname" : 1
 		}
 ,
-		"dependency_cache" : [  ],
+		"dependency_cache" : [ 			{
+				"name" : "getTime.js",
+				"bootpath" : "D:/musiGAIT/audio",
+				"patcherrelativepath" : ".",
+				"type" : "TEXT",
+				"implicit" : 1
+			}
+ ],
 		"autosave" : 0
 	}
 
