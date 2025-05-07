@@ -40,6 +40,19 @@
 		"assistshowspatchername" : 0,
 		"boxes" : [ 			{
 				"box" : 				{
+					"color" : [ 0.0, 0.854901960784314, 0.282352941176471, 1.0 ],
+					"id" : "obj-2",
+					"maxclass" : "newobj",
+					"numinlets" : 1,
+					"numoutlets" : 2,
+					"outlettype" : [ "float", "bang" ],
+					"patching_rect" : [ 439.0, 186.0, 244.0, 22.0 ],
+					"text" : "buffer~ rolling_data @size 5000 @format 24"
+				}
+
+			}
+, 			{
+				"box" : 				{
 					"id" : "obj-39",
 					"maxclass" : "newobj",
 					"numinlets" : 1,
@@ -653,6 +666,8 @@
 					"saved_object_attributes" : 					{
 						"autostart" : 1,
 						"defer" : 0,
+						"node_bin_path" : "",
+						"npm_bin_path" : "",
 						"watch" : 1
 					}
 ,
@@ -666,11 +681,11 @@
 					"color" : [ 0.0, 0.854901960784314, 0.282352941176471, 1.0 ],
 					"id" : "obj-16",
 					"maxclass" : "newobj",
-					"numinlets" : 1,
+					"numinlets" : 3,
 					"numoutlets" : 1,
 					"outlettype" : [ "signal" ],
-					"patching_rect" : [ 439.0, 390.0, 163.0, 22.0 ],
-					"text" : "mc.sfrecord~ 4 @bitdepth 24"
+					"patching_rect" : [ 439.0, 390.0, 192.0, 22.0 ],
+					"text" : "mc.record~ rolling_data 4 @loop 1"
 				}
 
 			}
