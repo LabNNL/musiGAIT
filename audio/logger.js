@@ -86,11 +86,11 @@ Max.addHandler("save", () => {
     const oldFile = path.join(logsDir, `Unknown_${dateTime}.csv`);
     if (fs.existsSync(oldFile) && id !== "Unknown") fs.unlinkSync(oldFile);
 
-    const name = `${id}_${dateTime}.csv`;
-    const filePath = path.join(logsDir, name);
+    const name = `${id}_${dateTime}`;
+    const filePath = path.join(logsDir, name + '.csv');
     const csvData = generateCSV(savedDict);
 
-    Max.outlet('filename', `${dateTime}`);
+    Max.outlet('filename', name);
 
     try {
         fs.writeFileSync(filePath, csvData, 'utf8');
