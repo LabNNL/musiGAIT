@@ -10,7 +10,7 @@
 		}
 ,
 		"classnamespace" : "box",
-		"rect" : [ 399.0, 173.0, 1124.0, 552.0 ],
+		"rect" : [ 403.0, 292.0, 1124.0, 552.0 ],
 		"bglocked" : 0,
 		"openinpresentation" : 1,
 		"default_fontsize" : 12.0,
@@ -39,6 +39,30 @@
 		"subpatcher_template" : "",
 		"assistshowspatchername" : 0,
 		"boxes" : [ 			{
+				"box" : 				{
+					"id" : "obj-26",
+					"maxclass" : "newobj",
+					"numinlets" : 1,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 361.0, 294.0, 116.0, 22.0 ],
+					"text" : "loadmess animate 1"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-25",
+					"maxclass" : "progress",
+					"numinlets" : 1,
+					"numoutlets" : 0,
+					"patching_rect" : [ 336.0, 339.0, 211.0, 211.0 ],
+					"presentation" : 1,
+					"presentation_rect" : [ 305.5, 202.0, 211.0, 211.0 ]
+				}
+
+			}
+, 			{
 				"box" : 				{
 					"color" : [ 0.423529411764706, 1.0, 0.909803921568627, 1.0 ],
 					"fontsize" : 16.0,
@@ -420,7 +444,7 @@
 						"toptoolbarpinned" : 2,
 						"righttoolbarpinned" : 2,
 						"bottomtoolbarpinned" : 2,
-						"toolbars_unpinned_last_save" : 0,
+						"toolbars_unpinned_last_save" : 15,
 						"tallnewobj" : 0,
 						"boxanimatetime" : 200,
 						"enablehscroll" : 1,
@@ -1046,7 +1070,7 @@
 					"patching_rect" : [ 631.0, 942.0, 145.0, 29.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 6.0, 244.0, 438.0, 29.0 ],
-					"text" : "000°",
+					"text" : "128°",
 					"textcolor" : [ 0.847, 0.769, 0.357, 1.0 ]
 				}
 
@@ -5867,7 +5891,7 @@
 					"patching_rect" : [ 1109.0, 459.0, 92.0, 29.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 456.0, 244.0, 65.0, 29.0 ],
-					"text" : "0%",
+					"text" : "41%",
 					"textcolor" : [ 1.0, 1.0, 1.0, 1.0 ]
 				}
 
@@ -11912,7 +11936,7 @@
 					"maxclass" : "plot~",
 					"numinlets" : 1,
 					"numoutlets" : 1,
-					"numpoints" : 2,
+					"numpoints" : 1000,
 					"outlettype" : [ "" ],
 					"patching_rect" : [ 197.0, 942.0, 158.0, 93.0 ],
 					"presentation" : 1,
@@ -12411,6 +12435,13 @@
 				"patchline" : 				{
 					"destination" : [ "obj-229", 0 ],
 					"source" : [ "obj-230", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-25", 0 ],
+					"source" : [ "obj-26", 0 ]
 				}
 
 			}
@@ -13013,6 +13044,13 @@
 				"bootpath" : "D:/musiGAIT/audio",
 				"patcherrelativepath" : ".",
 				"type" : "JSON",
+				"implicit" : 1
+			}
+, 			{
+				"name" : "plotter.js",
+				"bootpath" : "D:/musiGAIT/audio",
+				"patcherrelativepath" : ".",
+				"type" : "TEXT",
 				"implicit" : 1
 			}
 , 			{

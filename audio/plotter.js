@@ -148,11 +148,18 @@ Max.addHandler("sensor_type", (type) => {
 	Max.post(`Sensor type set to: ${sensorType}\n`);
 });
 
-Max.addHandler("save", () => {
+Max.addHandler("save_data", () => {
 	try {
 		saveDataToDisk();
+	} catch (err) {
+		Max.post(`Error saving json: ${err}\n`);
+	}
+});
+
+Max.addHandler("save_plot", () => {
+	try {
 		generatePlot();
 	} catch (err) {
-		Max.post(`Error generating plot: ${err}\n`);
+		Max.post(`Error saving plot: ${err}\n`);
 	}
 });
