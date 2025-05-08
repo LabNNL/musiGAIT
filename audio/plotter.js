@@ -1,8 +1,9 @@
-// Max/MSP Node Script for Continuous Data Plotting using Max API
 const Max = require('max-api');
-const fs = require('fs');
 const path = require('path');
+const fs = require('fs');
+
 const { createCanvas } = require('canvas');
+const Chart = require('chart.js/auto');
 
 // Ensure logs directory exists
 const logsDir = path.join(__dirname, 'logs');
@@ -10,78 +11,130 @@ if (!fs.existsSync(logsDir)) fs.mkdirSync(logsDir);
 
 // Default filename (uses timestamp if not specified)
 let plotFileName = `data_plot_${new Date().toISOString().replace(/[:.]/g, '-')}.png`;
+let dataLogFile = path.join(logsDir, 'data_log.json');
 
-// Initialize an empty data array
-let dataArray = [];
+// Initialize data arrays
+let valData = [];
+let valDevData = [];
+let stepsData = [];
+let stepsDevData = [];
 let timeStamps = [];
+let sensorType = 'emg'; // Default sensor type
 
-// Function to generate a plot with axes and timestamps
+// Function to save data to disk
+function saveDataToDisk() {
+  const data = { valData, valDevData, stepsData, stepsDevData, timeStamps, sensorType };
+  fs.writeFileSync(dataLogFile, JSON.stringify(data, null, 2));
+}
+
+// Function to generate the plot
 function generatePlot() {
-  const canvas = createCanvas(800, 400);
+  const plotPath = path.join(logsDir, plotFileName);
+  const canvas = createCanvas(1600, 3200);
   const ctx = canvas.getContext('2d');
 
   ctx.fillStyle = 'white';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Draw axes
-  ctx.strokeStyle = 'gray';
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(50, 10);
-  ctx.lineTo(50, 380); // Y-axis
-  ctx.lineTo(780, 380); // X-axis
-  ctx.stroke();
+  const valColor = sensorType === 'emg' ? 'rgba(255, 108, 131, 1)' : 'rgba(216, 196, 91, 1)';
+  const valDevColor = 'rgba(255, 0, 0, 1)';
+  const stepsColor = 'rgba(108, 131, 255, 1)';
+  const stepsDevColor = 'rgba(109, 215, 255, 1)';
 
-  // Plot the data
-  ctx.strokeStyle = 'black';
-  ctx.beginPath();
+  [sensorType === 'emg' ? 'EMG' : 'Goniometer', sensorType === 'emg' ? 'EMG Deviation' : 'Goniometer Deviation', 'Steps/Min', 'Steps/Min Deviation'].forEach((label, index) => {
+    const data = [valData, valDevData, stepsData, stepsDevData][index];
+    const color = [valColor, valDevColor, stepsColor, stepsDevColor][index];
 
-  dataArray.forEach((val, index) => {
-    const x = 50 + ((index / dataArray.length) * 730);
-    const y = 380 - ((val / Math.max(...dataArray)) * 360);
-    index === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-  });
+    const tempCanvas = createCanvas(1600, 800);
+    const tempCtx = tempCanvas.getContext('2d');
 
-  ctx.stroke();
+    let yMin = undefined;
+    let yMax = undefined;
 
-  // Add timestamps on X-axis
-  ctx.fillStyle = 'black';
-  ctx.font = '12px Arial';
-  timeStamps.forEach((time, index) => {
-    if (index % Math.ceil(timeStamps.length / 10) === 0) {
-      const x = 50 + ((index / timeStamps.length) * 730);
-      ctx.fillText(new Date(time).toLocaleTimeString(), x, 395);
+    if (label === 'Steps/Min Deviation') {
+      yMin = Math.min(...data);
+      yMax = Math.max(...data);
+    } else if (label === (sensorType === 'emg' ? 'EMG Deviation' : 'Goniometer Deviation')) {
+      if (sensorType === 'emg') {
+        yMin = -100;
+        yMax = 100;
+      } else {
+        yMin = -180;
+        yMax = 180;
+      }
+    } else if (label.includes('Steps')) {
+      yMin = 0;
+      yMax = Math.max(...data);
+    } else {
+      if (sensorType === 'emg') {
+        yMin = 0;
+        yMax = 100;
+      } else {
+        yMin = -180;
+        yMax = 180;
+      }
     }
+
+    new Chart(tempCtx, {
+      type: 'line',
+      data: {
+        labels: timeStamps.map(ts => new Date(ts).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })),
+        datasets: [{
+          label: label,
+          data: data,
+          borderColor: color,
+          backgroundColor: color.replace('1)', '0.2)'),
+          borderWidth: 2,
+          tension: 0.1
+        }]
+      },
+      options: {
+        responsive: false,
+        maintainAspectRatio: false,
+        scales: {
+          x: { title: { display: true, text: 'Time' }, ticks: { maxTicksLimit: 10, autoSkip: true } },
+          y: {
+            title: {
+              display: true,
+              text: label.includes('Deviation') ? 'Deviation' : (label.includes('Steps') ? 'Steps/Min' : (sensorType === 'emg' ? 'Percentage (%)' : 'Angle (°)'))
+            },
+            min: yMin,
+            max: yMax
+          }
+        }
+      }
+    });
+
+    ctx.drawImage(tempCanvas, 0, index * 800);
   });
 
   const buffer = canvas.toBuffer('image/png');
-  const fullPath = path.join(logsDir, plotFileName);
-  fs.writeFileSync(fullPath, buffer);
-  Max.post(`Plot saved to ${fullPath}\n`);
+  fs.writeFileSync(plotPath, buffer);
 }
 
-// Add handlers for incoming messages
-Max.addHandler("val", (value) => {
-  if (!isNaN(value)) {
-    dataArray.push(value);
-    timeStamps.push(Date.now());
+// Handler for synchronized values
+Max.addHandler("values", (val, valDev, steps, stepsDev) => {
+  if ([val, valDev, steps, stepsDev].every(v => !isNaN(v))) {
+    valData.push(val);
+    valDevData.push(valDev);
+    stepsData.push(steps);
+    stepsDevData.push(stepsDev);
+    timeStamps.push(new Date().toISOString());
+
+    if (valData.length % 1000 === 0) saveDataToDisk();
   }
 });
 
-Max.addHandler("filename", (name) => {
-  if (typeof name === 'string' && name.trim() !== '') {
-    plotFileName = name.endsWith('.png') ? name : `${name}.png`;
-    Max.post(`Plot filename set to: ${plotFileName}\n`);
-  }
+Max.addHandler("sensor_type", (type) => {
+  if (typeof type === 'string') sensorType = type.toLowerCase();
+  Max.post(`Sensor type set to: ${sensorType}\n`);
 });
 
 Max.addHandler("save", () => {
-  generatePlot();
-  Max.post('Plot generated with save command.\n');
-});
-
-Max.addHandler("clear", () => {
-  dataArray = [];
-  timeStamps = [];
-  Max.post('Data cleared.\n');
+  try {
+    saveDataToDisk();
+    generatePlot();
+  } catch (err) {
+    Max.post(`Error generating plot: ${err}\n`);
+  }
 });
