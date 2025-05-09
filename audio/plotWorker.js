@@ -20,7 +20,7 @@ function smoothData(data, windowSize = 10) {
 }
 
 process.stdin.on('end', () => {
-	const { plotPath, valData, valDevData, stepsData, stepsDevData, timeStamps, sensorType } = JSON.parse(inputData);
+	const { plotPath, cycleData, valData, valDevData, stepsData, stepsDevData, timeStamps, sensorType } = JSON.parse(inputData);
 
 	try {
 		const plotDir = path.dirname(plotPath);
@@ -45,6 +45,7 @@ process.stdin.on('end', () => {
 		ctx.fillStyle = 'white';
 		ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+		const cycleColor = 'rgba(108, 131, 255, 1)';
 		const valColor = sensorType === 'emg' ? 'rgba(255, 108, 131, 1)' : 'rgba(216, 196, 91, 1)';
 		const valDevColor = 'rgba(255, 0, 0, 1)';
 		const stepsColor = 'rgba(108, 131, 255, 1)';
@@ -52,14 +53,15 @@ process.stdin.on('end', () => {
 
 		const labels = sensorType === 'emg' ? ['EMG', 'EMG Deviation'] : ['Goniometer', 'Goniometer Deviation'];
 
+		const smoothedCycleData = smoothData(cycleData, 10);
 		const smoothedValData = smoothData(valData, 10);
 		const smoothedValDevData = smoothData(valDevData, 10);
 		const smoothedStepsData = smoothData(stepsData, 10);
 		const smoothedStepsDevData = smoothData(stepsDevData, 10);
 
-		[labels[0], labels[1], 'Steps/Min', 'Steps/Min Deviation'].forEach((label, index) => {
-			const data = [smoothedValData, smoothedValDevData, smoothedStepsData, smoothedStepsDevData][index];
-			const color = [valColor, valDevColor, stepsColor, stepsDevColor][index];
+		['Foot Cycle', labels[0], labels[1], 'Steps/Min', 'Steps/Min Deviation'].forEach((label, index) => {
+			const data = [smoothedCycleData, smoothedValData, smoothedValDevData, smoothedStepsData, smoothedStepsDevData][index];
+			const color = [cycleColor, valColor, valDevColor, stepsColor, stepsDevColor][index];
 
 			const tempCanvas = createCanvas(1600, 800);
 			const tempCtx = tempCanvas.getContext('2d');

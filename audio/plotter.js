@@ -13,6 +13,7 @@ let plotFileName = `data_plot_${new Date().toISOString().replace(/[:.]/g, '-')}.
 let dataLogFile = path.join(logsDir, 'data_log.json');
 
 // Initialize data arrays
+let cycleData = [];
 let valData = [];
 let valDevData = [];
 let stepsData = [];
@@ -36,6 +37,7 @@ function generatePlot() {
 	// Send the data as JSON through stdin
 	child.stdin.write(JSON.stringify({
 		plotPath,
+		cycleData,
 		valData,
 		valDevData,
 		stepsData,
@@ -69,15 +71,16 @@ Max.addHandler('filename', (name) => {
 });
 
 // Handler for synchronized values
-Max.addHandler("values", (val, valDev, steps, stepsDev) => {
-	if ([val, valDev, steps, stepsDev].every(v => !isNaN(v))) {
+Max.addHandler("values", (cycle, val, valDev, steps, stepsDev) => {
+	if ([cycle, val, valDev, steps, stepsDev].every(v => !isNaN(v))) {
+		cycleData.push(cycle)
 		valData.push(val);
 		valDevData.push(valDev);
 		stepsData.push(steps);
 		stepsDevData.push(stepsDev);
 		timeStamps.push(new Date().toISOString());
 
-		if (valData.length % 1000 === 0) {
+		if (cycleData.length % 1000 === 0) {
 			saveDataToDisk();
 			generatePlot();
 		}
