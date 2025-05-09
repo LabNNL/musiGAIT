@@ -25,7 +25,7 @@ function formatSubKeyName(subKey) {
 
 // Utility function to capitalize first letter of each value
 function capitalizeValue(value, key = "") {
-    const targetKeys = ["audiofile", "audio_player_type"];
+    const targetKeys = ["diagnostic", "id", "audiofile", "audio_player_type"];
 
     // Directly return value for target keys
     if (targetKeys.includes(key.toLowerCase())) return value;
