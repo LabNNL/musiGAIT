@@ -20,20 +20,20 @@ function downsampleData(data) {
 	const factor = Math.max(1, Math.floor(Math.log10(length) * 2));
 
 	// ------------------------ DEBUG ------------------------
-    if (length !== lastLoggedLength) {
-        const now = new Date();
-        const timestamp = `${now.toTimeString().split(' ')[0]}.${String(now.getMilliseconds()).padStart(3, '0')}`;
-        // console.log(`[${timestamp}] Length changed: ${length}`);
-        lastLoggedLength = length;
-    }
-    // ------------------------------------------------------
+	if (length !== lastLoggedLength) {
+		const now = new Date();
+		const timestamp = `${now.toTimeString().split(' ')[0]}.${String(now.getMilliseconds()).padStart(3, '0')}`;
+		// console.log(`[${timestamp}] Length changed: ${length}`);
+		lastLoggedLength = length;
+	}
+	// ------------------------------------------------------
 
 	const downsampled = [];
-    for (let i = 0; i < length; i += factor) {
-        downsampled.push(data[i]);
-    }
+	for (let i = 0; i < length; i += factor) {
+		downsampled.push(data[i]);
+	}
 
-    return downsampled;
+	return downsampled;
 }
 
 function deleteOldPlot(plotPath) {
@@ -94,9 +94,16 @@ process.stdin.on('end', () => {
 			'rgba(109, 215, 255, 1)'
 		];
 
-		// ---------------------- DEBUG ----------------------
-		let start = new Date();
-    	// ---------------------------------------------------
+		const downsampledTimestamps = downsampleData(timeStamps);
+		
+		const maxLabels = 20; // Max number of labels on the X-axis
+		const step = Math.ceil(downsampledTimestamps.length / maxLabels);
+
+		const spacedTimeStamps = downsampledTimestamps.map((ts, index) =>
+			index % step === 0 
+				? new Date(ts).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+				: ''
+		);
 
 		datasets.forEach((data, index) => {
 			if (!data || data.length === 0) return;
@@ -109,13 +116,6 @@ process.stdin.on('end', () => {
 			
 			const yMin = typeof yAxisRanges[index].min === "function" ? yAxisRanges[index].min(data) : yAxisRanges[index].min;
 			const yMax = typeof yAxisRanges[index].max === "function" ? yAxisRanges[index].max(data) : yAxisRanges[index].max;
-
-			const maxLabels = 12; // Max number of labels on the X-axis
-			const step = Math.ceil(timeStamps.length / maxLabels);
-
-			const spacedTimeStamps = downsampleData(timeStamps)
-				.map(ts => new Date(ts).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' }))
-				.map((label, index) => (index % step === 0 ? label : ''));
 
 			const chart = new Chart(tempCtx, {
 				type: 'line',
@@ -138,7 +138,7 @@ process.stdin.on('end', () => {
 						x: {
 							ticks: {
 								maxTicksLimit: maxLabels,
-								autoSkip: false
+								autoSkip: true
 							}
 						},
 						y: {
@@ -156,12 +156,6 @@ process.stdin.on('end', () => {
 			ctx.drawImage(tempCanvas, 0, index * 800);
 			chart.destroy();
 		});
-
-		// ---------------------- DEBUG ----------------------
-		let end = new Date();
-		let timeTaken = end - start;
-		console.log(`Time to do the for each: ${timeTaken}ms`);
-    	// ---------------------------------------------------
 
 		const buffer = canvas.toBuffer('image/png');
 		fs.writeFileSync(plotPath, buffer);

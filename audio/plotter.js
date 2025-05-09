@@ -21,12 +21,6 @@ let stepsDevData = [];
 let timeStamps = [];
 let sensorType = 'emg'; // Default sensor type
 
-// Function to save data to disk
-function saveDataToDisk() {
-	const data = { valData, valDevData, stepsData, stepsDevData, timeStamps, sensorType };
-	fs.writeFileSync(dataLogFile, JSON.stringify(data, null, 2));
-}
-
 function generatePlot() {
 	const plotPath = path.join(__dirname, 'logs', plotFileName);
 
@@ -78,8 +72,7 @@ Max.addHandler("values", (cycle, val, valDev, steps, stepsDev) => {
 		stepsDevData.push(stepsDev);
 		timeStamps.push(new Date().toISOString());
 
-		if (cycleData.length % 1000 === 0) {
-			// saveDataToDisk();
+		if (cycleData.length % 2000 === 0) {
 			generatePlot();
 		}
 	}
@@ -91,7 +84,6 @@ Max.addHandler("sensor_type", (type) => {
 
 Max.addHandler("save", () => {
 	try {
-		// saveDataToDisk();
 		generatePlot();
 	} catch (err) {
 		Max.post(`Error saving json: ${err}\n`);
