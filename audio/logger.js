@@ -25,15 +25,28 @@ function formatSubKeyName(subKey) {
 
 // Utility function to capitalize first letter of each value
 function capitalizeValue(value, key = "") {
-	const targetKeys = ["audiofile", "audio_player_type"];
-	if (targetKeys.includes(key.toLowerCase())) return value;
+    const targetKeys = ["audiofile", "audio_player_type"];
 
-	if (typeof value === 'string') {
-		return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
-	} else if (Array.isArray(value)) {
-		return `${value.map(v => capitalizeValue(v)).join(" | " )}`;
-	}
-	return value;
+    // Directly return value for target keys
+    if (targetKeys.includes(key.toLowerCase())) return value;
+
+    // Handle string values
+    if (typeof value === 'string') {
+        return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
+    }
+
+    // Handle arrays
+    if (Array.isArray(value)) {
+        return value.map(v => typeof v === 'number' ? parseFloat(v.toFixed(3)) : capitalizeValue(v)).join(" | ");
+    }
+
+    // Handle numbers (including floats)
+    if (typeof value === 'number') {
+        return parseFloat(value.toFixed(3));
+    }
+
+    // Return value as-is for other types
+    return value;
 }
 
 // Function to sanitize filename
