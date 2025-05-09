@@ -62,7 +62,6 @@ function generatePlot() {
 	});
 }
 
-// Handler for setting filename
 Max.addHandler('filename', (name) => {
 	if (typeof name === 'string' && name.trim()) {
 		if (!name.endsWith('.png')) name += '.png';
@@ -70,7 +69,6 @@ Max.addHandler('filename', (name) => {
 	}
 });
 
-// Handler for synchronized values
 Max.addHandler("values", (cycle, val, valDev, steps, stepsDev) => {
 	if ([cycle, val, valDev, steps, stepsDev].every(v => !isNaN(v))) {
 		cycleData.push(cycle)
@@ -81,7 +79,7 @@ Max.addHandler("values", (cycle, val, valDev, steps, stepsDev) => {
 		timeStamps.push(new Date().toISOString());
 
 		if (cycleData.length % 1000 === 0) {
-			saveDataToDisk();
+			// saveDataToDisk();
 			generatePlot();
 		}
 	}
@@ -93,7 +91,7 @@ Max.addHandler("sensor_type", (type) => {
 
 Max.addHandler("save", () => {
 	try {
-		saveDataToDisk();
+		// saveDataToDisk();
 		generatePlot();
 	} catch (err) {
 		Max.post(`Error saving json: ${err}\n`);
