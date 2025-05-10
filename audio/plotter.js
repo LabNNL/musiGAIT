@@ -5,7 +5,7 @@ const fs = require('fs');
 const { spawn } = require('child_process');
 
 // Ensure logs directory exists
-const logsDir = path.join(__dirname, 'logs');
+const logsDir = path.join(__dirname, '..', 'logs');
 if (!fs.existsSync(logsDir)) fs.mkdirSync(logsDir);
 
 // Default filename (uses timestamp if not specified)
@@ -22,7 +22,7 @@ let timeStamps = [];
 let sensorType = 'emg'; // Default sensor type
 
 function generatePlot() {
-	const plotPath = path.join(__dirname, 'logs', plotFileName);
+	const plotPath = path.join(__dirname, '..', 'logs', plotFileName);
 
 	const child = spawn('node', [path.join(__dirname, 'plotWorker.js'), plotPath], {
 		stdio: ['pipe', 'pipe', 'pipe', 'ipc']

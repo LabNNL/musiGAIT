@@ -11,22 +11,9 @@ process.stdin.on('data', (chunk) => {
 	inputData += chunk;
 });
 
-// ---------------------- DEBUG ----------------------
-var lastLoggedLength = 0;
-// ------------------------------------------------------
-
 function downsampleData(data) {
 	const length = data.length;
 	const factor = Math.max(1, Math.floor(Math.log10(length) * 2));
-
-	// ------------------------ DEBUG ------------------------
-	if (length !== lastLoggedLength) {
-		const now = new Date();
-		const timestamp = `${now.toTimeString().split(' ')[0]}.${String(now.getMilliseconds()).padStart(3, '0')}`;
-		// console.log(`[${timestamp}] Length changed: ${length}`);
-		lastLoggedLength = length;
-	}
-	// ------------------------------------------------------
 
 	const downsampled = [];
 	for (let i = 0; i < length; i += factor) {
