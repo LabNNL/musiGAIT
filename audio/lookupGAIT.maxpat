@@ -6073,7 +6073,7 @@
 						}
 ,
 						"classnamespace" : "box",
-						"rect" : [ 59.0, 107.0, 479.0, 369.0 ],
+						"rect" : [ 59.0, 107.0, 417.0, 399.0 ],
 						"bglocked" : 0,
 						"openinpresentation" : 0,
 						"default_fontsize" : 12.0,
@@ -6108,7 +6108,7 @@
 									"numinlets" : 1,
 									"numoutlets" : 1,
 									"outlettype" : [ "" ],
-									"patching_rect" : [ 98.0, 216.0, 81.0, 22.0 ],
+									"patching_rect" : [ 98.0, 264.0, 81.0, 22.0 ],
 									"text" : "prepend write"
 								}
 
@@ -6120,7 +6120,7 @@
 									"numinlets" : 1,
 									"numoutlets" : 1,
 									"outlettype" : [ "bang" ],
-									"patching_rect" : [ 234.0, 100.0, 58.0, 22.0 ],
+									"patching_rect" : [ 232.0, 138.0, 58.0, 22.0 ],
 									"text" : "loadbang"
 								}
 
@@ -6132,7 +6132,7 @@
 									"numinlets" : 2,
 									"numoutlets" : 1,
 									"outlettype" : [ "" ],
-									"patching_rect" : [ 234.0, 138.0, 97.0, 22.0 ],
+									"patching_rect" : [ 232.0, 181.0, 97.0, 22.0 ],
 									"text" : "pattrLookup.json"
 								}
 
@@ -6144,8 +6144,8 @@
 									"numinlets" : 2,
 									"numoutlets" : 1,
 									"outlettype" : [ "" ],
-									"patching_rect" : [ 98.0, 173.0, 155.0, 22.0 ],
-									"text" : "sprintf symout %s%s"
+									"patching_rect" : [ 98.0, 221.0, 153.0, 22.0 ],
+									"text" : "sprintf symout %saudio/%s"
 								}
 
 							}
@@ -6169,7 +6169,7 @@
 									"numinlets" : 1,
 									"numoutlets" : 2,
 									"outlettype" : [ "path", "bang" ],
-									"patching_rect" : [ 50.0, 100.0, 166.0, 22.0 ],
+									"patching_rect" : [ 50.0, 100.0, 312.0, 22.0 ],
 									"text" : "t path b"
 								}
 
@@ -6181,7 +6181,7 @@
 									"numinlets" : 2,
 									"numoutlets" : 1,
 									"outlettype" : [ "" ],
-									"patching_rect" : [ 197.0, 216.0, 45.0, 22.0 ],
+									"patching_rect" : [ 343.0, 264.0, 45.0, 22.0 ],
 									"text" : "store 1"
 								}
 
@@ -6207,7 +6207,7 @@
 									"maxclass" : "outlet",
 									"numinlets" : 1,
 									"numoutlets" : 0,
-									"patching_rect" : [ 98.0, 273.0, 30.0, 30.0 ]
+									"patching_rect" : [ 98.0, 321.0, 30.0, 30.0 ]
 								}
 
 							}
