@@ -1308,7 +1308,7 @@
 						}
 ,
 						"classnamespace" : "box",
-						"rect" : [ 132.0, 157.0, 1048.0, 582.0 ],
+						"rect" : [ 583.0, 194.0, 1029.0, 579.0 ],
 						"bglocked" : 0,
 						"openinpresentation" : 0,
 						"default_fontsize" : 12.0,
@@ -2259,7 +2259,7 @@
  ]
 									}
 ,
-									"patching_rect" : [ 845.0, 444.0, 71.0, 22.0 ],
+									"patching_rect" : [ 845.0, 490.0, 71.0, 22.0 ],
 									"saved_object_attributes" : 									{
 										"description" : "",
 										"digest" : "",
@@ -2571,7 +2571,7 @@
 										}
 ,
 										"classnamespace" : "box",
-										"rect" : [ 171.0, 140.0, 1249.0, 669.0 ],
+										"rect" : [ 446.0, 141.0, 1249.0, 669.0 ],
 										"bglocked" : 0,
 										"openinpresentation" : 0,
 										"default_fontsize" : 12.0,
@@ -3394,7 +3394,7 @@
 									"numinlets" : 1,
 									"numoutlets" : 1,
 									"outlettype" : [ "" ],
-									"patching_rect" : [ 63.0, 477.0, 54.0, 22.0 ],
+									"patching_rect" : [ 63.0, 439.0, 54.0, 22.0 ],
 									"text" : "deferlow"
 								}
 
@@ -3406,7 +3406,7 @@
 									"numinlets" : 2,
 									"numoutlets" : 1,
 									"outlettype" : [ "bang" ],
-									"patching_rect" : [ 63.0, 444.0, 55.0, 22.0 ],
+									"patching_rect" : [ 137.0, 439.0, 55.0, 22.0 ],
 									"text" : "del 1000"
 								}
 
@@ -3430,7 +3430,7 @@
 									"numinlets" : 1,
 									"numoutlets" : 2,
 									"outlettype" : [ "bang", "bang" ],
-									"patching_rect" : [ 63.0, 402.0, 29.5, 22.0 ],
+									"patching_rect" : [ 63.0, 402.0, 93.0, 22.0 ],
 									"text" : "b"
 								}
 
@@ -3455,7 +3455,7 @@
 									"maxclass" : "outlet",
 									"numinlets" : 1,
 									"numoutlets" : 0,
-									"patching_rect" : [ 845.0, 517.0, 30.0, 30.0 ]
+									"patching_rect" : [ 845.0, 529.0, 30.0, 30.0 ]
 								}
 
 							}
@@ -3467,7 +3467,7 @@
 									"maxclass" : "outlet",
 									"numinlets" : 1,
 									"numoutlets" : 0,
-									"patching_rect" : [ 63.0, 517.0, 30.0, 30.0 ]
+									"patching_rect" : [ 63.0, 529.0, 30.0, 30.0 ]
 								}
 
 							}
@@ -3479,7 +3479,7 @@
 									"numoutlets" : 1,
 									"outlettype" : [ "bang" ],
 									"patching_rect" : [ 63.0, 365.0, 55.0, 22.0 ],
-									"text" : "del 8000"
+									"text" : "del 5000"
 								}
 
 							}
@@ -3646,14 +3646,14 @@
 							}
 , 							{
 								"patchline" : 								{
-									"destination" : [ "obj-76", 0 ],
+									"destination" : [ "obj-86", 0 ],
 									"source" : [ "obj-37", 1 ]
 								}
 
 							}
 , 							{
 								"patchline" : 								{
-									"destination" : [ "obj-86", 0 ],
+									"destination" : [ "obj-87", 0 ],
 									"source" : [ "obj-37", 0 ]
 								}
 
@@ -3771,7 +3771,7 @@
 							}
 , 							{
 								"patchline" : 								{
-									"destination" : [ "obj-87", 0 ],
+									"destination" : [ "obj-76", 0 ],
 									"source" : [ "obj-86", 0 ]
 								}
 
@@ -5791,7 +5791,7 @@
 					"patching_rect" : [ 1109.0, 459.0, 92.0, 29.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 456.0, 244.0, 65.0, 29.0 ],
-					"text" : "32%",
+					"text" : "0%",
 					"textcolor" : [ 1.0, 1.0, 1.0, 1.0 ]
 				}
 
@@ -8172,14 +8172,14 @@
 												"box" : 												{
 													"autopopulate" : 1,
 													"id" : "obj-42",
-													"items" : "Bobby McFerrin - Don't Worry Be Happy (Official Music Video).wav",
+													"items" : "<empty>",
 													"maxclass" : "umenu",
 													"numinlets" : 1,
 													"numoutlets" : 3,
 													"outlettype" : [ "int", "", "" ],
 													"parameter_enable" : 0,
 													"patching_rect" : [ 78.0, 344.0, 100.0, 22.0 ],
-													"prefix" : "D:/musiGAIT/audio/audiofiles/",
+													"prefix" : "D:/musiGAIT/audio/audio/audiofiles",
 													"types" : "WAVE"
 												}
 
@@ -11899,7 +11899,7 @@
 					"fontname" : "Arial",
 					"fontsize" : 16.0,
 					"id" : "obj-42",
-					"items" : "Bobby McFerrin - Don't Worry Be Happy (Official Music Video)",
+					"items" : "<empty>",
 					"maxclass" : "umenu",
 					"numinlets" : 1,
 					"numoutlets" : 3,
