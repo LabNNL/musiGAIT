@@ -8,3 +8,6 @@ logs/
 video/config.json
 video/*.toe
 video/Backup
+
+# builds
+external/
