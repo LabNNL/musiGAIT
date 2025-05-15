@@ -8,7 +8,6 @@ def main():
     current_file_path = os.path.abspath(__file__)
     current_dir = os.path.dirname(current_file_path)
 
-    # Read config
     with open(os.path.join(current_dir, "config.json"), 'r') as f:
         config = json.load(f)
 
@@ -16,11 +15,9 @@ def main():
     base_url = config["folder_url"]
     download_id = config["download_id"]
 
-    # Use Dropbox's raw file server (more reliable)
     file_url = f"{base_url}/{file_name}{download_id}"
     output_path = os.path.join(current_dir, file_name)
 
-    # Begin download
     with requests.get(file_url, stream=True, allow_redirects=True) as r:
         r.raise_for_status()
         with open(output_path, 'wb') as f:
