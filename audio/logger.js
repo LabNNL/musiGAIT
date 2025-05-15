@@ -67,16 +67,17 @@ function generateFilename() {
 // Function to generate CSV data from dictionary
 function generateCSV(dict) {
 	let csvData = "";
+	const delimiter = ";";
 	for (const section in dict) {
 		const subDict = dict[section];
 		for (const key in subDict) {
 			let value = subDict[key];
 			if (typeof value === 'object' && !Array.isArray(value) && value !== null) {
 				for (const subKey in value) {
-					csvData += `${escapeCSV(section)},${escapeCSV(key)},${escapeCSV(formatSubKeyName(subKey))},${escapeCSV(capitalizeValue(formatDate(subKey, value[subKey]), subKey))}\n`;
+					csvData += `${escapeCSV(section)}${delimiter}${escapeCSV(key)},${escapeCSV(formatSubKeyName(subKey))},${escapeCSV(capitalizeValue(formatDate(subKey, value[subKey]), subKey))}\n`;
 				}
 			} else {
-				csvData += `${escapeCSV(section)},${escapeCSV(key)},${escapeCSV(capitalizeValue(formatDate(key, value), key))}\n`;
+				csvData += `${escapeCSV(section)}${delimiter}${escapeCSV(key)},${escapeCSV(capitalizeValue(formatDate(key, value), key))}\n`;
 			}
 		}
         csvData += "\n"; // Separate sections
