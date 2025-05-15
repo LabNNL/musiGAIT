@@ -74,10 +74,10 @@ function generateCSV(dict) {
 			let value = subDict[key];
 			if (typeof value === 'object' && !Array.isArray(value) && value !== null) {
 				for (const subKey in value) {
-					csvData += `${escapeCSV(section)}${delimiter}${escapeCSV(key)},${escapeCSV(formatSubKeyName(subKey))},${escapeCSV(capitalizeValue(formatDate(subKey, value[subKey]), subKey))}\n`;
+					csvData += `${escapeCSV(section)}${delimiter}${escapeCSV(key)}${delimiter}${escapeCSV(formatSubKeyName(subKey))}${delimiter}${escapeCSV(capitalizeValue(formatDate(subKey, value[subKey]), subKey))}\n`;
 				}
 			} else {
-				csvData += `${escapeCSV(section)}${delimiter}${escapeCSV(key)},${escapeCSV(capitalizeValue(formatDate(key, value), key))}\n`;
+				csvData += `${escapeCSV(section)}${delimiter}${escapeCSV(key)}${delimiter}${escapeCSV(capitalizeValue(formatDate(key, value), key))}\n`;
 			}
 		}
         csvData += "\n"; // Separate sections
