@@ -66,8 +66,9 @@ function generateFilename() {
 
 // Function to generate CSV data from dictionary
 function generateCSV(dict) {
-	let csvData = "";
+	let csvData = "\uFEFFsep=;\n"; // BOM + Excel delimiter hint
 	const delimiter = ";";
+	
 	for (const section in dict) {
 		const subDict = dict[section];
 		for (const key in subDict) {
