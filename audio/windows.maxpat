@@ -10,7 +10,7 @@
 		}
 ,
 		"classnamespace" : "box",
-		"rect" : [ 59.0, 107.0, 151.0, 239.0 ],
+		"rect" : [ 59.0, 107.0, 148.0, 228.0 ],
 		"bglocked" : 0,
 		"openinpresentation" : 0,
 		"default_fontsize" : 12.0,
@@ -93,7 +93,7 @@
 						}
 ,
 						"classnamespace" : "box",
-						"rect" : [ 186.0, 266.0, 1400.0, 419.0 ],
+						"rect" : [ 162.0, 385.0, 1577.0, 419.0 ],
 						"bglocked" : 0,
 						"openinpresentation" : 0,
 						"default_fontsize" : 12.0,
@@ -112,7 +112,7 @@
 						"toolbars_unpinned_last_save" : 0,
 						"tallnewobj" : 0,
 						"boxanimatetime" : 200,
-						"enablehscroll" : 1,
+						"enablehscroll" : 0,
 						"enablevscroll" : 1,
 						"devicewidth" : 0.0,
 						"description" : "",
@@ -130,7 +130,6 @@
 									"numoutlets" : 1,
 									"outlettype" : [ "" ],
 									"patching_rect" : [ 194.0, 343.0, 142.0, 36.0 ],
-									"presentation_linecount" : 2,
 									"text" : ";\r\nmax wheelzoomfactor 75"
 								}
 
@@ -179,8 +178,8 @@
 									"numinlets" : 2,
 									"numoutlets" : 1,
 									"outlettype" : [ "" ],
-									"patching_rect" : [ 102.0, 304.0, 1283.0, 22.0 ],
-									"text" : "window flags zoom, window flags minimize, window flags grow, window flags nofloat, window flags close, window flags menu, window exec, toolbarvisible 1, lefttoolbarpinned 1, righttoolbarpinned 1, toptoolbarpinned 1, bottomtoolbarpinned 1"
+									"patching_rect" : [ 102.0, 304.0, 1457.0, 22.0 ],
+									"text" : "window flags zoom, window flags minimize, window flags grow, window flags nofloat, window flags close, window flags menu, window exec, toolbarvisible 1, lefttoolbarpinned 1, righttoolbarpinned 1, toptoolbarpinned 1, bottomtoolbarpinned 1, enablehscroll 1, enablevscroll 1"
 								}
 
 							}
@@ -203,8 +202,8 @@
 									"numinlets" : 2,
 									"numoutlets" : 1,
 									"outlettype" : [ "" ],
-									"patching_rect" : [ 45.0, 161.0, 1323.0, 22.0 ],
-									"text" : "window flags nozoom, window flags nominimize, window flags nogrow, window flags float, window flags close, window flags nomenu, window exec, toolbarvisible 0, lefttoolbarpinned 2, righttoolbarpinned 2, toptoolbarpinned 2, bottomtoolbarpinned 2"
+									"patching_rect" : [ 45.0, 161.0, 1497.0, 22.0 ],
+									"text" : "window flags nozoom, window flags nominimize, window flags nogrow, window flags float, window flags close, window flags nomenu, window exec, toolbarvisible 0, lefttoolbarpinned 2, righttoolbarpinned 2, toptoolbarpinned 2, bottomtoolbarpinned 2, enablehscroll 0, enablevscroll 0"
 								}
 
 							}
