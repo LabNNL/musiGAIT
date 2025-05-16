@@ -7056,20 +7056,8 @@
 					"numinlets" : 0,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 501.0, 1240.0, 65.0, 22.0 ],
+					"patching_rect" : [ 501.0, 1282.0, 65.0, 22.0 ],
 					"text" : "r emg_dev"
-				}
-
-			}
-, 			{
-				"box" : 				{
-					"id" : "obj-153",
-					"maxclass" : "newobj",
-					"numinlets" : 2,
-					"numoutlets" : 1,
-					"outlettype" : [ "float" ],
-					"patching_rect" : [ 593.0, 1286.0, 29.5, 22.0 ],
-					"text" : "* 1."
 				}
 
 			}
@@ -7081,47 +7069,8 @@
 					"numinlets" : 0,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 593.0, 1240.0, 75.0, 22.0 ],
+					"patching_rect" : [ 631.0, 1282.0, 75.0, 22.0 ],
 					"text" : "r speed_dev"
-				}
-
-			}
-, 			{
-				"box" : 				{
-					"id" : "obj-7",
-					"maxclass" : "newobj",
-					"numinlets" : 2,
-					"numoutlets" : 1,
-					"outlettype" : [ "float" ],
-					"patching_rect" : [ 419.0, 1286.0, 29.5, 22.0 ],
-					"text" : "* 1."
-				}
-
-			}
-, 			{
-				"box" : 				{
-					"id" : "obj-3",
-					"maxclass" : "live.numbox",
-					"numinlets" : 1,
-					"numoutlets" : 2,
-					"outlettype" : [ "", "float" ],
-					"parameter_enable" : 1,
-					"patching_rect" : [ 362.0, 1244.0, 44.0, 15.0 ],
-					"saved_attribute_attributes" : 					{
-						"valueof" : 						{
-							"parameter_initial" : [ 1.0 ],
-							"parameter_initial_enable" : 1,
-							"parameter_longname" : "live.numbox[8]",
-							"parameter_modmode" : 3,
-							"parameter_shortname" : "live.numbox[8]",
-							"parameter_type" : 0,
-							"parameter_units" : "* %.2f",
-							"parameter_unitstyle" : 9
-						}
-
-					}
-,
-					"varname" : "live.numbox[5]"
 				}
 
 			}
@@ -7507,7 +7456,7 @@
  ]
 					}
 ,
-					"patching_rect" : [ 148.0, 1286.0, 42.0, 22.0 ],
+					"patching_rect" : [ 148.0, 1282.0, 42.0, 22.0 ],
 					"saved_object_attributes" : 					{
 						"description" : "",
 						"digest" : "",
@@ -7641,7 +7590,7 @@
 					"numinlets" : 0,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 419.0, 1240.0, 71.0, 22.0 ],
+					"patching_rect" : [ 419.0, 1282.0, 71.0, 22.0 ],
 					"text" : "r angle_dev"
 				}
 
@@ -8756,7 +8705,7 @@
 												"box" : 												{
 													"autopopulate" : 1,
 													"id" : "obj-42",
-													"items" : "D:\\musiGAIT\\audio\\audio\\audiofiles\\Bobby McFerrin - Don't Worry Be Happy (Official Music Video).wav",
+													"items" : "<empty>",
 													"maxclass" : "umenu",
 													"numinlets" : 1,
 													"numoutlets" : 3,
@@ -9471,8 +9420,7 @@
 									"outlettype" : [ "", "bang" ],
 									"patching_rect" : [ 366.0, 300.0, 88.0, 22.0 ],
 									"saved_object_attributes" : 									{
-										"shell" : "(default)",
-										"wd" : "D:/musiGAIT/audio/audio/"
+										"shell" : "(default)"
 									}
 ,
 									"text" : "shell"
@@ -12538,7 +12486,7 @@
 					"fontname" : "Arial",
 					"fontsize" : 16.0,
 					"id" : "obj-42",
-					"items" : [ "D:\\musiGAIT\\audio\\audio\\audiofiles\\Bobby McFerrin - Don't Worry Be Happy (Official Music Video)", ",", "Bobby McFerrin - Don't Worry Be Happy (Official Music Video)" ],
+					"items" : "<empty>",
 					"maxclass" : "umenu",
 					"numinlets" : 1,
 					"numoutlets" : 3,
@@ -12630,7 +12578,7 @@
 			}
 , 			{
 				"patchline" : 				{
-					"destination" : [ "obj-7", 0 ],
+					"destination" : [ "obj-147", 0 ],
 					"source" : [ "obj-108", 0 ]
 				}
 
@@ -12723,13 +12671,6 @@
 			}
 , 			{
 				"patchline" : 				{
-					"destination" : [ "obj-147", 1 ],
-					"source" : [ "obj-153", 0 ]
-				}
-
-			}
-, 			{
-				"patchline" : 				{
 					"destination" : [ "obj-50", 0 ],
 					"source" : [ "obj-155", 0 ]
 				}
@@ -12737,7 +12678,7 @@
 			}
 , 			{
 				"patchline" : 				{
-					"destination" : [ "obj-7", 0 ],
+					"destination" : [ "obj-147", 0 ],
 					"source" : [ "obj-157", 0 ]
 				}
 
@@ -13005,22 +12946,6 @@
 			}
 , 			{
 				"patchline" : 				{
-					"destination" : [ "obj-153", 1 ],
-					"order" : 0,
-					"source" : [ "obj-3", 0 ]
-				}
-
-			}
-, 			{
-				"patchline" : 				{
-					"destination" : [ "obj-7", 1 ],
-					"order" : 1,
-					"source" : [ "obj-3", 0 ]
-				}
-
-			}
-, 			{
-				"patchline" : 				{
 					"destination" : [ "obj-27", 0 ],
 					"source" : [ "obj-33", 0 ]
 				}
@@ -13126,7 +13051,7 @@
 			}
 , 			{
 				"patchline" : 				{
-					"destination" : [ "obj-153", 0 ],
+					"destination" : [ "obj-147", 1 ],
 					"source" : [ "obj-61", 0 ]
 				}
 
@@ -13135,13 +13060,6 @@
 				"patchline" : 				{
 					"destination" : [ "obj-53", 0 ],
 					"source" : [ "obj-67", 0 ]
-				}
-
-			}
-, 			{
-				"patchline" : 				{
-					"destination" : [ "obj-147", 0 ],
-					"source" : [ "obj-7", 0 ]
 				}
 
 			}
@@ -13298,7 +13216,6 @@
 			"obj-23::obj-119::obj-35" : [ "live.menu[8]", "live.menu", 0 ],
 			"obj-23::obj-119::obj-8" : [ "live.menu[6]", "live.menu", 0 ],
 			"obj-23::obj-119::obj-9" : [ "live.menu[1]", "live.menu", 0 ],
-			"obj-3" : [ "live.numbox[8]", "live.numbox[8]", 0 ],
 			"obj-36" : [ "live.text[7]", "live.text[1]", 0 ],
 			"obj-4" : [ "radiogroup", "radiogroup", 0 ],
 			"obj-49" : [ "live.text[20]", "live.menu[1]", 0 ],
