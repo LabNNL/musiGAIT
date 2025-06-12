@@ -225,7 +225,7 @@
 									"maxclass" : "inlet",
 									"numinlets" : 0,
 									"numoutlets" : 1,
-									"outlettype" : [ "float" ],
+									"outlettype" : [ "" ],
 									"patching_rect" : [ 444.0, 19.0, 30.0, 30.0 ]
 								}
 
@@ -600,11 +600,11 @@
 				"box" : 				{
 					"id" : "obj-2",
 					"maxclass" : "newobj",
-					"numinlets" : 2,
+					"numinlets" : 1,
 					"numoutlets" : 1,
-					"outlettype" : [ "float" ],
-					"patching_rect" : [ 497.0, 90.0, 40.0, 22.0 ],
-					"text" : "* 100."
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 497.0, 90.0, 89.0, 22.0 ],
+					"text" : "vexpr $f1 * 100"
 				}
 
 			}
@@ -616,8 +616,8 @@
 					"numinlets" : 0,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 497.0, 21.0, 70.0, 22.0 ],
-					"text" : "r foot_cycle"
+					"patching_rect" : [ 497.0, 21.0, 76.0, 22.0 ],
+					"text" : "r foot_cycles"
 				}
 
 			}
@@ -1483,8 +1483,6 @@
 					"saved_object_attributes" : 					{
 						"autostart" : 0,
 						"defer" : 0,
-						"node_bin_path" : "",
-						"npm_bin_path" : "",
 						"watch" : 0
 					}
 ,
@@ -2316,7 +2314,6 @@
 						"style" : "",
 						"subpatcher_template" : "",
 						"assistshowspatchername" : 0,
-						"visible" : 1,
 						"boxes" : [ 							{
 								"box" : 								{
 									"id" : "obj-80",
