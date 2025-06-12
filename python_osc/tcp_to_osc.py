@@ -4,6 +4,7 @@ from pythonosc.dispatcher import Dispatcher
 from enum import Enum
 import threading
 import datetime
+import argparse
 import struct
 import socket
 import json
@@ -18,8 +19,8 @@ osc_client = SimpleUDPClient(OSC_IP, OSC_PORT)
 osc_lock = threading.Lock()
 
 # EMG to Delsys server
-EMG_HOST, EMG_PORTS = "127.0.0.1", [5000, 5001, 5002, 5003]  # Command, Response, Data, Analyses
-# EMG_HOST, EMG_PORTS = "127.0.0.1", [5123, 5124, 5125, 5126]  # Command, Response, Data, Analyses
+EMG_HOST = "127.0.0.1"
+
 CURRENT_SENSORS = []
 SOCKETS = []
 
@@ -607,7 +608,24 @@ def listen_to_osc_updates() -> None:
 
 
 def main():
-	"""Main function to establish connections and start data processing."""
+	"""Main function to parse CLI args, establish connections and start data processing."""
+
+	# Parse server ports
+	parser = argparse.ArgumentParser(description="TCP→OSC bridge: specify Delsys EMG ports to use")
+	parser.add_argument("--portCommand", type=int, default=5000, help="EMG command port")
+	parser.add_argument("--portResponse", type=int, default=5001, help="EMG response port")
+	parser.add_argument("--portLiveData", type=int, default=5002, help="EMG data stream port")
+	parser.add_argument("--portLiveAnalyses", type=int, default=5003, help="EMG analyses stream port")
+	args = parser.parse_args()
+
+	# Override the default ports
+	global EMG_PORTS
+	EMG_PORTS = [
+		args.portCommand,
+		args.portResponse,
+		args.portLiveData,
+		args.portLiveAnalyses,
+	]
 
 	# Establish connections with handshake
 	global SOCKETS

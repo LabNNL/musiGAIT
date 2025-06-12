@@ -37,8 +37,9 @@ else
 fi
 
 # Run TCP2OSC.py script using the virtual environment's Python
-echo "Launching tcp_to_osc.py..."
-"$PYTHON_EXEC" tcp_to_osc.py
+# forwarding all CLI args you passed to the .command
+echo "Launching tcp_to_osc.py with:" "$@"
+"$PYTHON_EXEC" tcp_to_osc.py "$@"
 
 # Deactivate virtual environment
 deactivate
