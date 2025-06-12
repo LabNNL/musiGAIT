@@ -356,7 +356,7 @@ def listen_to_live_data(sock: socket.socket) -> None:
 				decoded = json.loads(body.decode('utf-8'))
 				for key, payload in decoded.items():
 					for entry in payload['data']['data']:
-						timestamp, channels = entry
+						timestamp, channels = entry[0], entry[1]
 						if timestamp in sent_timestamps:
 							continue
 						sent_timestamps.add(timestamp)
@@ -382,48 +382,36 @@ def listen_to_live_analyses(sock: socket) -> None:
 
 	log.info(f"Sending live analyses via OSC on {OSC_IP}:{OSC_PORT}")
 
-	while True:
-		try:
-			data = sock.recv(4096)
-			if not data:
-				break
-			buffer.extend(data)
+	try:
+		while True:
+			header = recv_exact(sock, 16)
+			body_length = parse_data_length(header)
+			body = recv_exact(sock, body_length)
+			
+			try:
+				decoded = json.loads(body.decode('utf-8'))
+				if "data" in decoded:
+					for key, analysis in decoded["data"].items():
+						# make OSC address safe
+						addr = f'/{key.replace(" ", "_")}'
+						# if analysis[1] is a list of values, send each separately:
+						if (
+							isinstance(analysis, list)
+							and len(analysis) >= 2
+							and isinstance(analysis[1], list)
+						):
+							for value in analysis[1]:
+								send_osc_message(addr, value)
+						else:
+							log.error(f"Unexpected format in '{key}' data")
+			except json.JSONDecodeError:
+				log.error("JSON decode error in live analyses; skipping this packet")
 
-			# Read header to determine packet length if not set
-			if expected_length is None and len(buffer) >= 16:
-				expected_length = parse_data_length(buffer[:16])
-				buffer = buffer[16:]
-
-			# Process full packets
-			while expected_length and len(buffer) >= expected_length:
-				raw_data = buffer[:expected_length]
-				buffer = buffer[expected_length:]
-				expected_length = None
-
-				try:
-					decoded_data = json.loads(raw_data.decode('utf-8'))
-
-					if "data" in decoded_data:
-						for key, analysis in decoded_data["data"].items():
-							if isinstance(analysis, list) and len(analysis) >= 2 and isinstance(analysis[1], list):
-								extracted_data = analysis[1]  # Extract the analysis data
-
-								# Send data via OSC
-								send_osc_message(f'/{key.replace(" ", "_")}', extracted_data)
-
-							else:
-								log.error(f"Unexpected format in '{key}' data")
-
-				except json.JSONDecodeError:
-					log.error("JSON decode error in analysis data. Resetting buffer.")
-					buffer.clear()
-
-		except Exception as e:
-			log.error(f"Error processing analysis data: {e}")
-			break
-
-	sock.close()
-	log.info("Live analysis connection closed")
+	except (ConnectionError, socket.error) as e:
+		log.info(f"Live-analyses socket closed: {e}")
+	finally:
+		sock.close()
+		log.info("Live analysis connection closed")
 
 
 def analyzer_update_channels(address: str, *args) -> None:
