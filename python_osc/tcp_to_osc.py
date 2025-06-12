@@ -5,6 +5,7 @@ from enum import Enum
 import threading
 import datetime
 import argparse
+import logging
 import struct
 import socket
 import json
@@ -191,6 +192,17 @@ def interpret_response(response: bytes) -> dict:
 	}
 
 
+def recv_exact(sock: socket.socket, n: int) -> bytes:
+	"""Read exactly n bytes or raise if the socket closes early."""
+	buf = b""
+	while len(buf) < n:
+		chunk = sock.recv(n - len(buf))
+		if not chunk:
+			raise ConnectionError("Socket closed unexpectedly while reading")
+		buf += chunk
+	return buf
+
+
 def send_command(sock, command: Command) -> bool:
 	"""
 	Send a command to the server using the required protocol format.
@@ -215,7 +227,7 @@ def send_command(sock, command: Command) -> bool:
 		log_message(f"Sent command: {command.name} ({command.value})")
 
 		# Read the full 16-byte response
-		response = sock.recv(16)
+		response = recv_exact(sock, 16)
 		parsed_response = interpret_response(response)
 
 		# Handle interpretation errors
@@ -260,7 +272,7 @@ def send_extra_data(sock, response_sock, extra_data: dict) -> bool:
 		sock.sendall(header + json_data)
 
 		# Wait for the response
-		response = response_sock.recv(16)
+		response = recv_exact(response_sock, 16)
 		parsed_response = interpret_response(response)
 
 		if "error" in parsed_response:
@@ -328,57 +340,38 @@ def send_osc_message(address: str, value: float) -> None:
 		osc_client.send_message(address, value)
 
 
-def listen_to_live_data(sock: socket) -> None:
+def listen_to_live_data(sock: socket.socket) -> None:
 	"""Listen for live data packets and send them via OSC."""
-	buffer = bytearray()
-	expected_length = None
 	sent_timestamps = set()
-
 	log_message(f"Sending live data via OSC on {OSC_IP}:{OSC_PORT}")
 
-	while True:
-		try:
-			data = sock.recv(4096)
-			if not data:
-				break
-			buffer.extend(data)
+	try:
+		while True:
+			header = recv_exact(sock, 16)
+			body_length = parse_data_length(header)
+			body = recv_exact(sock, body_length)
 
-			# Read header to determine packet length if not set
-			if expected_length is None and len(buffer) >= 16:
-				expected_length = parse_data_length(buffer[:16])
-				buffer = buffer[16:]
+			try:
+                decoded = json.loads(body.decode('utf-8'))
+                for key, payload in decoded.items():
+                    for entry in payload['data']['data']:
+                        timestamp, channels = entry
+                        if timestamp in sent_timestamps:
+                            continue
+                        sent_timestamps.add(timestamp)
+                        for ch in CURRENT_SENSORS:
+                            if 1 <= ch <= len(channels):
+                                send_osc_message(f'/sensor_{ch}',
+                                                 channels[ch-1] * DATA_MULTIPLIER)
+            except json.JSONDecodeError:
+                log_message("JSON decode error; skipping this packet.", "ERROR")
 
-			# Process full packets
-			while expected_length and len(buffer) >= expected_length:
-				raw_data = buffer[:expected_length]
-				buffer = buffer[expected_length:]
-				expected_length = None
-
-				try:
-					decoded_data = json.loads(raw_data.decode('utf-8'))
-
-					for key in decoded_data.keys():
-						for entry in decoded_data[key]['data']['data']:
-							timestamp, channels = entry[0], entry[1]
-
-							if timestamp not in sent_timestamps:
-								sent_timestamps.add(timestamp)
-
-								for channel in CURRENT_SENSORS:
-									if channel <= len(channels):
-										# Send data via OSC
-										send_osc_message(f'/sensor_{channel}', channels[channel-1] * DATA_MULTIPLIER)
-
-				except json.JSONDecodeError:
-					log_message("JSON decode error in live data. Resetting buffer.", "ERROR")
-					buffer.clear()
-
-		except Exception as e:
-			log_message(f"Error processing data: {e}", "ERROR")
-			break
-
-	sock.close()
-	log_message("Live data connection closed")
+    except (ConnectionError, socket.error) as e:
+        log_message(f"Live-data socket closed: {e}", "INFO")
+    
+    finally:
+        sock.close()
+        log_message("Live data connection closed")
 
 
 def listen_to_live_analyses(sock: socket) -> None:
