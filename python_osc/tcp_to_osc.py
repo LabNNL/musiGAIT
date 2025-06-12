@@ -115,6 +115,13 @@ analyzer_config_right = {
 	]
 }
 
+logging.basicConfig(
+	level=logging.INFO, 
+	format='[%(asctime)s] [%(levelname)s] %(message)s', 
+	datefmt='%Y-%m-%d %H:%M:%S'
+)
+log = logging.getLogger(__name__)
+
 
 # Commands
 class Command(Enum):
@@ -133,12 +140,6 @@ class Command(Enum):
 	ADD_ANALYZER = 50
 	REMOVE_ANALYZER = 51
 	FAILED = 100
-
-
-def log_message(message, level="INFO") -> None:
-	"""Print messages with a timestamp and log level."""
-	timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
-	print(f"[{timestamp}] [{level}]: {message}")
 
 
 def to_packet(command_int: int) -> bytes:
@@ -215,7 +216,7 @@ def send_command(sock, command: Command) -> bool:
 		bool: True if the command was successful, False otherwise.
 	"""
 	if not isinstance(command, Command):
-		log_message(f"Invalid command {command}", "ERROR")
+		log.error(f"Invalid command {command}")
 		return False
 
 	# Pack command as 8 bytes (4-byte version + 4-byte command)
@@ -224,7 +225,7 @@ def send_command(sock, command: Command) -> bool:
 	try:
 		# Send the command
 		sock.sendall(command_packet)
-		log_message(f"Sent command: {command.name} ({command.value})")
+		log.info(f"Sent command: {command.name} ({command.value})")
 
 		# Read the full 16-byte response
 		response = recv_exact(sock, 16)
@@ -232,18 +233,18 @@ def send_command(sock, command: Command) -> bool:
 
 		# Handle interpretation errors
 		if "error" in parsed_response:
-			log_message(f"Response interpretation error: {parsed_response['error']}", "ERROR")
+			log.error(f"Response interpretation error: {parsed_response['error']}")
 			return False
 
 		# Check if response is OK (1) or NOK (0)
 		if parsed_response["status"] != 1:
-			log_message(f"Command {command.name} failed", "ERROR")
+			log.error(f"Command {command.name} failed")
 			return False
 
 		return True
 
 	except socket.error as e:
-		log_message(f"Socket error: {e}", "ERROR")
+		log.error(f"Socket error: {e}")
 		return False
 
 
@@ -276,18 +277,18 @@ def send_extra_data(sock, response_sock, extra_data: dict) -> bool:
 		parsed_response = interpret_response(response)
 
 		if "error" in parsed_response:
-			log_message(f"Error in extra data response: {parsed_response['error']}", "ERROR")
+			log.error(f"Error in extra data response: {parsed_response['error']}")
 			return False
 
 		if parsed_response["status"] != 1:
-			log_message(f"Extra data failed (NOK received)", "ERROR")
+			log.error(f"Extra data failed (NOK received)")
 			return False
 
-		log_message(f"Extra data sent successfully")
+		log.info(f"Extra data sent successfully")
 		return True
 
 	except socket.error as e:
-		log_message(f"Socket error while sending extra data: {e}", "ERROR")
+		log.error(f"Socket error while sending extra data: {e}")
 		return False
 
 
@@ -305,10 +306,10 @@ def connect_and_handshake(host: str, ports: list[int]) -> list[socket.socket] | 
 		try:
 			sock = socket.create_connection((host, port))
 			sockets.append(sock)
-			log_message(f"Connected to {host}:{port}")
+			log.info(f"Connected to {host}:{port}")
 
 		except Exception as e:
-			log_message(f"Error connecting to {host}:{port}: {e}", "ERROR")
+			log.error(f"Error connecting to {host}:{port}: {e}")
 			for s in sockets:
 				s.close()
 			return False
@@ -322,10 +323,10 @@ def connect_and_handshake(host: str, ports: list[int]) -> list[socket.socket] | 
 		parsed_response = interpret_response(response)
 
 		if "error" in parsed_response:
-			log_message(f"Handshake error: {parsed_response['error']}", "ERROR")
+			log.error(f"Handshake error: {parsed_response['error']}")
 			return False
 
-	log_message("Handshake successful")
+	log.info("Handshake successful")
 	return sockets
 
 
@@ -343,7 +344,7 @@ def send_osc_message(address: str, value: float) -> None:
 def listen_to_live_data(sock: socket.socket) -> None:
 	"""Listen for live data packets and send them via OSC."""
 	sent_timestamps = set()
-	log_message(f"Sending live data via OSC on {OSC_IP}:{OSC_PORT}")
+	log.info(f"Sending live data via OSC on {OSC_IP}:{OSC_PORT}")
 
 	try:
 		while True:
@@ -352,26 +353,26 @@ def listen_to_live_data(sock: socket.socket) -> None:
 			body = recv_exact(sock, body_length)
 
 			try:
-                decoded = json.loads(body.decode('utf-8'))
-                for key, payload in decoded.items():
-                    for entry in payload['data']['data']:
-                        timestamp, channels = entry
-                        if timestamp in sent_timestamps:
-                            continue
-                        sent_timestamps.add(timestamp)
-                        for ch in CURRENT_SENSORS:
-                            if 1 <= ch <= len(channels):
-                                send_osc_message(f'/sensor_{ch}',
-                                                 channels[ch-1] * DATA_MULTIPLIER)
-            except json.JSONDecodeError:
-                log_message("JSON decode error; skipping this packet.", "ERROR")
+				decoded = json.loads(body.decode('utf-8'))
+				for key, payload in decoded.items():
+					for entry in payload['data']['data']:
+						timestamp, channels = entry
+						if timestamp in sent_timestamps:
+							continue
+						sent_timestamps.add(timestamp)
+						for ch in CURRENT_SENSORS:
+							if 1 <= ch <= len(channels):
+								send_osc_message(f'/sensor_{ch}',
+												 channels[ch-1] * DATA_MULTIPLIER)
+			except json.JSONDecodeError:
+				log.error("JSON decode error; skipping this packet.")
 
-    except (ConnectionError, socket.error) as e:
-        log_message(f"Live-data socket closed: {e}", "INFO")
-    
-    finally:
-        sock.close()
-        log_message("Live data connection closed")
+	except (ConnectionError, socket.error) as e:
+		log.error(f"Live-data socket closed: {e}")
+	
+	finally:
+		sock.close()
+		log.info("Live data connection closed")
 
 
 def listen_to_live_analyses(sock: socket) -> None:
@@ -379,7 +380,7 @@ def listen_to_live_analyses(sock: socket) -> None:
 	buffer = bytearray()
 	expected_length = None
 
-	log_message(f"Sending live analyses via OSC on {OSC_IP}:{OSC_PORT}")
+	log.info(f"Sending live analyses via OSC on {OSC_IP}:{OSC_PORT}")
 
 	while True:
 		try:
@@ -411,18 +412,18 @@ def listen_to_live_analyses(sock: socket) -> None:
 								send_osc_message(f'/{key.replace(" ", "_")}', extracted_data)
 
 							else:
-								log_message(f"Unexpected format in '{key}' data", "ERROR")
+								log.error(f"Unexpected format in '{key}' data")
 
 				except json.JSONDecodeError:
-					log_message("JSON decode error in analysis data. Resetting buffer.", "ERROR")
+					log.error("JSON decode error in analysis data. Resetting buffer.")
 					buffer.clear()
 
 		except Exception as e:
-			log_message(f"Error processing analysis data: {e}", "ERROR")
+			log.error(f"Error processing analysis data: {e}")
 			break
 
 	sock.close()
-	log_message("Live analysis connection closed")
+	log.info("Live analysis connection closed")
 
 
 def analyzer_update_channels(address: str, *args) -> None:
@@ -434,12 +435,12 @@ def analyzer_update_channels(address: str, *args) -> None:
 			if len(args) == 1:
 				ANALYZER_LEFT_CHANNEL = int(args[0])
 				ANALYZER_RIGHT_CHANNEL = -1
-				log_message(f"Updated ANALYZER_LEFT_CHANNEL: {ANALYZER_LEFT_CHANNEL}")
+				log.info(f"Updated ANALYZER_LEFT_CHANNEL: {ANALYZER_LEFT_CHANNEL}")
 			
 			elif len(args) >= 2:
 				ANALYZER_LEFT_CHANNEL = int(args[0])
 				ANALYZER_RIGHT_CHANNEL = int(args[1])
-				log_message(f"Updated ANALYZER_CHANNELS: {ANALYZER_LEFT_CHANNEL}, {ANALYZER_RIGHT_CHANNEL}")
+				log.info(f"Updated ANALYZER_CHANNELS: {ANALYZER_LEFT_CHANNEL}, {ANALYZER_RIGHT_CHANNEL}")
 			
 			else:
 				raise IndexError("No channel data provided.")
@@ -447,7 +448,7 @@ def analyzer_update_channels(address: str, *args) -> None:
 		send_analyzer_config()
 
 	except (ValueError, IndexError) as e:
-		log_message(f"Error updating ANALYZER_CHANNEL: {e}", "ERROR")
+		log.error(f"Error updating ANALYZER_CHANNEL: {e}")
 
 
 def analyzer_update_thresholds(address: str, *args) -> None:
@@ -458,12 +459,12 @@ def analyzer_update_thresholds(address: str, *args) -> None:
 		with osc_lock:
 			if len(args) == 1:
 				ANALYZER_LEFT_THRESHOLD = float(args[0])
-				log_message(f"Updated ANALYZER_LEFT_THRESHOLD: {ANALYZER_LEFT_THRESHOLD}")
+				log.info(f"Updated ANALYZER_LEFT_THRESHOLD: {ANALYZER_LEFT_THRESHOLD}")
 			
 			elif len(args) >= 2:
 				ANALYZER_LEFT_THRESHOLD = float(args[0])
 				ANALYZER_RIGHT_THRESHOLD = float(args[1])
-				log_message(f"Updated ANALYZER_THRESHOLDS: {ANALYZER_LEFT_THRESHOLD}, {ANALYZER_RIGHT_THRESHOLD}")
+				log.info(f"Updated ANALYZER_THRESHOLDS: {ANALYZER_LEFT_THRESHOLD}, {ANALYZER_RIGHT_THRESHOLD}")
 			
 			else:
 				raise IndexError("No threshold data provided.")
@@ -471,7 +472,7 @@ def analyzer_update_thresholds(address: str, *args) -> None:
 		send_analyzer_config()
 
 	except (ValueError, IndexError) as e:
-		log_message(f"Error updating ANALYZER_THRESHOLDS: {e}", "ERROR")
+		log.error(f"Error updating ANALYZER_THRESHOLDS: {e}")
 
 
 def analyzer_update_learningrate(address: str, *args) -> None:
@@ -483,10 +484,10 @@ def analyzer_update_learningrate(address: str, *args) -> None:
 			ANALYZER_LEARNING_RATE = float(args[0])
 
 		send_analyzer_config()
-		log_message(f"Updated ANALYZER_LEARNING_RATE: {ANALYZER_LEARNING_RATE}")
+		log.info(f"Updated ANALYZER_LEARNING_RATE: {ANALYZER_LEARNING_RATE}")
 
 	except (ValueError, IndexError) as e:
-		log_message(f"Error updating ANALYZER_LEARNING_RATE: {e}", "ERROR")
+		log.error(f"Error updating ANALYZER_LEARNING_RATE: {e}")
 
 
 def update_analyzer_config() -> None:
@@ -513,7 +514,7 @@ def send_analyzer_config() -> None:
 	global SOCKETS
 
 	if not SOCKETS or len(SOCKETS) < 2:
-		log_message("Sockets not initialized, cannot send analyzer configuration.", "ERROR")
+		log.error("Sockets not initialized, cannot send analyzer configuration.")
 		return
 
 	# One-time function attribute initialization
@@ -543,33 +544,33 @@ def send_analyzer_config() -> None:
 		if channel == -1:
 			if is_active:
 				if not send_command(SOCKETS[0], Command.REMOVE_ANALYZER):
-					log_message(f"Failed to remove {side} analyzer '{config['name']}'", "ERROR")
+					log.error(f"Failed to remove {side} analyzer '{config['name']}'")
 				
 				elif not send_extra_data(SOCKETS[1], SOCKETS[0], {"analyzer": config["name"]}):
-					log_message(f"Failed to send {side} analyzer name '{config['name']}'", "ERROR")
+					log.error(f"Failed to send {side} analyzer name '{config['name']}'")
 				
 				else:
-					log_message(f"{side.capitalize()} analyzer '{config['name']}' removed due to disabled channel.")
+					log.info(f"{side.capitalize()} analyzer '{config['name']}' removed due to disabled channel.")
 					setattr(send_analyzer_config, active_attr, False)
 		
 		else:
 			if is_active:
 				if not send_command(SOCKETS[0], Command.REMOVE_ANALYZER):
-					log_message(f"Failed to remove {side} analyzer '{config['name']}'", "ERROR")
+					log.error(f"Failed to remove {side} analyzer '{config['name']}'")
 					continue  # Skip adding if we can't remove
 
 				elif not send_extra_data(SOCKETS[1], SOCKETS[0], {"analyzer": config["name"]}):
-					log_message(f"Failed to send {side} analyzer name '{config['name']}'", "ERROR")
+					log.error(f"Failed to send {side} analyzer name '{config['name']}'")
 					continue
 
 			if not send_command(SOCKETS[0], Command.ADD_ANALYZER):
-				log_message(f"Failed to send ADD_ANALYZER for {side} '{config['name']}'", "ERROR")
+				log.error(f"Failed to send ADD_ANALYZER for {side} '{config['name']}'")
 
 			elif not send_extra_data(SOCKETS[1], SOCKETS[0], config):
-				log_message(f"Failed to send configuration for {side} '{config['name']}'", "ERROR")
+				log.error(f"Failed to send configuration for {side} '{config['name']}'")
 
 			else:
-				log_message(f"{side.capitalize()} analyzer '{config['name']}' updated successfully.")
+				log.info(f"{side.capitalize()} analyzer '{config['name']}' updated successfully.")
 				setattr(send_analyzer_config, active_attr, True)
 
 
@@ -581,10 +582,10 @@ def change_current_sensors(address: str, *args) -> None:
 		with osc_lock:
 			CURRENT_SENSORS = [int(arg) for arg in args]
 
-		log_message(f"Changed current sensors to {CURRENT_SENSORS}")
+		log.info(f"Changed current sensors to {CURRENT_SENSORS}")
 
 	except (ValueError, IndexError) as e:
-		log_message(f"Error changing current sensor: {e}", "ERROR")
+		log.error(f"Error changing current sensor: {e}")
 
 
 def listen_to_osc_updates() -> None:
@@ -596,7 +597,7 @@ def listen_to_osc_updates() -> None:
 	dispatcher.map("/analyzer_learningrate", analyzer_update_learningrate)
 
 	server = BlockingOSCUDPServer((ANALYZER_IP, ANALYZER_PORT), dispatcher)
-	log_message(f"Listening for OSC updates on port {ANALYZER_PORT}...")
+	log.info(f"Listening for OSC updates on port {ANALYZER_PORT}...")
 	server.serve_forever()
 
 
@@ -625,12 +626,12 @@ def main():
 	SOCKETS = connect_and_handshake(EMG_HOST, EMG_PORTS)
 
 	if not SOCKETS:
-		log_message("Failed to establish all connections. Exiting...", "ERROR")
+		log.error("Failed to establish all connections. Exiting...")
 		return
 
 	# Send CONNECT_DELSYS_EMG command
 	if not send_command(SOCKETS[0], Command.CONNECT_DELSYS_EMG):
-		log_message("Failed to send CONNECT_DELSYS_EMG command. Exiting...", "ERROR")
+		log.error("Failed to send CONNECT_DELSYS_EMG command. Exiting...")
 		return
 
 	# Start live data listener thread
@@ -639,12 +640,12 @@ def main():
 
 	# Send ADD_ANALYZER command
 	if not send_command(SOCKETS[0], Command.ADD_ANALYZER):
-		log_message("Failed to send ADD_ANALYZER command. Exiting...", "ERROR")
+		log.error("Failed to send ADD_ANALYZER command. Exiting...")
 		return
 
 	# Send the analyzer configuration
 	if not send_extra_data(SOCKETS[1], SOCKETS[0], analyzer_config_left):
-		log_message("Failed to send analyzer configuration. Exiting...", "ERROR")
+		log.error("Failed to send analyzer configuration. Exiting...")
 		return
 
 	# Start live analyses listener thread
@@ -656,14 +657,14 @@ def main():
 	analyzer_update_thread.start()
 
 	try:
-		log_message("Connections established. Running... Press Ctrl+C to exit.")
+		log.info("Connections established. Running... Press Ctrl+C to exit.")
 		threading.Event().wait()
 	except KeyboardInterrupt:
-		log_message("\nShutting down...")
+		log.info("\nShutting down...")
 	finally:
 		for sock in SOCKETS:
 			sock.close()
-		log_message("Connections closed")
+		log.info("Connections closed")
 
 
 if __name__ == "__main__":
