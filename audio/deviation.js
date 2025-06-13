@@ -1,12 +1,12 @@
-// Max/MSP 8 JS script for EMG or goniometer sensors with calibration toggles, list support, and deviation tolerance
+// Max/MSP 8 JS script for EMG or goniometer sensors with calibration toggles, list support, and dual-objective deviations
 
 inlets = 2;   // inlet 0: raw sensor data or list, inlet 1: control commands
-outlets = 3;  // outlet 0: normalized value(s); outlet 1: measure (EMG: percent; Goniometer: degrees); outlet 2: deviation from objective (normalized)
+outlets = 3;  // outlet 0: normalized value(s); outlet 1: measure (EMG: percent; Goniometer: degrees); outlet 2: normalized deviation(s)
 autowatch = 1;
 
-// Control functions available via inlet 1:
+// Control functions (inlet 1):
 //   sensortype "emg"|"goniometer"
-//   objective <value>
+//   objective <v1> [<v2>]
 //   inputmin 1|0
 //   inputmax 1|0
 //   outputmin <value>
@@ -16,10 +16,10 @@ autowatch = 1;
 
 var minVal = 0.0;
 var maxVal = 1.0;
-var objectiveVal = 0.0;    // EMG: percent, Goniometer: degrees
+var objectiveVal = 0.0;    // Scalar or array for multiple objectives
 var sensorType = "emg";
-var angleRange = 180;       // full scale angle (degrees) for goniometer
-var toleranceVal = 0.0;     // acceptable deviation in percent or degrees
+var angleRange = 180;
+var toleranceVal = 0.0;
 
 var recordingMin = false;
 var recordingMax = false;
@@ -29,15 +29,19 @@ var minArrays = [];
 var maxArrays = [];
 
 function sensortype(t) {
-    if (["emg","goniometer"].indexOf(t) !== -1) {
-        sensorType = t;
-        post("[sensorHandler] Sensor type set to " + sensorType + "\n");
-    } else post("[sensorHandler] Unknown sensor type: " + t + "\n");
+    sensorType = t;
+    post("[sensorHandler] Sensor type set to " + sensorType + "\n");
 }
 
-function objective(v) {
-    objectiveVal = parseFloat(v);
-    post("[sensorHandler] Objective set to " + objectiveVal + "\n");
+function objective() {
+    var args = arrayfromargs(arguments);
+    if (args.length > 1) {
+        objectiveVal = args.map(function(x){ return parseFloat(x); });
+        post("[sensorHandler] Objectives set to " + objectiveVal + "\n");
+    } else {
+        objectiveVal = parseFloat(args[0]);
+        post("[sensorHandler] Objective set to " + objectiveVal + "\n");
+    }
 }
 
 function setanglerange(v) {
@@ -53,17 +57,14 @@ function tolerance(v) {
 function inputmin(v) {
     v = parseInt(v);
     if (v === 1) {
-        recordingMin = true;
-        minArray = [];
-        minArrays = [];
+        recordingMin = true; minArray = []; minArrays = [];
         post("[sensorHandler] Started recording MIN samples\n");
-    } else if (v === 0) {
+    } else {
         recordingMin = false;
-        if (minArrays.length > 0) {
-            var medians = minArrays.map(median);
-            minVal = medians;
+        if (minArrays.length) {
+            minVal = minArrays.map(median);
             minArrays = [];
-            post("[sensorHandler] Calibrated MIN per sensor = " + medians + "\n");
+            post("[sensorHandler] Calibrated MIN per sensor = " + minVal + "\n");
         } else {
             minVal = median(minArray);
             minArray = [];
@@ -75,17 +76,14 @@ function inputmin(v) {
 function inputmax(v) {
     v = parseInt(v);
     if (v === 1) {
-        recordingMax = true;
-        maxArray = [];
-        maxArrays = [];
+        recordingMax = true; maxArray = []; maxArrays = [];
         post("[sensorHandler] Started recording MAX samples\n");
-    } else if (v === 0) {
+    } else {
         recordingMax = false;
-        if (maxArrays.length > 0) {
-            var medians = maxArrays.map(median);
-            maxVal = medians;
+        if (maxArrays.length) {
+            maxVal = maxArrays.map(median);
             maxArrays = [];
-            post("[sensorHandler] Calibrated MAX per sensor = " + medians + "\n");
+            post("[sensorHandler] Calibrated MAX per sensor = " + maxVal + "\n");
         } else {
             maxVal = median(maxArray);
             maxArray = [];
@@ -105,18 +103,10 @@ function outputmax(v) {
 }
 
 function median(arr) {
-    if (arr.length === 0) return 0;
-    arr.sort(function(a,b){return a-b;});
-    var mid = Math.floor(arr.length / 2);
-    return (arr.length % 2) ? arr[mid] : (arr[mid-1] + arr[mid]) / 2;
-}
-
-function absVal(x) {
-    return x < 0 ? -x : x;
-}
-
-function signVal(x) {
-    return x > 0 ? 1 : (x < 0 ? -1 : 0);
+    if (!arr.length) return 0;
+    arr.sort(function(a,b){ return a - b; });
+    var m = Math.floor(arr.length / 2);
+    return (arr.length % 2) ? arr[m] : (arr[m-1] + arr[m]) / 2;
 }
 
 function msg_float(v) {
@@ -136,16 +126,10 @@ function msg_float(v) {
 function list() {
     if (inlet !== 0) return;
     var args = arrayfromargs(messagename, arguments);
-    var norms = [];
-    var measures = [];
-    var deviations = [];
+    var norms = [], measures = [], normDevs = [];
 
-    if (recordingMin && minArrays.length === 0) {
-        for (var i = 0; i < args.length; i++) minArrays.push([]);
-    }
-    if (recordingMax && maxArrays.length === 0) {
-        for (var i = 0; i < args.length; i++) maxArrays.push([]);
-    }
+    if (recordingMin && !minArrays.length) for (var i = 0; i < args.length; i++) minArrays.push([]);
+    if (recordingMax && !maxArrays.length) for (var i = 0; i < args.length; i++) maxArrays.push([]);
 
     for (var i = 0; i < args.length; i++) {
         var v = args[i];
@@ -157,33 +141,33 @@ function list() {
             var out = compute(v, i);
             norms.push(out[0]);
             measures.push(out[1]);
-            deviations.push(out[2]);
+            normDevs.push(out[2]);
         }
     }
 
     if (!recordingMin && !recordingMax) {
         outlet(0, norms);
         outlet(1, measures);
-        outlet(2, deviations);
+        outlet(2, normDevs);
     }
 }
 
 function compute(v, i) {
     var minv = Array.isArray(minVal) ? minVal[i] : minVal;
     var maxv = Array.isArray(maxVal) ? maxVal[i] : maxVal;
-    var norm, measure, rawDev, devNorm;
+    var obj = Array.isArray(objectiveVal) ? objectiveVal[i] : objectiveVal;
+    var norm, measure, rawDev, normDev;
+
     if (sensorType === "emg") {
         norm = (maxv !== minv) ? (v - minv) / (maxv - minv) : 0;
         measure = norm * 100;
-        rawDev = measure - objectiveVal;
-        var maxDevRange = 100 - toleranceVal;
-        devNorm = (maxDevRange > 0) ? rawDev / maxDevRange : 0;
     } else {
         norm = (maxv !== minv) ? ((v - minv) / (maxv - minv)) * 2 - 1 : 0;
         measure = ((v - minv) / (maxv - minv)) * angleRange;
-        rawDev = measure - objectiveVal;
-        var maxDevRange = angleRange - toleranceVal;
-        devNorm = (maxDevRange > 0) ? rawDev / maxDevRange : 0;
     }
-    return [norm, measure, devNorm];
+
+    rawDev = measure - obj;
+    var range = (sensorType === "emg" ? 100 : angleRange) - toleranceVal;
+    normDev = (range > 0) ? rawDev / range : 0;
+    return [norm, measure, normDev];
 }
