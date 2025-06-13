@@ -3,7 +3,6 @@ from pythonosc.udp_client import SimpleUDPClient
 from pythonosc.dispatcher import Dispatcher
 from enum import Enum
 import threading
-import datetime
 import argparse
 import logging
 import struct
@@ -362,14 +361,14 @@ def listen_to_live_data(sock: socket.socket) -> None:
 						sent_timestamps.add(timestamp)
 						for ch in CURRENT_SENSORS:
 							if 1 <= ch <= len(channels):
-								send_osc_message(f'/sensor_{ch}',
-												 channels[ch-1] * DATA_MULTIPLIER)
+								send_osc_message(f'/sensor_{ch}', channels[ch-1] * DATA_MULTIPLIER)
+
 			except json.JSONDecodeError:
 				log.error("JSON decode error; skipping this packet.")
 
 	except (ConnectionError, socket.error) as e:
 		log.error(f"Live-data socket closed: {e}")
-	
+
 	finally:
 		sock.close()
 		log.info("Live data connection closed")
