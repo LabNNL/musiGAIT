@@ -1,35 +1,45 @@
-var windowSize = 10;
-var buffer = [];
-var sum    = 0;
+// ES5‐compatible MovingAverage
+function MovingAverage(initialWindowSize) {
+	this.windowSize = Math.max(1, Math.floor(initialWindowSize)||1);
+	this.buffer = new Array(this.windowSize);
+	this.head = 0;
+	this.count = 0;
+	this.sum = 0;
+}
 
-// handle new data samples
+MovingAverage.prototype.setWindow = function(n) {
+	n = Math.max(1, Math.floor(n));
+	if (n === this.windowSize) return;
+	// reinitialize
+	this.windowSize = n;
+	this.buffer = new Array(n);
+	this.head = 0;
+	this.count = 0;
+	this.sum = 0;
+};
+
+MovingAverage.prototype.update = function(v) {
+	// subtract old sample if buffer full
+	if (this.count === this.windowSize) {
+		this.sum -= this.buffer[this.head];
+	} else {
+		this.count++;
+	}
+	// write new
+	this.buffer[this.head] = v;
+	this.sum += v;
+	// advance head
+	this.head = (this.head + 1) % this.windowSize;
+	// return avg
+	return this.sum / this.count;
+};
+
+var ma = new MovingAverage(10);
+
 function msg_float(v) {
-    var x2 = v * v;
-    buffer.push(x2);
-    sum += x2;
-
-    // if we have more than windowSize entries, drop the oldest
-    if (buffer.length > windowSize) {
-        sum -= buffer.shift();
-    }
-
-    // compute RMS: note zeros are implicit if buffer.length < windowSize
-    var rms = Math.sqrt(sum / windowSize);
-    outlet(0, rms);
+	outlet(0, ma.update(v));
 }
 
 function setWindow(n) {
-    n = Math.max(1, Math.floor(n));
-    if (n === windowSize) return;
-
-    // if shrinking, drop the oldest extra elements
-    if (n < windowSize) {
-        var drop = buffer.length - n;
-        while (drop-- > 0 && buffer.length > 0) {
-            sum -= buffer.shift();
-        }
-    }
-
-    // if growing, we just increase windowSize; existing buffer stays in place
-    windowSize = n;
+	ma.setWindow(n);
 }
