@@ -42,6 +42,7 @@
 				"box" : 				{
 					"fontface" : 1,
 					"fontsize" : 20.0,
+					"hidden" : 1,
 					"id" : "obj-4",
 					"maxclass" : "comment",
 					"numinlets" : 1,
@@ -49,7 +50,7 @@
 					"patching_rect" : [ 1116.0, 495.0, 76.0, 29.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 574.5, 245.0, 92.0, 29.0 ],
-					"text" : "100%",
+					"text" : "0%",
 					"textcolor" : [ 1.0, 1.0, 1.0, 1.0 ],
 					"textjustification" : 2
 				}
@@ -1983,7 +1984,7 @@
 					"patching_rect" : [ 631.0, 942.0, 145.0, 29.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 6.0, 245.0, 438.0, 29.0 ],
-					"text" : "180°",
+					"text" : "000°",
 					"textcolor" : [ 0.847, 0.769, 0.357, 1.0 ]
 				}
 
@@ -4187,7 +4188,7 @@
 													"numoutlets" : 1,
 													"outlettype" : [ "bang" ],
 													"patching_rect" : [ 527.0, 301.0, 55.0, 22.0 ],
-													"text" : "del 4000"
+													"text" : "del 2000"
 												}
 
 											}
@@ -5030,7 +5031,7 @@
 									"numoutlets" : 1,
 									"outlettype" : [ "bang" ],
 									"patching_rect" : [ 108.0, 365.0, 55.0, 22.0 ],
-									"text" : "del 5000"
+									"text" : "del 3000"
 								}
 
 							}
@@ -5066,7 +5067,7 @@
 									"numinlets" : 2,
 									"numoutlets" : 1,
 									"outlettype" : [ "" ],
-									"patching_rect" : [ 284.0, 137.0, 147.0, 35.0 ],
+									"patching_rect" : [ 284.0, 137.0, 147.0, 36.0 ],
 									"text" : ";\r\nmax getsystem systemKill"
 								}
 
@@ -5127,7 +5128,7 @@
 									"numinlets" : 2,
 									"numoutlets" : 1,
 									"outlettype" : [ "" ],
-									"patching_rect" : [ 108.0, 137.0, 156.0, 35.0 ],
+									"patching_rect" : [ 108.0, 137.0, 156.0, 36.0 ],
 									"text" : ";\r\nmax getsystem systemStart"
 								}
 
@@ -6156,7 +6157,7 @@
 					"patching_rect" : [ 1019.0, 495.0, 76.0, 29.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 456.0, 245.0, 92.0, 29.0 ],
-					"text" : "100%",
+					"text" : "0%",
 					"textcolor" : [ 1.0, 1.0, 1.0, 1.0 ]
 				}
 
@@ -7817,6 +7818,8 @@
 													"saved_object_attributes" : 													{
 														"autostart" : 1,
 														"defer" : 0,
+														"node_bin_path" : "",
+														"npm_bin_path" : "",
 														"watch" : 0
 													}
 ,
@@ -10666,7 +10669,7 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"numplots" : 2,
-					"numpoints" : 31,
+					"numpoints" : 1,
 					"outlettype" : [ "" ],
 					"patching_rect" : [ 197.0, 981.0, 158.0, 93.0 ],
 					"presentation" : 1,
