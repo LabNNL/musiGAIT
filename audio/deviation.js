@@ -162,18 +162,27 @@ function compute(v, i) {
 	var minv = Array.isArray(minVal) ? minVal[i] : minVal;
 	var maxv = Array.isArray(maxVal) ? maxVal[i] : maxVal;
 	var obj = Array.isArray(objectiveVal) ? objectiveVal[i] : objectiveVal;
-	var norm, measure, rawDev, normDev;
+	
+	var norm, measure;
 
 	if (sensorType === "emg") {
 		norm = (maxv !== minv) ? (v - minv) / (maxv - minv) : 0;
-		measure = norm * 100;
+		measure = norm * 100; // EMG → [0..100]%
 	} else {
 		norm = (maxv !== minv) ? ((v - minv) / (maxv - minv)) * 2 - 1 : 0;
-		measure = ((v - minv) / (maxv - minv)) * angleRange;
+		measure = ((v - minv) / (maxv - minv)) * angleRange; // Gonio → [0..angleRange]°
 	}
 
-	rawDev = measure - obj;
-	var range = (sensorType === "emg" ? 100 : angleRange) - toleranceVal;
-	normDev = (range > 0) ? rawDev / range : 0;
+	var rawDev = measure - obj;
+
+	var absDev = Math.abs(rawDev);
+	var devOutsideTol = Math.max(0, absDev - toleranceVal);
+	var sign = (rawDev === 0 ? 0 : rawDev / absDev);
+
+	var fullRange = (sensorType === "emg" ? 100 : angleRange);
+	var scaledRange = Math.max(0, fullRange - toleranceVal);
+
+	var normDev = (scaledRange > 0) ? (devOutsideTol / scaledRange) * sign : 0;
+
 	return [norm, measure, normDev];
 }
