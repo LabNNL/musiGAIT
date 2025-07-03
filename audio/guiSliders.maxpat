@@ -2280,14 +2280,9 @@
 													"maxclass" : "newobj",
 													"numinlets" : 1,
 													"numoutlets" : 1,
-													"outlettype" : [ "" ],
-													"patching_rect" : [ 447.0, 327.0, 72.0, 22.0 ],
-													"saved_object_attributes" : 													{
-														"filename" : "smooth.js",
-														"parameter_enable" : 0
-													}
-,
-													"text" : "js smooth.js"
+													"outlettype" : [ "float" ],
+													"patching_rect" : [ 447.0, 327.0, 48.0, 22.0 ],
+													"text" : "smooth"
 												}
 
 											}
@@ -2298,14 +2293,9 @@
 													"maxclass" : "newobj",
 													"numinlets" : 1,
 													"numoutlets" : 1,
-													"outlettype" : [ "" ],
-													"patching_rect" : [ 350.0, 327.0, 72.0, 22.0 ],
-													"saved_object_attributes" : 													{
-														"filename" : "smooth.js",
-														"parameter_enable" : 0
-													}
-,
-													"text" : "js smooth.js"
+													"outlettype" : [ "float" ],
+													"patching_rect" : [ 350.0, 327.0, 48.0, 22.0 ],
+													"text" : "smooth"
 												}
 
 											}
@@ -2316,14 +2306,9 @@
 													"maxclass" : "newobj",
 													"numinlets" : 1,
 													"numoutlets" : 1,
-													"outlettype" : [ "" ],
-													"patching_rect" : [ 253.0, 327.0, 72.0, 22.0 ],
-													"saved_object_attributes" : 													{
-														"filename" : "smooth.js",
-														"parameter_enable" : 0
-													}
-,
-													"text" : "js smooth.js"
+													"outlettype" : [ "float" ],
+													"patching_rect" : [ 253.0, 327.0, 48.0, 22.0 ],
+													"text" : "smooth"
 												}
 
 											}
@@ -2334,14 +2319,9 @@
 													"maxclass" : "newobj",
 													"numinlets" : 1,
 													"numoutlets" : 1,
-													"outlettype" : [ "" ],
-													"patching_rect" : [ 157.0, 327.0, 72.0, 22.0 ],
-													"saved_object_attributes" : 													{
-														"filename" : "smooth.js",
-														"parameter_enable" : 0
-													}
-,
-													"text" : "js smooth.js"
+													"outlettype" : [ "float" ],
+													"patching_rect" : [ 157.0, 327.0, 48.0, 22.0 ],
+													"text" : "smooth"
 												}
 
 											}
@@ -3631,10 +3611,10 @@
 		}
 ,
 		"dependency_cache" : [ 			{
-				"name" : "smooth.js",
+				"name" : "smooth.maxpat",
 				"bootpath" : "D:/musiGAIT/audio",
 				"patcherrelativepath" : ".",
-				"type" : "TEXT",
+				"type" : "JSON",
 				"implicit" : 1
 			}
 , 			{
