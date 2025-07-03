@@ -4,7 +4,7 @@ inlets = 2; // 0: raw data or list, 1: control cmds
 outlets = 3; // 0: normalized, 1: measure, 2: normalized deviation
 
 // ——— Logging ———
-var printEnabled = true;
+var printEnabled = false;
 function log(msg) {
 	if (printEnabled) post(msg);
 }
