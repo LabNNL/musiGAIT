@@ -11213,7 +11213,7 @@
 					"patching_rect" : [ 1415.0, 1037.0, 114.0, 23.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 449.0, 204.0, 213.5, 23.0 ],
-					"text" : "Dev: -44.00",
+					"text" : "Dev: +0.0",
 					"textjustification" : 2
 				}
 
@@ -11527,8 +11527,8 @@
 													"numinlets" : 2,
 													"numoutlets" : 1,
 													"outlettype" : [ "float" ],
-													"patching_rect" : [ 201.0, 495.0, 33.0, 22.0 ],
-													"text" : "* 10."
+													"patching_rect" : [ 201.0, 495.0, 29.5, 22.0 ],
+													"text" : "* 5."
 												}
 
 											}
@@ -12120,8 +12120,8 @@
 													"numinlets" : 2,
 													"numoutlets" : 1,
 													"outlettype" : [ "float" ],
-													"patching_rect" : [ 201.0, 495.0, 33.0, 22.0 ],
-													"text" : "* 10."
+													"patching_rect" : [ 201.0, 495.0, 29.5, 22.0 ],
+													"text" : "* 5."
 												}
 
 											}
