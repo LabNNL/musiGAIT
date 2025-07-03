@@ -10,7 +10,7 @@
 		}
 ,
 		"classnamespace" : "box",
-		"rect" : [ 263.0, 106.0, 528.0, 360.0 ],
+		"rect" : [ 462.0, 246.0, 528.0, 360.0 ],
 		"bglocked" : 0,
 		"openinpresentation" : 1,
 		"default_fontsize" : 12.0,
@@ -41,44 +41,25 @@
 		"boxes" : [ 			{
 				"box" : 				{
 					"comment" : "",
+					"id" : "obj-3",
+					"index" : 0,
+					"maxclass" : "inlet",
+					"numinlets" : 0,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 120.75, 22.0, 30.0, 30.0 ]
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"comment" : "",
 					"id" : "obj-2",
 					"index" : 0,
 					"maxclass" : "outlet",
 					"numinlets" : 1,
 					"numoutlets" : 0,
 					"patching_rect" : [ 293.0, 307.0, 30.0, 30.0 ]
-				}
-
-			}
-, 			{
-				"box" : 				{
-					"fontsize" : 12.0,
-					"id" : "obj-54",
-					"maxclass" : "live.numbox",
-					"numinlets" : 1,
-					"numoutlets" : 2,
-					"outlettype" : [ "", "float" ],
-					"parameter_enable" : 1,
-					"patching_rect" : [ 120.75, 159.0, 50.0, 18.0 ],
-					"presentation" : 1,
-					"presentation_rect" : [ 389.0, 181.0, 50.0, 18.0 ],
-					"saved_attribute_attributes" : 					{
-						"valueof" : 						{
-							"parameter_initial" : [ 3.0 ],
-							"parameter_initial_enable" : 1,
-							"parameter_longname" : "live.numbox[1]",
-							"parameter_mmax" : 60.0,
-							"parameter_mmin" : 1.0,
-							"parameter_modmode" : 3,
-							"parameter_shortname" : "live.numbox[1]",
-							"parameter_type" : 0,
-							"parameter_units" : "%d sec",
-							"parameter_unitstyle" : 9
-						}
-
-					}
-,
-					"varname" : "live.numbox[1]"
 				}
 
 			}
@@ -3526,6 +3507,13 @@
 			}
 , 			{
 				"patchline" : 				{
+					"destination" : [ "obj-208", 1 ],
+					"source" : [ "obj-3", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
 					"destination" : [ "obj-2", 0 ],
 					"order" : 1,
 					"source" : [ "obj-39", 0 ]
@@ -3605,13 +3593,6 @@
 			}
 , 			{
 				"patchline" : 				{
-					"destination" : [ "obj-208", 1 ],
-					"source" : [ "obj-54", 0 ]
-				}
-
-			}
-, 			{
-				"patchline" : 				{
 					"destination" : [ "obj-208", 0 ],
 					"source" : [ "obj-78", 0 ]
 				}
@@ -3637,7 +3618,6 @@
 			"obj-41" : [ "live.menu[13]", "live.menu[12]", 0 ],
 			"obj-46" : [ "live.menu[14]", "live.menu[12]", 0 ],
 			"obj-48" : [ "live.menu[15]", "live.menu[12]", 0 ],
-			"obj-54" : [ "live.numbox[1]", "live.numbox[1]", 0 ],
 			"parameterbanks" : 			{
 				"0" : 				{
 					"index" : 0,
