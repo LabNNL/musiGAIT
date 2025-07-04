@@ -2098,7 +2098,7 @@
 													"numinlets" : 1,
 													"numoutlets" : 2,
 													"outlettype" : [ "int", "int" ],
-													"patching_rect" : [ 579.0, 193.0, 146.0, 22.0 ],
+													"patching_rect" : [ 579.0, 161.0, 146.0, 22.0 ],
 													"text" : "t i i"
 												}
 
