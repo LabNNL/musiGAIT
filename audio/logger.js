@@ -5,6 +5,7 @@ const fs = require('fs');
 let realtimeStream = null;
 let realtimeFilePath = null;
 let closeStreamTimeout = null;
+let hasWrittenInitialHeader = false;
 
 let currentSensorConfig = "";
 let currentSensorType = null;
@@ -19,22 +20,17 @@ let stats = {
 };
 
 function initRealtimeLog() {
-	if (realtimeStream) {
-		realtimeStream.end();
-	}
+	if (realtimeStream) realtimeStream.end();
 
 	const { name } = generateFilename();
 	const logsDir = path.join(__dirname, '..', 'logs');
 	if (!fs.existsSync(logsDir)) fs.mkdirSync(logsDir, { recursive: true });
 
-	const filePath = path.join(logsDir, name + '_Sensors.csv');
-	realtimeFilePath = filePath;
+	realtimeFilePath = path.join(logsDir, name + '_Sensors.csv');
+	realtimeStream = fs.createWriteStream(realtimeFilePath, { flags: 'a' });
 
-	realtimeStream = fs.createWriteStream(filePath, { flags: 'a' });
-
-	// write BOM + header
-	const headerLine = buildHeaderLine();
-	realtimeStream.write("\uFEFFsep=;\n" + headerLine);
+	// write header
+	writeHeader(true);
 
 	// remember we’ve logged this config
 	currentSensorConfig = (currentSensorType || "") + "|" + enabledSensors.join("");
@@ -56,6 +52,18 @@ function buildHeaderLine() {
 		if (enabledSensors[i]) header.push(labels[i]);
 	}
 	return header.map(escapeCSV).join(delimiter) + "\n";
+}
+
+function writeHeader(isInitial = false) {
+	if (isInitial) {
+		// BOM + Excel “sep=” hint only once
+		realtimeStream.write("\uFEFFsep=;\n");
+		hasWrittenInitialHeader = true;
+	} else {
+		// a blank line before each new header
+		realtimeStream.write("\n");
+	}
+	realtimeStream.write(buildHeaderLine());
 }
 
 // Escape CSV values
@@ -258,7 +266,7 @@ Max.addHandler("values", (cycle, val, valDev, steps, stepsDev) => {
 	// If config changed, write a new header in the same file
 	const newConfig = (currentSensorType || "") + "|" + enabledSensors.join("");
 	if (newConfig !== currentSensorConfig) {
-		realtimeStream.write("\n" + buildHeaderLine());
+		writeHeader(false);
 		currentSensorConfig = newConfig;
 	}
 
