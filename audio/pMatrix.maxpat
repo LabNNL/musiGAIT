@@ -166,7 +166,7 @@
 									"numoutlets" : 2,
 									"outlettype" : [ "", "" ],
 									"patching_rect" : [ 106.0, 332.0, 339.0, 22.0 ],
-									"text" : "zl.nth"
+									"text" : "zl.nth 1"
 								}
 
 							}
