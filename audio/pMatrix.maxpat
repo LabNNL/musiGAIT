@@ -597,7 +597,7 @@
 						}
 ,
 						"valueof" : 						{
-							"parameter_initial" : [ 120 ],
+							"parameter_initial" : [ 135 ],
 							"parameter_initial_enable" : 1,
 							"parameter_longname" : "live.numbox[57]",
 							"parameter_mmax" : 200.0,
