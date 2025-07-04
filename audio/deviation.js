@@ -98,8 +98,8 @@ Sensor.prototype = {
 
 	// process incoming raw data
 	handleData: function(v) {
-		if (this.recordingMin) { this.minSamples.push(v); return null; }
-		if (this.recordingMax) { this.maxSamples.push(v); return null; }
+		if (this.recordingMin) this.minSamples.push(v);
+		if (this.recordingMax) this.maxSamples.push(v);
 		return this.compute(v);
 	},
 
