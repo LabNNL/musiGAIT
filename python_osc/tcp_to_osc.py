@@ -31,7 +31,7 @@ ANALYZER_IP, ANALYZER_PORT = "127.0.0.1", 8001
 DATA_MULTIPLIER = 10000
 
 # Analyzer configuration
-ANALYZER_LEFT_CHANNEL = 13
+ANALYZER_LEFT_CHANNEL = -1
 ANALYZER_LEFT_THRESHOLD = 5
 
 ANALYZER_RIGHT_CHANNEL = -1
@@ -625,15 +625,18 @@ def main():
 	data_thread = threading.Thread(target=listen_to_live_data, args=(SOCKETS[2],), daemon=True)
 	data_thread.start()
 
-	# Send ADD_ANALYZER command
-	if not send_command(SOCKETS[0], Command.ADD_ANALYZER):
-		log.error("Failed to send ADD_ANALYZER command. Exiting...")
-		return
+	# # Send ADD_ANALYZER command
+	# if not send_command(SOCKETS[0], Command.ADD_ANALYZER):
+	# 	log.error("Failed to send ADD_ANALYZER command. Exiting...")
+	# 	return
 
-	# Send the analyzer configuration
-	if not send_extra_data(SOCKETS[1], SOCKETS[0], analyzer_config_left):
-		log.error("Failed to send analyzer configuration. Exiting...")
-		return
+	# # Send the analyzer configuration
+	# if not send_extra_data(SOCKETS[1], SOCKETS[0], analyzer_config_left):
+	# 	log.error("Failed to send analyzer configuration. Exiting...")
+	# 	return
+
+	# Send analyzer config (only if channel != -1)
+	send_analyzer_config()
 
 	# Start live analyses listener thread
 	analyses_thread = threading.Thread(target=listen_to_live_analyses, args=(SOCKETS[3],), daemon=True)
