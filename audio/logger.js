@@ -2,20 +2,61 @@ const Max = require('max-api');
 const path = require('path');
 const fs = require('fs');
 
-let savedDict = null;
-let savedDateTime = new Date();
+let realtimeStream = null;
+let realtimeFilePath = null;
+let closeStreamTimeout = null;
 
-let realtimeCsvFilePath = null;
-let isRealtimeFileInitialized = false;
-let lastLoggedSensorConfig = null;
-
+let currentSensorConfig = "";
 let currentSensorType = null;
 let enabledSensors = [1, 1, 1, 1, 1];
+
+let savedDict = null;
+let savedDateTime = new Date();
 
 let stats = {
 	valDev: { count: 0, mean: 0, M2: 0 },
 	stepsDev: { count: 0, mean: 0, M2: 0 }
 };
+
+function initRealtimeLog() {
+	if (realtimeStream) {
+		realtimeStream.end();
+	}
+
+	const { name } = generateFilename();
+	const logsDir = path.join(__dirname, '..', 'logs');
+	if (!fs.existsSync(logsDir)) fs.mkdirSync(logsDir, { recursive: true });
+
+	const filePath = path.join(logsDir, name + '_Sensors.csv');
+	realtimeFilePath = filePath;
+
+	realtimeStream = fs.createWriteStream(filePath, { flags: 'a' });
+
+	// write BOM + header
+	const headerLine = buildHeaderLine();
+	realtimeStream.write("\uFEFFsep=;\n" + headerLine);
+
+	// remember we’ve logged this config
+	currentSensorConfig = (currentSensorType || "") + "|" + enabledSensors.join("");
+}
+
+function buildHeaderLine() {
+	const delimiter = ';';
+	const labels = [
+		"Foot Cycle",
+		currentSensorType === "emg" ? "Force" :
+		currentSensorType === "goniometer" ? "Angle" : "Value",
+		currentSensorType === "emg" ? "Force Deviation" :
+		currentSensorType === "goniometer" ? "Angle Deviation" : "Deviation",
+		"Steps/Min",
+		"Steps/Min Deviation"
+	];
+	const header = ["Timestamp"];
+	for (let i = 0; i < 5; i++) {
+		if (enabledSensors[i]) header.push(labels[i]);
+	}
+	return header.map(escapeCSV).join(delimiter) + "\n";
+}
 
 // Escape CSV values
 function escapeCSV(value) {
@@ -95,85 +136,6 @@ function generateCSV(dict) {
 		csvData += "\n"; // Separate sections
 	}
 	return csvData;
-}
-
-// Realtime CSV Logging
-function logRealtimeData(timestamp, cycle, val, valDev, steps, stepsDev) {
-	const delimiter = ";";
-
-	const { name, dateTime } = generateFilename();
-	const logsDir = path.join(__dirname, '..', 'logs');
-	const newFilePath = path.join(logsDir, name + '_Sensors.csv');
-
-	if (!fs.existsSync(logsDir)) fs.mkdirSync(logsDir, { recursive: true });
-
-	// If filename changed, delete old file and update path
-	if (realtimeCsvFilePath && realtimeCsvFilePath !== newFilePath) {
-		// Try to extract the old datetime from the old file
-		const oldRealtimeFile = path.join(logsDir, `Unknown_${dateTime}_Sensors.csv`);
-		if (fs.existsSync(oldRealtimeFile) && name.split('_')[0] !== "Unknown") {
-			fs.unlinkSync(oldRealtimeFile);
-		}
-		realtimeCsvFilePath = newFilePath;
-	} else if (!realtimeCsvFilePath) {
-		// First-time assignment
-		realtimeCsvFilePath = newFilePath;
-	}
-
-	// If the sensor type has changed, insert a new header section
-	if (!isRealtimeFileInitialized) {
-		isRealtimeFileInitialized = true;
-	}
-
-	const labels = [
-		"Foot Cycle",
-		currentSensorType === "emg" ? "Force" : currentSensorType === "goniometer" ? "Angle" : "Value",
-		currentSensorType === "emg" ? "Force Deviation" : currentSensorType === "goniometer" ? "Angle Deviation" : "Deviation",
-		"Steps/Min",
-		"Steps/Min Deviation"
-	];
-
-	const header = ["Timestamp"];
-	for (let i = 0; i < 5; i++) {
-		if (enabledSensors[i]) {
-			header.push(labels[i]);
-		}
-	}
-	const headerLine = header.map(escapeCSV).join(delimiter) + '\n';
-
-	const shouldWriteHeader =
-		!fs.existsSync(realtimeCsvFilePath) ||
-		fs.readFileSync(realtimeCsvFilePath, 'utf8').indexOf(labels[1]) === -1 ||
-		!lastLoggedSensorConfig || enabledSensors.join('') !== lastLoggedSensorConfig.join('');
-
-	if (shouldWriteHeader) {
-		const fullHeader = !fs.existsSync(realtimeCsvFilePath)
-			? "\uFEFFsep=;\n" + headerLine
-			: '\n' + headerLine;
-
-		const writeMethod = !fs.existsSync(realtimeCsvFilePath) ? fs.writeFileSync : fs.appendFileSync;
-		writeMethod(realtimeCsvFilePath, fullHeader, 'utf8');
-
-		lastLoggedSensorConfig = [...enabledSensors]; // Save current config
-	}
-
-	try {
-		const formatNumber = (n) => typeof n === 'number' ? n.toFixed(6) : n;
-		
-		const row = [timestamp];
-		const values = [cycle, val, valDev, steps, stepsDev];
-
-		for (let i = 0; i < 5; i++) {
-			if (enabledSensors[i]) {
-				row.push(formatNumber(values[i]));
-			}
-		}
-
-		const rowLine = row.map(escapeCSV).join(delimiter) + '\n';
-		fs.appendFileSync(realtimeCsvFilePath, rowLine, 'utf8');
-	} catch (err) {
-		Max.post(`[ERROR] Failed to save sensor data as CSV. ${err.message}`);
-	}
 }
 
 // Update the current stats
@@ -266,21 +228,63 @@ Max.addHandler("set", (dict) => {
 	savedDict = dict;
 	const { name, dateTime } = generateFilename();
 	Max.outlet('filename', name);
+	
+	// if we’re already logging, move the old _Sensors.csv to the new name
+	if (realtimeStream && realtimeFilePath) {
+		const logsDir = path.join(__dirname, '..', 'logs');
+		const newPath = path.join(logsDir, name + '_Sensors.csv');
+
+		// End the current stream, then rename, then re-open
+		realtimeStream.end(() => {
+			try {
+				fs.renameSync(realtimeFilePath, newPath);
+				// reopen on the renamed file so we keep streaming
+				realtimeStream = fs.createWriteStream(newPath, { flags: 'a' });
+				realtimeFilePath = newPath;
+			} catch (err) {
+				Max.post(`[WARN] could not rename sensors file: ${err.message}`);
+			}
+		});
+	}
 });
 
 // Handler to set realtime values
 Max.addHandler("values", (cycle, val, valDev, steps, stepsDev) => {
-	if ([cycle, val, valDev, steps, stepsDev].every(v => !isNaN(v))) {
-		const now = new Date();
-		const ms = String(now.getMilliseconds()).padStart(3, '0');
-		const timestamp = now.toLocaleTimeString('en-US', { hour12: false }) + '.' + ms;
-		
-		logRealtimeData(timestamp, cycle, val, valDev, steps, stepsDev);
-
-		// Update running stats
-		updateStats(stats.valDev, Math.abs(valDev));
-		updateStats(stats.stepsDev, Math.abs(stepsDev));
+	// First sample ever?
+	if (!realtimeStream) {
+		initRealtimeLog();
 	}
+
+	// If config changed, write a new header in the same file
+	const newConfig = (currentSensorType || "") + "|" + enabledSensors.join("");
+	if (newConfig !== currentSensorConfig) {
+		realtimeStream.write("\n" + buildHeaderLine());
+		currentSensorConfig = newConfig;
+	}
+
+	const now = new Date();
+	const ms = String(now.getMilliseconds()).padStart(3, '0');
+	const timestamp = now.toLocaleTimeString('en-CA', { hour12: false }) + '.' + ms;
+
+	const row = [timestamp];
+	[cycle, val, valDev, steps, stepsDev].forEach((v, i) => {
+		if (enabledSensors[i]) row.push(typeof v === 'number' ? v.toFixed(6) : v);
+	});
+	realtimeStream.write(row.map(escapeCSV).join(';') + "\n");
+
+	// Update running stats
+	updateStats(stats.valDev, Math.abs(valDev));
+	updateStats(stats.stepsDev, Math.abs(stepsDev));
+
+	// schedule a close in 1000ms
+	clearTimeout(closeStreamTimeout);
+	closeStreamTimeout = setTimeout(() => {
+		if (realtimeStream) {
+			realtimeStream.end();
+			realtimeStream = null;
+			realtimeFilePath = null;
+		}
+	}, 1000);
 });
 
 // Handler to set current sensor type
@@ -297,4 +301,24 @@ Max.addHandler("log_sensors", (...sensorFlags) => {
 		return Max.post("[ERROR] 'log_sensors' requires a list of 5 integers (0 or 1).");
 	}
 	enabledSensors = sensorFlags;
+});
+
+// Handler to manually close the realtime file
+Max.addHandler("endFile", () => {
+	if (!realtimeStream) {
+		return Max.post("[WARN] No realtime stream is open.");
+	}
+
+	// stop any pending auto-close
+	clearTimeout(closeStreamTimeout);
+
+	// close the stream
+	realtimeStream.end(() => {
+		Max.post("Realtime CSV stream closed via endFile.");
+	});
+
+	// clean up our globals
+	realtimeStream = null;
+	realtimeFilePath = null;
+	currentSensorConfig = "";
 });
