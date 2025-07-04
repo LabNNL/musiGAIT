@@ -35,7 +35,6 @@ if %errorlevel% neq 0 (
 )
 
 :: Run TCP2OSC.py script using the virtual environment's Python
-echo Launching tcp_to_osc.py with args: %*
 %PYTHON_EXEC% tcp_to_osc.py %*
 
 :: Deactivate virtual environment
