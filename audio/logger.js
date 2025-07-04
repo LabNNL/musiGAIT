@@ -5,7 +5,6 @@ const fs = require('fs');
 let realtimeStream = null;
 let realtimeFilePath = null;
 let closeStreamTimeout = null;
-let hasWrittenInitialHeader = false;
 
 let currentSensorConfig = "";
 let currentSensorType = null;
@@ -28,6 +27,9 @@ function initRealtimeLog() {
 
 	realtimeFilePath = path.join(logsDir, name + '_Sensors.csv');
 	realtimeStream = fs.createWriteStream(realtimeFilePath, { flags: 'a' });
+	realtimeStream.on('error', err => {
+		Max.post(`[ERROR] CSV stream error: ${err.message}`);
+	});
 
 	// write header
 	writeHeader(true);
@@ -58,7 +60,6 @@ function writeHeader(isInitial = false) {
 	if (isInitial) {
 		// BOM + Excel “sep=” hint only once
 		realtimeStream.write("\uFEFFsep=;\n");
-		hasWrittenInitialHeader = true;
 	} else {
 		// a blank line before each new header
 		realtimeStream.write("\n");
@@ -170,6 +171,15 @@ function calculateSessionScore(std, baseline = 1) {
 	return Math.max(0, parseFloat((maxScore - penalty).toFixed(2)));
 }
 
+function closeStream() {
+	clearTimeout(closeStreamTimeout);
+	if (!realtimeStream) return;
+	realtimeStream.end();
+	realtimeStream = null;
+	realtimeFilePath = null;
+	Max.post("Realtime CSV stream closed.");
+}
+
 // Handler to set the current time
 Max.addHandler("time", () => {
 	savedDateTime = new Date();
@@ -258,8 +268,10 @@ Max.addHandler("set", (dict) => {
 
 // Handler to set realtime values
 Max.addHandler("values", (cycle, val, valDev, steps, stepsDev) => {
+	clearTimeout(closeStreamTimeout);
+
 	// First sample ever?
-	if (!realtimeStream) {
+	if (!realtimeStream || !realtimeStream.writable) {
 		initRealtimeLog();
 	}
 
@@ -278,21 +290,22 @@ Max.addHandler("values", (cycle, val, valDev, steps, stepsDev) => {
 	[cycle, val, valDev, steps, stepsDev].forEach((v, i) => {
 		if (enabledSensors[i]) row.push(typeof v === 'number' ? v.toFixed(6) : v);
 	});
-	realtimeStream.write(row.map(escapeCSV).join(';') + "\n");
+
+	const rowString = row.map(escapeCSV).join(';') + "\n";
+	const ok = realtimeStream.write(rowString);
+	
+	const pending = [];
+	if (!ok) pending.push(rowString);
+	realtimeStream.once('drain', () => {
+		while (pending.length && realtimeStream.write(pending.shift()));
+	});
 
 	// Update running stats
 	updateStats(stats.valDev, Math.abs(valDev));
 	updateStats(stats.stepsDev, Math.abs(stepsDev));
 
 	// schedule a close in 1000ms
-	clearTimeout(closeStreamTimeout);
-	closeStreamTimeout = setTimeout(() => {
-		if (realtimeStream) {
-			realtimeStream.end();
-			realtimeStream = null;
-			realtimeFilePath = null;
-		}
-	}, 1000);
+	closeStreamTimeout = setTimeout(closeStream, 1000);
 });
 
 // Handler to set current sensor type
@@ -317,16 +330,12 @@ Max.addHandler("endFile", () => {
 		return Max.post("[WARN] No realtime stream is open.");
 	}
 
-	// stop any pending auto-close
+	// stop the stream
 	clearTimeout(closeStreamTimeout);
+	closeStream()
+});
 
-	// close the stream
-	realtimeStream.end(() => {
-		Max.post("Realtime CSV stream closed via endFile.");
-	});
-
-	// clean up our globals
-	realtimeStream = null;
-	realtimeFilePath = null;
-	currentSensorConfig = "";
+process.on('uncaughtException', err => {
+	Max.post(`[FATAL] uncaught exception: ${err.stack}`);
+	closeStream()
 });
