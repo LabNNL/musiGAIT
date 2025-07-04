@@ -456,6 +456,7 @@
 				"box" : 				{
 					"fontface" : 1,
 					"fontsize" : 20.0,
+					"hidden" : 1,
 					"id" : "obj-13",
 					"maxclass" : "comment",
 					"numinlets" : 1,
@@ -569,6 +570,7 @@
 				"box" : 				{
 					"fontface" : 1,
 					"fontsize" : 20.0,
+					"hidden" : 1,
 					"id" : "obj-4",
 					"maxclass" : "comment",
 					"numinlets" : 1,
@@ -576,7 +578,7 @@
 					"patching_rect" : [ 1116.0, 495.0, 76.0, 29.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 574.5, 245.0, 92.0, 29.0 ],
-					"text" : "90%",
+					"text" : "0%",
 					"textcolor" : [ 1.0, 1.0, 1.0, 1.0 ],
 					"textjustification" : 2
 				}
@@ -1566,6 +1568,7 @@
 , 			{
 				"box" : 				{
 					"fontsize" : 16.0,
+					"hidden" : 1,
 					"id" : "obj-7",
 					"maxclass" : "live.menu",
 					"numinlets" : 1,
@@ -2935,7 +2938,7 @@
 					"patching_rect" : [ 522.5, 980.5, 145.0, 29.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 6.0, 245.0, 438.0, 29.0 ],
-					"text" : "128°",
+					"text" : "000°",
 					"textcolor" : [ 0.847, 0.769, 0.357, 1.0 ]
 				}
 
@@ -6952,7 +6955,7 @@
 					"patching_rect" : [ 1019.0, 495.0, 76.0, 29.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 456.0, 245.0, 92.0, 29.0 ],
-					"text" : "40%",
+					"text" : "0%",
 					"textcolor" : [ 1.0, 1.0, 1.0, 1.0 ]
 				}
 
@@ -7915,7 +7918,7 @@
 					"parameter_enable" : 1,
 					"patching_rect" : [ 748.999999999999773, 262.5, 66.0, 23.0 ],
 					"presentation" : 1,
-					"presentation_rect" : [ 6.0, 97.0, 61.0, 23.0 ],
+					"presentation_rect" : [ 6.0, 97.0, 124.0, 23.0 ],
 					"saved_attribute_attributes" : 					{
 						"valueof" : 						{
 							"parameter_enum" : [ "None", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16" ],
@@ -8613,6 +8616,8 @@
 													"saved_object_attributes" : 													{
 														"autostart" : 1,
 														"defer" : 0,
+														"node_bin_path" : "",
+														"npm_bin_path" : "",
 														"watch" : 0
 													}
 ,
@@ -9820,7 +9825,7 @@
 										}
 ,
 										"classnamespace" : "box",
-										"rect" : [ 200.0, 181.0, 689.0, 620.0 ],
+										"rect" : [ 200.0, 181.0, 692.0, 620.0 ],
 										"bglocked" : 0,
 										"openinpresentation" : 0,
 										"default_fontsize" : 12.0,
@@ -9849,6 +9854,18 @@
 										"subpatcher_template" : "",
 										"assistshowspatchername" : 0,
 										"boxes" : [ 											{
+												"box" : 												{
+													"id" : "obj-13",
+													"maxclass" : "newobj",
+													"numinlets" : 2,
+													"numoutlets" : 2,
+													"outlettype" : [ "", "" ],
+													"patching_rect" : [ 608.5, 385.0, 53.0, 22.0 ],
+													"text" : "zl.filter 0"
+												}
+
+											}
+, 											{
 												"box" : 												{
 													"id" : "obj-41",
 													"maxclass" : "newobj",
@@ -10247,6 +10264,13 @@
 											}
 , 											{
 												"patchline" : 												{
+													"destination" : [ "obj-39", 0 ],
+													"source" : [ "obj-13", 0 ]
+												}
+
+											}
+, 											{
+												"patchline" : 												{
 													"destination" : [ "obj-4", 0 ],
 													"source" : [ "obj-14", 0 ]
 												}
@@ -10366,15 +10390,15 @@
 											}
 , 											{
 												"patchline" : 												{
-													"destination" : [ "obj-26", 0 ],
-													"source" : [ "obj-35", 0 ]
+													"destination" : [ "obj-13", 0 ],
+													"source" : [ "obj-35", 1 ]
 												}
 
 											}
 , 											{
 												"patchline" : 												{
-													"destination" : [ "obj-39", 0 ],
-													"source" : [ "obj-35", 1 ]
+													"destination" : [ "obj-26", 0 ],
+													"source" : [ "obj-35", 0 ]
 												}
 
 											}
@@ -11816,7 +11840,7 @@
 							"color" : [ 0.847000002861023, 0.768999993801117, 0.35699999332428, 1.0 ],
 							"thickness" : 2.0,
 							"point_style" : "none",
-							"line_style" : "lines",
+							"line_style" : "none",
 							"number_style" : "none",
 							"filter" : "none",
 							"domain_start" : 0.0,
@@ -11836,7 +11860,7 @@
 							"color" : [ 0.35699999332428, 0.435000002384186, 0.847000002861023, 1.0 ],
 							"thickness" : 2.0,
 							"point_style" : "none",
-							"line_style" : "lines",
+							"line_style" : "none",
 							"number_style" : "none",
 							"filter" : "none",
 							"domain_start" : 0.0,
