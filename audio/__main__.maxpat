@@ -480,7 +480,6 @@
 				"box" : 				{
 					"fontface" : 1,
 					"fontsize" : 20.0,
-					"hidden" : 1,
 					"id" : "obj-13",
 					"maxclass" : "comment",
 					"numinlets" : 1,
@@ -488,7 +487,7 @@
 					"patching_rect" : [ 541.5, 1018.5, 145.0, 29.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 6.0, 245.0, 438.0, 29.0 ],
-					"text" : "000°",
+					"text" : "130°",
 					"textcolor" : [ 0.357, 0.435, 0.847, 1.0 ],
 					"textjustification" : 2
 				}
@@ -507,7 +506,7 @@
 					"patching_rect" : [ 378.75, 1018.5, 149.0, 29.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 6.0, 245.0, 438.0, 29.0 ],
-					"text" : "067%",
+					"text" : "000%",
 					"textcolor" : [ 0.424, 1.0, 0.91, 1.0 ],
 					"textjustification" : 2
 				}
@@ -517,7 +516,6 @@
 				"box" : 				{
 					"angle" : 270.0,
 					"bgcolor" : [ 0.2, 0.2, 0.2, 0.74 ],
-					"hidden" : 1,
 					"id" : "obj-18",
 					"maxclass" : "panel",
 					"mode" : 0,
@@ -595,7 +593,6 @@
 				"box" : 				{
 					"fontface" : 1,
 					"fontsize" : 20.0,
-					"hidden" : 1,
 					"id" : "obj-4",
 					"maxclass" : "comment",
 					"numinlets" : 1,
@@ -603,7 +600,7 @@
 					"patching_rect" : [ 1116.0, 495.0, 76.0, 29.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 574.5, 245.0, 92.0, 29.0 ],
-					"text" : "72%",
+					"text" : "74%",
 					"textcolor" : [ 1.0, 1.0, 1.0, 1.0 ],
 					"textjustification" : 2
 				}
@@ -3000,7 +2997,7 @@
 					"patching_rect" : [ 522.5, 980.5, 145.0, 29.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 6.0, 245.0, 438.0, 29.0 ],
-					"text" : "023°",
+					"text" : "065°",
 					"textcolor" : [ 0.847, 0.769, 0.357, 1.0 ]
 				}
 
@@ -3018,7 +3015,7 @@
 					"patching_rect" : [ 359.75, 980.5, 149.0, 29.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 6.0, 245.0, 438.0, 29.0 ],
-					"text" : "072%",
+					"text" : "000%",
 					"textcolor" : [ 1.0, 0.423529411764706, 0.513725490196078, 1.0 ]
 				}
 
@@ -7017,7 +7014,7 @@
 					"patching_rect" : [ 1019.0, 495.0, 76.0, 29.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 456.0, 245.0, 92.0, 29.0 ],
-					"text" : "100%",
+					"text" : "24%",
 					"textcolor" : [ 1.0, 1.0, 1.0, 1.0 ]
 				}
 
@@ -9364,6 +9361,8 @@
 													"saved_object_attributes" : 													{
 														"autostart" : 1,
 														"defer" : 0,
+														"node_bin_path" : "",
+														"npm_bin_path" : "",
 														"watch" : 0
 													}
 ,
@@ -9496,7 +9495,7 @@
 												"box" : 												{
 													"autopopulate" : 1,
 													"id" : "obj-42",
-													"items" : "<empty>",
+													"items" : "D:\\musiGAIT\\audio\\audio\\audiofiles\\Bobby McFerrin - Don't Worry Be Happy (Official Music Video).wav",
 													"maxclass" : "umenu",
 													"numinlets" : 1,
 													"numoutlets" : 3,
@@ -10199,7 +10198,8 @@
 									"outlettype" : [ "", "bang" ],
 									"patching_rect" : [ 366.0, 300.0, 88.0, 22.0 ],
 									"saved_object_attributes" : 									{
-										"shell" : "(default)"
+										"shell" : "(default)",
+										"wd" : "D:/musiGAIT/audio/audio/"
 									}
 ,
 									"text" : "shell"
@@ -12467,7 +12467,7 @@
 					"fontname" : "Arial",
 					"fontsize" : 16.0,
 					"id" : "obj-42",
-					"items" : "<empty>",
+					"items" : "Bobby McFerrin - Don't Worry Be Happy (Official Music Video)",
 					"maxclass" : "umenu",
 					"numinlets" : 1,
 					"numoutlets" : 3,
@@ -12605,7 +12605,7 @@
 							"color" : [ 0.35699999332428, 0.435000002384186, 0.847000002861023, 1.0 ],
 							"thickness" : 2.0,
 							"point_style" : "none",
-							"line_style" : "none",
+							"line_style" : "lines",
 							"number_style" : "none",
 							"filter" : "none",
 							"domain_start" : 0.0,
