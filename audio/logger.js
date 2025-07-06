@@ -10,8 +10,9 @@ let currentSensorConfig = "";
 let currentSensorType = null;
 let enabledSensors = [1, 1, 1, 1, 1];
 
-let savedDict = null;
 let savedDateTime = new Date();
+let savedDict = null;
+let sensorsNum = null;
 
 let stats = {
 	valDev: { count: 0, mean: 0, M2: 0 },
@@ -26,20 +27,32 @@ function initRealtimeLog() {
 	if (!fs.existsSync(logsDir)) fs.mkdirSync(logsDir, { recursive: true });
 
 	realtimeFilePath = path.join(logsDir, name + '_Sensors.csv');
+	
+	// check if this file is brand-new or empty
+	const isNewFile = !fs.existsSync(realtimeFilePath) 
+					|| fs.statSync(realtimeFilePath).size === 0;
+
 	realtimeStream = fs.createWriteStream(realtimeFilePath, { flags: 'a' });
 	realtimeStream.on('error', err => {
 		Max.post(`[ERROR] CSV stream error: ${err.message}`);
 	});
 
-	// write header
-	writeHeader(true);
+	// only write the BOM + sep=; on a fresh file
+	if (isNewFile) writeHeader(true);
+ 
+	const sensorsPart = Array.isArray(sensorsNum) 
+					? sensorsNum.join(",")
+					: (typeof sensorsNum === "number" ? sensorsNum : "");
 
-	// remember we’ve logged this config
-	currentSensorConfig = (currentSensorType || "") + "|" + enabledSensors.join("");
+	currentSensorConfig = [
+		currentSensorType || "",
+		enabledSensors.join(""),
+		sensorsPart
+	].join("|");
 }
 
 function buildHeaderLine() {
-	const delimiter = ';';
+	const delim = ';';
 	const labels = [
 		"Foot Cycle",
 		currentSensorType === "emg" ? "Force" :
@@ -49,11 +62,28 @@ function buildHeaderLine() {
 		"Steps/Min",
 		"Steps/Min Deviation"
 	];
-	const header = ["Timestamp"];
-	for (let i = 0; i < 5; i++) {
-		if (enabledSensors[i]) header.push(labels[i]);
+	let cols = ["Timestamp"];
+
+	// turn single number into a one-element array
+	const ids = Array.isArray(sensorsNum) ? sensorsNum 
+			: (typeof sensorsNum === 'number' ? [sensorsNum] : null);
+
+	// helper to push one block of 5 metrics (with an optional suffix)
+	const pushBlock = suffix => {
+		labels.forEach((lbl,i) => { 
+			if (enabledSensors[i]) { 
+				cols.push(suffix ? `${lbl} ${suffix}` : lbl);
+			}
+		});
+	};
+
+	if (ids) {
+		ids.forEach(id => pushBlock(`(Sensor ${id})`));
+	} else {
+		pushBlock();    // fallback to single-sensor layout
 	}
-	return header.map(escapeCSV).join(delimiter) + "\n";
+
+	return cols.map(escapeCSV).join(delim) + "\n";
 }
 
 function writeHeader(isInitial = false) {
@@ -244,6 +274,32 @@ Max.addHandler("save", () => {
 // Handler to set dictionary data
 Max.addHandler("set", (dict) => {
 	savedDict = dict;
+
+	// pull the latest sensors_num out of dict.Logs
+	if (dict.Logs && typeof dict.Logs === 'object') {
+		const times = Object.keys(dict.Logs).sort();
+		const latestEntry = dict.Logs[times[times.length - 1]];
+		if (latestEntry.hasOwnProperty('sensors_num')) {
+			sensorsNum = latestEntry.sensors_num;
+		}
+	} else {
+		sensorsNum = null;
+	}
+
+	const sensorsPart = Array.isArray(sensorsNum)
+						? sensorsNum.join(",")
+						: (typeof sensorsNum === "number" ? sensorsNum : "");
+	const newConfig = [
+		currentSensorType || "",
+		enabledSensors.join(""),
+		sensorsPart
+	].join("|");
+
+	if (newConfig !== currentSensorConfig && realtimeStream) {
+		writeHeader(false);
+		currentSensorConfig = newConfig;
+	}
+
 	const { name, dateTime } = generateFilename();
 	Max.outlet('filename', name);
 	
@@ -275,36 +331,67 @@ Max.addHandler("values", (cycle, val, valDev, steps, stepsDev) => {
 		initRealtimeLog();
 	}
 
-	// If config changed, write a new header in the same file
-	const newConfig = (currentSensorType || "") + "|" + enabledSensors.join("");
+	// Build the “config string” so header changes if sensorsNum changed too
+	const sensorsPart = Array.isArray(sensorsNum)
+						? sensorsNum.join(",")
+						: (typeof sensorsNum === "number" ? sensorsNum : "");
+	const newConfig = [
+		currentSensorType || "",
+		enabledSensors.join(""),
+		sensorsPart
+	].join("|");
+
 	if (newConfig !== currentSensorConfig) {
 		writeHeader(false);
 		currentSensorConfig = newConfig;
 	}
 
+	// Timestamp
 	const now = new Date();
-	const ms = String(now.getMilliseconds()).padStart(3, '0');
-	const timestamp = now.toLocaleTimeString('en-CA', { hour12: false }) + '.' + ms;
+	const ms = String(now.getMilliseconds()).padStart(3, "0");
+	const ts = now.toLocaleTimeString("en-CA", { hour12: false }) + "." + ms;
 
-	const row = [timestamp];
-	[cycle, val, valDev, steps, stepsDev].forEach((v, i) => {
-		if (enabledSensors[i]) row.push(typeof v === 'number' ? v.toFixed(6) : v);
+	// Build row array
+	const row = [ts];
+	const ids = Array.isArray(sensorsNum)
+				? sensorsNum
+				: (typeof sensorsNum === "number" ? [sensorsNum] : null);
+
+	const metrics = [ cycle, val, valDev, steps, stepsDev ];
+	const blockCount = ids ? ids.length : 1;
+
+	metrics.forEach((m, mi) => {
+		if (!enabledSensors[mi]) return;
+
+		if (Array.isArray(m)) {
+			// one value per sensor
+			m.forEach(v => {
+				row.push(typeof v === "number" ? v.toFixed(6) : v);
+			});
+		} else {
+			// repeat the scalar once per sensor
+			for (let k = 0; k < blockCount; k++) {
+				row.push(typeof m === "number" ? m.toFixed(6) : m);
+			}
+		}
 	});
 
-	const rowString = row.map(escapeCSV).join(';') + "\n";
-	const ok = realtimeStream.write(rowString);
-	
-	const pending = [];
-	if (!ok) pending.push(rowString);
-	realtimeStream.once('drain', () => {
-		while (pending.length && realtimeStream.write(pending.shift()));
-	});
+	// Write out
+	const line = row.map(escapeCSV).join(";") + "\n";
+	if (!realtimeStream.write(line)) {
+		const pending = [line];
+		realtimeStream.once("drain", () => {
+			while (pending.length) realtimeStream.write(pending.shift());
+		});
+	}
 
-	// Update running stats
-	updateStats(stats.valDev, Math.abs(valDev));
-	updateStats(stats.stepsDev, Math.abs(stepsDev));
+	// Stats
+	const avgValDev = Array.isArray(valDev) ? valDev.reduce((a,b)=>a+b,0)/valDev.length : valDev;
+	const avgStepDev = Array.isArray(stepsDev)? stepsDev.reduce((a,b)=>a+b,0)/stepsDev.length : stepsDev;
+	updateStats(stats.valDev,  Math.abs(avgValDev));
+	updateStats(stats.stepsDev, Math.abs(avgStepDev));
 
-	// schedule a close in 1000ms
+	// Idle close
 	closeStreamTimeout = setTimeout(closeStream, 1000);
 });
 
