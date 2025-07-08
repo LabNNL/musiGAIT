@@ -63,7 +63,7 @@
 					"numoutlets" : 0,
 					"patching_rect" : [ 321.0, 112.0, 100.0, 28.0 ],
 					"presentation" : 1,
-					"presentation_rect" : [ 114.0, 0.0, 112.0, 28.0 ],
+					"presentation_rect" : [ 114.0, 0.0, 112.0, 25.0 ],
 					"proportion" : 0.5,
 					"rounded" : 0
 				}
@@ -81,7 +81,7 @@
 					"bgfillcolor_type" : "color",
 					"color" : [ 0.780392156862745, 0.929411764705882, 1.0, 1.0 ],
 					"fontname" : "Ableton Sans Medium",
-					"fontsize" : 16.0,
+					"fontsize" : 14.0,
 					"id" : "obj-9",
 					"items" : [ "Off", ",", "On" ],
 					"maxclass" : "umenu",
@@ -89,9 +89,9 @@
 					"numoutlets" : 3,
 					"outlettype" : [ "int", "", "" ],
 					"parameter_enable" : 0,
-					"patching_rect" : [ 171.0, 97.0, 100.0, 28.0 ],
+					"patching_rect" : [ 171.0, 97.0, 100.0, 25.0 ],
 					"presentation" : 1,
-					"presentation_rect" : [ 114.0, 0.0, 112.0, 28.0 ],
+					"presentation_rect" : [ 114.0, 0.0, 112.0, 25.0 ],
 					"saved_attribute_attributes" : 					{
 						"bgfillcolor" : 						{
 							"expression" : "themecolor.live_control_text_bg"
@@ -124,7 +124,7 @@
 					"numoutlets" : 0,
 					"patching_rect" : [ 306.0, 97.0, 100.0, 28.0 ],
 					"presentation" : 1,
-					"presentation_rect" : [ 0.0, 0.0, 112.0, 28.0 ],
+					"presentation_rect" : [ 0.0, 0.0, 112.0, 25.0 ],
 					"proportion" : 0.5,
 					"rounded" : 0
 				}
@@ -142,7 +142,7 @@
 					"bgfillcolor_type" : "color",
 					"color" : [ 0.780392156862745, 0.929411764705882, 1.0, 1.0 ],
 					"fontname" : "Ableton Sans Medium",
-					"fontsize" : 16.0,
+					"fontsize" : 14.0,
 					"id" : "obj-2",
 					"items" : [ "None", ",", "ad_asio", "Focusrite Thunderbolt ASIO", ",", "ad_asio", "Focusrite USB ASIO", ",", "ad_asio", "JackRouter", ",", "ad_asio", "Komplete Audio 6", ",", "ad_asio", "Realtek ASIO", ",", "ad_directsound", "", ",", "ad_mme", "", ",", "NonRealTime", ",", "ad_portaudio", "MME", ",", "ad_portaudio", "Windows DirectSound", ",", "ad_portaudio", "Windows WASAPI", ",", "ad_portaudio", "Windows WDM-KS" ],
 					"maxclass" : "umenu",
@@ -150,9 +150,9 @@
 					"numoutlets" : 3,
 					"outlettype" : [ "int", "", "" ],
 					"parameter_enable" : 0,
-					"patching_rect" : [ 32.0, 97.0, 100.0, 28.0 ],
+					"patching_rect" : [ 32.0, 97.0, 100.0, 25.0 ],
 					"presentation" : 1,
-					"presentation_rect" : [ 0.0, 0.0, 112.0, 28.0 ],
+					"presentation_rect" : [ 0.0, 0.0, 112.0, 25.0 ],
 					"saved_attribute_attributes" : 					{
 						"bgfillcolor" : 						{
 							"expression" : "themecolor.live_control_text_bg"
