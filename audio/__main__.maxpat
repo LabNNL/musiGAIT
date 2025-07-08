@@ -10,7 +10,7 @@
 		}
 ,
 		"classnamespace" : "box",
-		"rect" : [ 705.0, 160.0, 1174.0, 816.0 ],
+		"rect" : [ 499.0, 157.0, 1167.0, 648.0 ],
 		"bglocked" : 0,
 		"openinpresentation" : 1,
 		"default_fontsize" : 12.0,
@@ -480,6 +480,7 @@
 				"box" : 				{
 					"fontface" : 1,
 					"fontsize" : 20.0,
+					"hidden" : 1,
 					"id" : "obj-13",
 					"maxclass" : "comment",
 					"numinlets" : 1,
@@ -487,7 +488,7 @@
 					"patching_rect" : [ 541.5, 1018.5, 145.0, 29.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 6.0, 245.0, 438.0, 29.0 ],
-					"text" : "130°",
+					"text" : "000°",
 					"textcolor" : [ 0.357, 0.435, 0.847, 1.0 ],
 					"textjustification" : 2
 				}
@@ -555,30 +556,6 @@
 			}
 , 			{
 				"box" : 				{
-					"id" : "obj-10",
-					"maxclass" : "newobj",
-					"numinlets" : 1,
-					"numoutlets" : 1,
-					"outlettype" : [ "" ],
-					"patching_rect" : [ 337.0, 460.0, 116.0, 22.0 ],
-					"text" : "loadmess animate 1"
-				}
-
-			}
-, 			{
-				"box" : 				{
-					"id" : "obj-5",
-					"maxclass" : "progress",
-					"numinlets" : 1,
-					"numoutlets" : 0,
-					"patching_rect" : [ 337.0, 495.0, 91.0, 91.0 ],
-					"presentation" : 1,
-					"presentation_rect" : [ 108.0, 578.0, 234.0, 234.0 ]
-				}
-
-			}
-, 			{
-				"box" : 				{
 					"id" : "obj-2",
 					"maxclass" : "newobj",
 					"numinlets" : 1,
@@ -593,6 +570,7 @@
 				"box" : 				{
 					"fontface" : 1,
 					"fontsize" : 20.0,
+					"hidden" : 1,
 					"id" : "obj-4",
 					"maxclass" : "comment",
 					"numinlets" : 1,
@@ -600,7 +578,7 @@
 					"patching_rect" : [ 1116.0, 495.0, 76.0, 29.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 574.5, 245.0, 92.0, 29.0 ],
-					"text" : "74%",
+					"text" : "0%",
 					"textcolor" : [ 1.0, 1.0, 1.0, 1.0 ],
 					"textjustification" : 2
 				}
@@ -1628,6 +1606,7 @@
 , 			{
 				"box" : 				{
 					"fontsize" : 16.0,
+					"hidden" : 1,
 					"id" : "obj-7",
 					"maxclass" : "live.menu",
 					"numinlets" : 1,
@@ -2997,7 +2976,7 @@
 					"patching_rect" : [ 522.5, 980.5, 145.0, 29.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 6.0, 245.0, 438.0, 29.0 ],
-					"text" : "065°",
+					"text" : "000°",
 					"textcolor" : [ 0.847, 0.769, 0.357, 1.0 ]
 				}
 
@@ -7014,7 +6993,7 @@
 					"patching_rect" : [ 1019.0, 495.0, 76.0, 29.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 456.0, 245.0, 92.0, 29.0 ],
-					"text" : "24%",
+					"text" : "0%",
 					"textcolor" : [ 1.0, 1.0, 1.0, 1.0 ]
 				}
 
@@ -8663,7 +8642,7 @@
 					"parameter_enable" : 1,
 					"patching_rect" : [ 748.999999999999773, 262.5, 66.0, 23.0 ],
 					"presentation" : 1,
-					"presentation_rect" : [ 6.0, 97.0, 61.0, 23.0 ],
+					"presentation_rect" : [ 6.0, 97.0, 124.0, 23.0 ],
 					"saved_attribute_attributes" : 					{
 						"valueof" : 						{
 							"parameter_enum" : [ "None", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16" ],
@@ -9361,8 +9340,6 @@
 													"saved_object_attributes" : 													{
 														"autostart" : 1,
 														"defer" : 0,
-														"node_bin_path" : "",
-														"npm_bin_path" : "",
 														"watch" : 0
 													}
 ,
@@ -12585,7 +12562,7 @@
 							"color" : [ 0.847000002861023, 0.768999993801117, 0.35699999332428, 1.0 ],
 							"thickness" : 2.0,
 							"point_style" : "none",
-							"line_style" : "lines",
+							"line_style" : "none",
 							"number_style" : "none",
 							"filter" : "none",
 							"domain_start" : 0.0,
@@ -12605,7 +12582,7 @@
 							"color" : [ 0.35699999332428, 0.435000002384186, 0.847000002861023, 1.0 ],
 							"thickness" : 2.0,
 							"point_style" : "none",
-							"line_style" : "lines",
+							"line_style" : "none",
 							"number_style" : "none",
 							"filter" : "none",
 							"domain_start" : 0.0,
@@ -12630,13 +12607,6 @@
 				"patchline" : 				{
 					"destination" : [ "obj-37", 0 ],
 					"source" : [ "obj-1", 0 ]
-				}
-
-			}
-, 			{
-				"patchline" : 				{
-					"destination" : [ "obj-5", 0 ],
-					"source" : [ "obj-10", 0 ]
 				}
 
 			}
@@ -13696,6 +13666,14 @@
 				"patcherrelativepath" : ".",
 				"type" : "TEXT",
 				"implicit" : 1
+			}
+, 			{
+				"name" : "grainflow.util.stereopan~.mxe64",
+				"type" : "mx64"
+			}
+, 			{
+				"name" : "grainflow~.mxe64",
+				"type" : "mx64"
 			}
 , 			{
 				"name" : "guiAnalyzers.maxpat",
