@@ -231,6 +231,8 @@ Max.addHandler("save", () => {
 	const filePath = path.join(logsDir, name + '.csv');
 	let csvData = generateCSV(savedDict);
 
+	/* ------------------------ Score section ------------------------
+	
 	// Insert Score section between Infos and Logs
 	let lines = csvData.trim().split('\n');
 	const insertIndex = 7;
@@ -238,7 +240,7 @@ Max.addHandler("save", () => {
 	const valStd = Math.sqrt(stats.valDev.count > 1 ? stats.valDev.M2 / (stats.valDev.count - 1) : 0);
 	const stepsStd = Math.sqrt(stats.stepsDev.count > 1 ? stats.stepsDev.M2 / (stats.stepsDev.count - 1) : 0);
 
-	const valScore = calculateSessionScore(valStd, 0.75);     // baseline: 0.05 for valDev
+	const valScore = calculateSessionScore(valStd, 0.75);     // baseline: 0.75 for valDev
 	const stepsScore = calculateSessionScore(stepsStd, 5);    // baseline: 5 for stepsDev
 
 	// Create score section
@@ -263,6 +265,8 @@ Max.addHandler("save", () => {
 	
 	// Rebuild CSV
 	csvData = lines.join('\n');
+	
+	--------------------------------------------------------------- */
 
 	try {
 		fs.writeFileSync(filePath, csvData, 'utf8');
