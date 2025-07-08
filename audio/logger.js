@@ -333,8 +333,6 @@ Max.addHandler("set", (dict) => {
 Max.addHandler("values", (...args) => {
 	clearTimeout(closeStreamTimeout);
 
-	Max.post(`DEBUG ⇒ sensorsNum=${JSON.stringify(sensorsNum)} | args=${JSON.stringify(args)}`);
-
 	// First sample ever?
 	if (!realtimeStream || !realtimeStream.writable) initRealtimeLog();
 
