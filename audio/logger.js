@@ -65,8 +65,11 @@ function buildHeaderLine() {
 	let cols = ["Timestamp"];
 
 	// turn single number into a one-element array
-	const ids = Array.isArray(sensorsNum) ? sensorsNum 
-			: (typeof sensorsNum === 'number' ? [sensorsNum] : null);
+	const ids = Array.isArray(sensorsNum) 
+				? sensorsNum
+				: (typeof sensorsNum === 'number'
+					? Array.from({length: sensorsNum}, (_,i) => i+1)
+					: null);
 
 	// helper to push one block of 5 metrics (with an optional suffix)
 	const pushBlock = suffix => {
@@ -327,18 +330,19 @@ Max.addHandler("set", (dict) => {
 });
 
 // Handler to set realtime values
-Max.addHandler("values", (cycle, val, valDev, steps, stepsDev) => {
+Max.addHandler("values", (...args) => {
 	clearTimeout(closeStreamTimeout);
 
+	Max.post(`DEBUG ⇒ sensorsNum=${JSON.stringify(sensorsNum)} | args=${JSON.stringify(args)}`);
+
 	// First sample ever?
-	if (!realtimeStream || !realtimeStream.writable) {
-		initRealtimeLog();
-	}
+	if (!realtimeStream || !realtimeStream.writable) initRealtimeLog();
 
 	// Build the “config string” so header changes if sensorsNum changed too
 	const sensorsPart = Array.isArray(sensorsNum)
 						? sensorsNum.join(",")
 						: (typeof sensorsNum === "number" ? sensorsNum : "");
+	
 	const newConfig = [
 		currentSensorType || "",
 		enabledSensors.join(""),
@@ -350,37 +354,52 @@ Max.addHandler("values", (cycle, val, valDev, steps, stepsDev) => {
 		currentSensorConfig = newConfig;
 	}
 
-	// Timestamp
-	const now = new Date();
-	const ms = String(now.getMilliseconds()).padStart(3, "0");
-	const ts = now.toLocaleTimeString("en-CA", { hour12: false }) + "." + ms;
-
-	// Build row array
-	const row = [ts];
+	// figure out N
 	const ids = Array.isArray(sensorsNum)
-				? sensorsNum
-				: (typeof sensorsNum === "number" ? [sensorsNum] : null);
+	 			? sensorsNum
+	 			: (typeof sensorsNum === "number"
+	 				? Array.from({ length: sensorsNum }, (_,i) => i+1)
+	 				: [1]);
+	const N = ids.length;
+	
+	// args layout: [ cycle1…cycleN,
+	//                val1…valN,
+	//                valDev1…valDevN,
+	//                steps,
+	//                stepsDev ]
+	if (args.length < 3*N + 2) {
+		return Max.post(`[WARN] expected at least ${3*N+2} args, got ${args.length}`);
+	}
 
-	const metrics = [ cycle, val, valDev, steps, stepsDev ];
-	const blockCount = ids ? ids.length : 1;
+	// slice out each array
+	const cycleArr = args.slice(0, N);
+	const valArr = args.slice(N, 2*N);
+	const valDevArr = args.slice(2*N, 3*N);
+	const stepsValue = args[3*N];
+	const sDevValue = args[3*N + 1];
 
-	metrics.forEach((m, mi) => {
-		if (!enabledSensors[mi]) return;
+	// expand scalars to length-N arrays
+	const stepsArr = Array(N).fill(stepsValue);
+	const stepsDevArr = Array(N).fill(sDevValue);
 
-		if (Array.isArray(m)) {
-			// one value per sensor
-			m.forEach(v => {
-				row.push(typeof v === "number" ? v.toFixed(6) : v);
-			});
-		} else {
-			// repeat the scalar once per sensor
-			for (let k = 0; k < blockCount; k++) {
-				row.push(typeof m === "number" ? m.toFixed(6) : m);
-			}
-		}
+	// scale deviations
+	const devScale = currentSensorType === "emg" ? 100 : 1;
+	const scaledValDevArr = valDevArr.map(v => (v * devScale).toFixed(6));
+
+	// Build timestamp + sensor-first row
+	const now = new Date();
+	const ts = now.toLocaleTimeString("en-CA", {hour12:false}) + "." + String(now.getMilliseconds()).padStart(3,"0");
+	const row = [ ts ];
+
+	ids.forEach((_, si) => {
+		if (enabledSensors[0]) row.push( cycleArr[si].toFixed(6) );
+		if (enabledSensors[1]) row.push( valArr[si].toFixed(6) );
+		if (enabledSensors[2]) row.push( scaledValDevArr[si] );
+		if (enabledSensors[3]) row.push( stepsArr[si].toFixed(6) );
+		if (enabledSensors[4]) row.push( stepsDevArr[si].toFixed(6) );
 	});
 
-	// Write out
+	// Write CSV line
 	const line = row.map(escapeCSV).join(";") + "\n";
 	if (!realtimeStream.write(line)) {
 		const pending = [line];
@@ -390,10 +409,10 @@ Max.addHandler("values", (cycle, val, valDev, steps, stepsDev) => {
 	}
 
 	// Stats
-	const avgValDev = Array.isArray(valDev) ? valDev.reduce((a,b)=>a+b,0)/valDev.length : valDev;
-	const avgStepDev = Array.isArray(stepsDev)? stepsDev.reduce((a,b)=>a+b,0)/stepsDev.length : stepsDev;
-	updateStats(stats.valDev,  Math.abs(avgValDev));
-	updateStats(stats.stepsDev, Math.abs(avgStepDev));
+	const avgScaledDev = scaledValDevArr.reduce((a,b)=>a+parseFloat(b),0) / scaledValDevArr.length;
+	const avgStepsDev = stepsDevArr.reduce((a,b)=>a+b,0) / stepsDevArr.length;
+	updateStats(stats.valDev,  Math.abs(avgScaledDev));
+	updateStats(stats.stepsDev, Math.abs(avgStepsDev));
 
 	// Idle close
 	closeStreamTimeout = setTimeout(closeStream, 1000);
