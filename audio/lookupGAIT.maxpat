@@ -10,7 +10,7 @@
 		}
 ,
 		"classnamespace" : "box",
-		"rect" : [ 354.0, 159.0, 420.0, 623.0 ],
+		"rect" : [ 502.0, 184.0, 420.0, 623.0 ],
 		"bglocked" : 0,
 		"openinpresentation" : 1,
 		"default_fontsize" : 12.0,
@@ -5195,7 +5195,7 @@
 			}
 , 			{
 				"box" : 				{
-					"addpoints" : [ 0.0, 5.0, 0, 100.0, 5.0, 0, 300.0, 5.0, 0, 500.0, 5.0, 0, 600.0, 180.0, 0, 730.0, 180.0, 0, 870.0, 180.0, 0, 1000.0, 180.0, 0 ],
+					"addpoints" : [ 0.0, 10.0, 0, 100.0, 10.0, 0, 300.0, 10.0, 0, 500.0, 10.0, 0, 600.0, 180.0, 0, 730.0, 180.0, 0, 870.0, 180.0, 0, 1000.0, 180.0, 0 ],
 					"classic_curve" : 1,
 					"id" : "obj-184",
 					"maxclass" : "function",
@@ -11517,7 +11517,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 4,
 					"outlettype" : [ "", "", "", "" ],
-					"patching_rect" : [ 2099.0, 565.0, 56.0, 22.0 ],
+					"patching_rect" : [ 1978.666666666666742, 491.0, 56.0, 22.0 ],
 					"restore" : 					{
 						"live.numbox" : [ 35.0 ],
 						"live.numbox[10]" : [ 60.0 ],
@@ -11529,8 +11529,8 @@
 						"live.numbox[16]" : [ 5.0 ],
 						"live.numbox[17]" : [ 15.0 ],
 						"live.numbox[18]" : [ 5.0 ],
-						"live.numbox[19]" : [ 5.0 ],
-						"live.numbox[1]" : [ 5.0 ],
+						"live.numbox[19]" : [ 10.0 ],
+						"live.numbox[1]" : [ 10.0 ],
 						"live.numbox[20]" : [ 180.0 ],
 						"live.numbox[21]" : [ 180.0 ],
 						"live.numbox[22]" : [ 180.0 ],
@@ -11541,7 +11541,7 @@
 						"live.numbox[27]" : [ 100.0 ],
 						"live.numbox[28]" : [ 5.000000000000001 ],
 						"live.numbox[29]" : [ 5.000000000000001 ],
-						"live.numbox[2]" : [ 5.0 ],
+						"live.numbox[2]" : [ 10.0 ],
 						"live.numbox[30]" : [ 5.000000000000001 ],
 						"live.numbox[31]" : [ 50.0 ],
 						"live.numbox[32]" : [ 70.0 ],
@@ -11561,14 +11561,12 @@
 						"live.numbox[45]" : [ 40.0 ],
 						"live.numbox[46]" : [ 4.999999999999997 ],
 						"live.numbox[47]" : [ 35.0 ],
-						"live.numbox[4]" : [ 5.0 ],
+						"live.numbox[4]" : [ 10.0 ],
 						"live.numbox[5]" : [ 35.0 ],
 						"live.numbox[6]" : [ 0.0 ],
 						"live.numbox[7]" : [ 10.0 ],
 						"live.numbox[8]" : [ 30.0 ],
-						"live.numbox[9]" : [ 50.0 ],
-						"live.text" : [ 0.0 ],
-						"live.text[1]" : [ 0.0 ]
+						"live.numbox[9]" : [ 50.0 ]
 					}
 ,
 					"text" : "autopattr",
@@ -12148,7 +12146,7 @@
 			}
 , 			{
 				"box" : 				{
-					"addpoints" : [ 0.0, 5.0, 0, 100.0, 5.0, 0, 300.0, 5.0, 0, 500.0, 5.0, 0, 600.0, 180.0, 0, 730.0, 180.0, 0, 870.0, 180.0, 0, 1000.0, 180.0, 0 ],
+					"addpoints" : [ 0.0, 10.0, 0, 100.0, 10.0, 0, 300.0, 10.0, 0, 500.0, 10.0, 0, 600.0, 180.0, 0, 730.0, 180.0, 0, 870.0, 180.0, 0, 1000.0, 180.0, 0 ],
 					"classic_curve" : 1,
 					"id" : "obj-103",
 					"maxclass" : "function",
@@ -16698,6 +16696,22 @@
 			}
 , 			{
 				"patchline" : 				{
+					"destination" : [ "obj-162", 0 ],
+					"order" : 0,
+					"source" : [ "obj-67", 1 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-68", 0 ],
+					"order" : 1,
+					"source" : [ "obj-67", 1 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
 					"destination" : [ "obj-88", 0 ],
 					"source" : [ "obj-68", 0 ]
 				}
@@ -17082,8 +17096,8 @@
 ,
 		"dependency_cache" : [ 			{
 				"name" : "pattrLookup.json",
-				"bootpath" : "D:/musiGAIT/audio",
-				"patcherrelativepath" : ".",
+				"bootpath" : "D:/musiGAIT/audio/audio",
+				"patcherrelativepath" : "./audio",
 				"type" : "JSON",
 				"implicit" : 1
 			}
