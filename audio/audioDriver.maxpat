@@ -63,7 +63,7 @@
 					"numoutlets" : 0,
 					"patching_rect" : [ 321.0, 112.0, 100.0, 28.0 ],
 					"presentation" : 1,
-					"presentation_rect" : [ 114.0, 0.0, 112.0, 25.0 ],
+					"presentation_rect" : [ 0.0, 27.0, 231.0, 25.0 ],
 					"proportion" : 0.5,
 					"rounded" : 0
 				}
@@ -91,7 +91,7 @@
 					"parameter_enable" : 0,
 					"patching_rect" : [ 171.0, 97.0, 100.0, 25.0 ],
 					"presentation" : 1,
-					"presentation_rect" : [ 114.0, 0.0, 112.0, 25.0 ],
+					"presentation_rect" : [ 0.0, 27.0, 231.0, 25.0 ],
 					"saved_attribute_attributes" : 					{
 						"bgfillcolor" : 						{
 							"expression" : "themecolor.live_control_text_bg"
@@ -124,7 +124,7 @@
 					"numoutlets" : 0,
 					"patching_rect" : [ 306.0, 97.0, 100.0, 28.0 ],
 					"presentation" : 1,
-					"presentation_rect" : [ 0.0, 0.0, 112.0, 25.0 ],
+					"presentation_rect" : [ 0.0, 0.0, 231.0, 25.0 ],
 					"proportion" : 0.5,
 					"rounded" : 0
 				}
@@ -152,7 +152,7 @@
 					"parameter_enable" : 0,
 					"patching_rect" : [ 32.0, 97.0, 100.0, 25.0 ],
 					"presentation" : 1,
-					"presentation_rect" : [ 0.0, 0.0, 112.0, 25.0 ],
+					"presentation_rect" : [ 0.0, 0.0, 231.0, 25.0 ],
 					"saved_attribute_attributes" : 					{
 						"bgfillcolor" : 						{
 							"expression" : "themecolor.live_control_text_bg"

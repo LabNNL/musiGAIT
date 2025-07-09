@@ -340,7 +340,7 @@ Max.addHandler("values", (...args) => {
 	const sensorsPart = Array.isArray(sensorsNum)
 						? sensorsNum.join(",")
 						: (typeof sensorsNum === "number" ? sensorsNum : "");
-	
+
 	const newConfig = [
 		currentSensorType || "",
 		enabledSensors.join(""),
@@ -356,7 +356,7 @@ Max.addHandler("values", (...args) => {
 	const ids = Array.isArray(sensorsNum)
 	 			? sensorsNum
 	 			: (typeof sensorsNum === "number"
-	 				? Array.from({ length: sensorsNum }, (_,i) => i+1)
+	 				? [sensorsNum]
 	 				: [1]);
 	const N = ids.length;
 	

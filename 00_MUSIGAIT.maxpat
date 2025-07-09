@@ -10,7 +10,7 @@
 		}
 ,
 		"classnamespace" : "box",
-		"rect" : [ 270.0, 172.0, 1124.0, 551.0 ],
+		"rect" : [ 368.0, 256.0, 1012.0, 378.0 ],
 		"bglocked" : 0,
 		"openinpresentation" : 1,
 		"default_fontsize" : 12.0,
@@ -21,12 +21,12 @@
 		"gridsnaponopen" : 1,
 		"objectsnaponopen" : 1,
 		"statusbarvisible" : 2,
-		"toolbarvisible" : 0,
-		"lefttoolbarpinned" : 2,
-		"toptoolbarpinned" : 2,
-		"righttoolbarpinned" : 2,
-		"bottomtoolbarpinned" : 2,
-		"toolbars_unpinned_last_save" : 15,
+		"toolbarvisible" : 1,
+		"lefttoolbarpinned" : 1,
+		"toptoolbarpinned" : 1,
+		"righttoolbarpinned" : 1,
+		"bottomtoolbarpinned" : 1,
+		"toolbars_unpinned_last_save" : 0,
 		"tallnewobj" : 0,
 		"boxanimatetime" : 200,
 		"enablehscroll" : 1,
@@ -119,7 +119,7 @@
 						}
 ,
 						"classnamespace" : "box",
-						"rect" : [ 126.0, 817.0, 1430.0, 293.0 ],
+						"rect" : [ 170.0, 769.0, 1430.0, 293.0 ],
 						"bglocked" : 0,
 						"openinpresentation" : 0,
 						"default_fontsize" : 12.0,
@@ -279,8 +279,8 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 84.0, 204.0, 720.0, 22.0 ],
-					"text" : "script delete __main__, script newdefault __main__ 84 300 bpatcher @name $1 @presentation 1 @presentation_rect 0. 0. 1123. 551."
+					"patching_rect" : [ 84.0, 204.0, 721.0, 22.0 ],
+					"text" : "script delete __main__, script newdefault __main__ 84 300 bpatcher @name $1 @presentation 1 @presentation_rect 2. 1. 1009. 376."
 				}
 
 			}
