@@ -4,13 +4,13 @@
 		"appversion" : 		{
 			"major" : 8,
 			"minor" : 6,
-			"revision" : 5,
+			"revision" : 4,
 			"architecture" : "x64",
 			"modernui" : 1
 		}
 ,
 		"classnamespace" : "box",
-		"rect" : [ 44.0, 306.0, 1189.0, 570.0 ],
+		"rect" : [ -82.0, 134.0, 1852.0, 921.0 ],
 		"bglocked" : 0,
 		"openinpresentation" : 1,
 		"default_fontsize" : 12.0,
@@ -70,9 +70,9 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 523.0, 83.0, 204.0, 24.0 ],
+					"patching_rect" : [ 523.0, 83.0, 204.0, 25.0 ],
 					"presentation" : 1,
-					"presentation_rect" : [ 524.0, 10.0, 137.0, 24.0 ],
+					"presentation_rect" : [ 592.0, 10.0, 159.0, 25.0 ],
 					"text" : "Pace (Steps/Min)",
 					"textjustification" : 1
 				}
@@ -86,9 +86,9 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 142.0, 83.0, 209.0, 24.0 ],
+					"patching_rect" : [ 142.0, 83.0, 209.0, 25.0 ],
 					"presentation" : 1,
-					"presentation_rect" : [ 186.0, 10.0, 141.0, 24.0 ],
+					"presentation_rect" : [ 162.5, 10.0, 141.0, 25.0 ],
 					"text" : "Sensor Targets",
 					"textjustification" : 1
 				}
@@ -103,7 +103,7 @@
 					"numoutlets" : 0,
 					"patching_rect" : [ 971.5, 138.0, 41.0, 38.0 ],
 					"presentation" : 1,
-					"presentation_rect" : [ 1.0, 5.0, 54.0, 38.0 ],
+					"presentation_rect" : [ 1.0, 3.5, 54.0, 38.0 ],
 					"text" : "🎯",
 					"textjustification" : 1
 				}
@@ -301,7 +301,7 @@
 					"outlettype" : [ "", "", "", "", "", "" ],
 					"patching_rect" : [ 35.5, 115.0, 847.0, 288.0 ],
 					"presentation" : 1,
-					"presentation_rect" : [ 1.0, 45.0, 815.0, 287.0 ],
+					"presentation_rect" : [ 1.0, 55.5, 860.0, 461.0 ],
 					"varname" : "patcher",
 					"viewvisibility" : 1
 				}
@@ -320,7 +320,7 @@
 					"numoutlets" : 0,
 					"patching_rect" : [ 928.0, 195.0, 128.0, 128.0 ],
 					"presentation" : 1,
-					"presentation_rect" : [ 57.0, 6.0, 399.0, 33.0 ],
+					"presentation_rect" : [ 1.0, 3.0, 464.0, 39.0 ],
 					"proportion" : 0.5
 				}
 
@@ -338,7 +338,7 @@
 					"numoutlets" : 0,
 					"patching_rect" : [ 943.0, 210.0, 128.0, 128.0 ],
 					"presentation" : 1,
-					"presentation_rect" : [ 464.0, 6.0, 258.0, 33.0 ],
+					"presentation_rect" : [ 481.0, 3.0, 380.0, 39.0 ],
 					"proportion" : 0.5
 				}
 
@@ -642,28 +642,28 @@
 ,
 		"dependency_cache" : [ 			{
 				"name" : "deviation.js",
-				"bootpath" : "~/onSite/musiGAIT/audio",
+				"bootpath" : "D:/musiGAIT/audio",
 				"patcherrelativepath" : ".",
 				"type" : "TEXT",
 				"implicit" : 1
 			}
 , 			{
 				"name" : "guiParams.maxpat",
-				"bootpath" : "~/onSite/musiGAIT/audio",
+				"bootpath" : "D:/musiGAIT/audio",
 				"patcherrelativepath" : ".",
 				"type" : "JSON",
 				"implicit" : 1
 			}
 , 			{
 				"name" : "lookupGAIT.maxpat",
-				"bootpath" : "~/onSite/musiGAIT/audio",
+				"bootpath" : "D:/musiGAIT/audio",
 				"patcherrelativepath" : ".",
 				"type" : "JSON",
 				"implicit" : 1
 			}
 , 			{
 				"name" : "pattrLookup.json",
-				"bootpath" : "~/onSite/musiGAIT/audio",
+				"bootpath" : "D:/musiGAIT/audio",
 				"patcherrelativepath" : ".",
 				"type" : "JSON",
 				"implicit" : 1
@@ -676,7 +676,7 @@
 			}
 , 			{
 				"name" : "windows.maxpat",
-				"bootpath" : "~/onSite/musiGAIT/audio",
+				"bootpath" : "D:/musiGAIT/audio",
 				"patcherrelativepath" : ".",
 				"type" : "JSON",
 				"implicit" : 1

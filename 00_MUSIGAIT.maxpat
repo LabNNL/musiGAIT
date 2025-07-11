@@ -4,13 +4,13 @@
 		"appversion" : 		{
 			"major" : 8,
 			"minor" : 6,
-			"revision" : 5,
+			"revision" : 4,
 			"architecture" : "x64",
 			"modernui" : 1
 		}
 ,
 		"classnamespace" : "box",
-		"rect" : [ 200.0, 199.0, 1168.0, 436.0 ],
+		"rect" : [ 200.0, 199.0, 1191.0, 585.0 ],
 		"bglocked" : 0,
 		"openinpresentation" : 1,
 		"default_fontsize" : 12.0,
@@ -113,7 +113,7 @@
 						"appversion" : 						{
 							"major" : 8,
 							"minor" : 6,
-							"revision" : 5,
+							"revision" : 4,
 							"architecture" : "x64",
 							"modernui" : 1
 						}
@@ -280,7 +280,7 @@
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
 					"patching_rect" : [ 84.0, 204.0, 720.0, 22.0 ],
-					"text" : "script delete __main__, script newdefault __main__ 84 300 bpatcher @name $1 @presentation 1 @presentation_rect 2. 1. 1161. 391."
+					"text" : "script delete __main__, script newdefault __main__ 84 300 bpatcher @name $1 @presentation 1 @presentation_rect 2. 1. 1188. 583."
 				}
 
 			}
