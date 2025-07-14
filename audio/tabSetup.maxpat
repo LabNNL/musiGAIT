@@ -315,7 +315,7 @@
 					"numoutlets" : 2,
 					"outlettype" : [ "", "" ],
 					"parameter_enable" : 1,
-					"patching_rect" : [ 1595.0, 206.0, 129.0, 33.0 ],
+					"patching_rect" : [ 1628.0, 206.0, 129.0, 33.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 162.5, 226.0, 140.0, 26.0 ],
 					"rounded" : 3.42,
@@ -522,7 +522,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 647.0, 20.0, 80.0, 34.0 ],
+					"patching_rect" : [ 647.0, 20.0, 83.0, 34.0 ],
 					"text" : "Comments[1] Angle Val"
 				}
 
@@ -547,7 +547,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 481.0, 20.0, 80.0, 34.0 ],
+					"patching_rect" : [ 481.0, 20.0, 83.0, 34.0 ],
 					"text" : "Comments[0] EMG Val"
 				}
 
@@ -681,7 +681,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 1,
 					"outlettype" : [ "int" ],
-					"patching_rect" : [ 1595.0, 337.0, 29.0, 22.0 ],
+					"patching_rect" : [ 1628.0, 337.0, 29.0, 22.0 ],
 					"text" : "thru"
 				}
 
@@ -705,7 +705,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 2,
 					"outlettype" : [ "", "" ],
-					"patching_rect" : [ 1614.0, 291.0, 67.0, 22.0 ],
+					"patching_rect" : [ 1647.0, 291.0, 67.0, 22.0 ],
 					"save" : [ "#N", "thispatcher", ";", "#Q", "end", ";" ],
 					"text" : "thispatcher"
 				}
@@ -914,7 +914,7 @@
  ]
 					}
 ,
-					"patching_rect" : [ 1595.0, 248.0, 38.0, 22.0 ],
+					"patching_rect" : [ 1628.0, 248.0, 38.0, 22.0 ],
 					"saved_object_attributes" : 					{
 						"description" : "",
 						"digest" : "",
@@ -1345,7 +1345,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 1554.0, 198.0, 29.0, 22.0 ],
+					"patching_rect" : [ 1559.0, 198.0, 29.0, 22.0 ],
 					"text" : "thru"
 				}
 
@@ -2484,7 +2484,7 @@
 					"numoutlets" : 1,
 					"offset" : [ 0.0, 0.0 ],
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 1237.0, 97.0, 346.0, 73.0 ],
+					"patching_rect" : [ 1237.0, 97.0, 351.0, 73.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 495.0, 156.0, 351.0, 78.0 ],
 					"viewvisibility" : 1
@@ -6612,7 +6612,7 @@
 					"patching_rect" : [ 1183.0, 480.0, 89.0, 34.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 495.0, 467.0, 89.0, 34.0 ],
-					"text" : "0%",
+					"text" : "80%",
 					"textcolor" : [ 1.0, 1.0, 1.0, 1.0 ]
 				}
 
