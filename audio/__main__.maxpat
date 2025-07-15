@@ -1484,45 +1484,6 @@
 			}
 , 			{
 				"box" : 				{
-					"fontsize" : 16.0,
-					"id" : "obj-22",
-					"maxclass" : "live.numbox",
-					"numinlets" : 1,
-					"numoutlets" : 2,
-					"outlettype" : [ "", "float" ],
-					"parameter_enable" : 1,
-					"patching_rect" : [ 151.0, 87.0, 59.0, 23.0 ],
-					"saved_attribute_attributes" : 					{
-						"valueof" : 						{
-							"parameter_initial" : [ 10 ],
-							"parameter_initial_enable" : 1,
-							"parameter_longname" : "live.numbox[59]",
-							"parameter_mmax" : 100.0,
-							"parameter_modmode" : 3,
-							"parameter_shortname" : "live.numbox[92]",
-							"parameter_type" : 0,
-							"parameter_unitstyle" : 0
-						}
-
-					}
-,
-					"varname" : "live.numbox[1]"
-				}
-
-			}
-, 			{
-				"box" : 				{
-					"id" : "obj-17",
-					"maxclass" : "newobj",
-					"numinlets" : 1,
-					"numoutlets" : 0,
-					"patching_rect" : [ 151.0, 123.0, 81.0, 22.0 ],
-					"text" : "s rmsWindow"
-				}
-
-			}
-, 			{
-				"box" : 				{
 					"color" : [ 0.423529411764706, 1.0, 0.909803921568627, 1.0 ],
 					"fontsize" : 16.0,
 					"id" : "obj-23",
@@ -2741,13 +2702,6 @@
 			}
 , 			{
 				"patchline" : 				{
-					"destination" : [ "obj-17", 0 ],
-					"source" : [ "obj-22", 0 ]
-				}
-
-			}
-, 			{
-				"patchline" : 				{
 					"destination" : [ "obj-151", 1 ],
 					"source" : [ "obj-25", 0 ]
 				}
@@ -2825,9 +2779,7 @@
 			"obj-1::obj-7" : [ "live.menu[11]", "live.menu", 0 ],
 			"obj-1::obj-85::obj-24" : [ "live.menu[12]", "live.menu[12]", 0 ],
 			"obj-1::obj-85::obj-41" : [ "live.menu[13]", "live.menu[12]", 0 ],
-			"obj-1::obj-85::obj-46" : [ "live.menu[14]", "live.menu[12]", 0 ],
 			"obj-1::obj-85::obj-48" : [ "live.menu[15]", "live.menu[12]", 0 ],
-			"obj-22" : [ "live.numbox[59]", "live.numbox[92]", 0 ],
 			"obj-23::obj-119::obj-10" : [ "live.menu[2]", "live.menu", 0 ],
 			"obj-23::obj-119::obj-16" : [ "live.menu[3]", "live.menu", 0 ],
 			"obj-23::obj-119::obj-20" : [ "live.text", "live.text", 0 ],
@@ -2931,6 +2883,7 @@
 			"obj-8::obj-147::obj-179" : [ "live.numbox[10]", "Freq", 0 ],
 			"obj-8::obj-147::obj-48" : [ "live.numbox[12]", "Freq", 0 ],
 			"obj-8::obj-147::obj-49" : [ "live.numbox[13]", "Freq", 0 ],
+			"obj-8::obj-147::obj-52" : [ "live.gain~", "live.gain~", 0 ],
 			"obj-8::obj-147::obj-54" : [ "live.numbox[57]", "live.numbox[57]", 0 ],
 			"obj-8::obj-147::obj-55::obj-10" : [ "live.dial", "Speed", 0 ],
 			"obj-8::obj-147::obj-55::obj-13" : [ "live.dial[6]", "Brightness", 0 ],
