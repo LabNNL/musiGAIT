@@ -100,6 +100,7 @@ Sensor.prototype = {
 	handleData: function(v) {
 		if (this.recordingMin) this.minSamples.push(v);
 		if (this.recordingMax) this.maxSamples.push(v);
+		if (sensorType === "emg") v = Math.abs(v); // EMG values always positive
 		return this.compute(v);
 	},
 

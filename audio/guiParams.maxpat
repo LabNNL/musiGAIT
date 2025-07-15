@@ -10063,7 +10063,7 @@
 									"numoutlets" : 1,
 									"outlettype" : [ "" ],
 									"patching_rect" : [ 458.0, 280.0, 268.0, 22.0 ],
-									"text" : "definerange -1.005 1.01, definecolor $1 $2 $3 $4"
+									"text" : "definerange -0.005 1.01, definecolor $1 $2 $3 $4"
 								}
 
 							}
@@ -10099,7 +10099,7 @@
 									"numoutlets" : 1,
 									"outlettype" : [ "" ],
 									"patching_rect" : [ 414.0, 251.0, 268.0, 22.0 ],
-									"text" : "definerange -1.005 1.01, definecolor $1 $2 $3 $4"
+									"text" : "definerange -0.005 1.01, definecolor $1 $2 $3 $4"
 								}
 
 							}
