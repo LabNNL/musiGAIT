@@ -10,7 +10,7 @@
 		}
 ,
 		"classnamespace" : "box",
-		"rect" : [ 203.0, 107.0, 1222.0, 921.0 ],
+		"rect" : [ 203.0, 85.0, 1222.0, 905.0 ],
 		"bglocked" : 0,
 		"openinpresentation" : 1,
 		"default_fontsize" : 12.0,
@@ -71,7 +71,7 @@
 							"parameter_initial" : [ 10 ],
 							"parameter_initial_enable" : 1,
 							"parameter_longname" : "live.numbox[59]",
-							"parameter_mmax" : 100.0,
+							"parameter_mmax" : 1000.0,
 							"parameter_modmode" : 3,
 							"parameter_shortname" : "live.numbox[92]",
 							"parameter_type" : 0,
@@ -1077,6 +1077,7 @@
 			}
 , 			{
 				"box" : 				{
+					"activebgoncolor" : [ 0.427450980392157, 0.843137254901961, 1.0, 1.0 ],
 					"fontsize" : 12.0,
 					"id" : "obj-47",
 					"maxclass" : "live.text",
@@ -1089,6 +1090,10 @@
 					"presentation_rect" : [ 600.5, 111.5, 140.0, 26.0 ],
 					"rounded" : 3.42,
 					"saved_attribute_attributes" : 					{
+						"activebgoncolor" : 						{
+							"expression" : "themecolor.live_value_bar"
+						}
+,
 						"valueof" : 						{
 							"parameter_enum" : [ "val1", "val2" ],
 							"parameter_longname" : "live.toggle[1]",
@@ -7455,7 +7460,7 @@
 					"patching_rect" : [ 1183.0, 537.0, 89.0, 34.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 495.0, 467.0, 89.0, 34.0 ],
-					"text" : "0%",
+					"text" : "74%",
 					"textcolor" : [ 1.0, 1.0, 1.0, 1.0 ]
 				}
 
@@ -7832,7 +7837,7 @@
 					"parameter_enable" : 0,
 					"patching_rect" : [ 1312.333333333333258, 548.5, 133.0, 133.0 ],
 					"presentation" : 1,
-					"presentation_rect" : [ 495.0, 257.5, 351.0, 244.0 ],
+					"presentation_rect" : [ 495.0, 226.0, 351.0, 276.0 ],
 					"setminmax" : [ 0.0, 100.0 ],
 					"setstyle" : 1,
 					"size" : 2,
@@ -10515,9 +10520,9 @@
 		"parameters" : 		{
 			"obj-167::obj-21" : [ "live.numbox[81]", "live.numbox[2]", 0 ],
 			"obj-167::obj-22" : [ "live.numbox[85]", "live.numbox[2]", 0 ],
-			"obj-167::obj-29" : [ "live.numbox[82]", "live.numbox[2]", 0 ],
+			"obj-167::obj-29" : [ "live.numbox[82]", "live.menu", 0 ],
 			"obj-167::obj-36" : [ "live.numbox[83]", "live.numbox[2]", 0 ],
-			"obj-167::obj-40" : [ "live.numbox[2]", "live.numbox[2]", 0 ],
+			"obj-167::obj-40" : [ "live.numbox[2]", "live.menu", 0 ],
 			"obj-230" : [ "live.text[29]", "live.text[14]", 0 ],
 			"obj-30" : [ "live.text[25]", "live.text[14]", 0 ],
 			"obj-34" : [ "live.toggle", "live.text[2]", 0 ],
