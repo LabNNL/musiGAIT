@@ -10,7 +10,7 @@
 		}
 ,
 		"classnamespace" : "box",
-		"rect" : [ 71.0, 107.0, 1537.0, 921.0 ],
+		"rect" : [ 203.0, 107.0, 1222.0, 921.0 ],
 		"bglocked" : 0,
 		"openinpresentation" : 1,
 		"default_fontsize" : 12.0,
@@ -542,7 +542,7 @@
 						}
 ,
 						"classnamespace" : "box",
-						"rect" : [ 59.0, 107.0, 394.0, 308.0 ],
+						"rect" : [ 461.0, 269.0, 398.0, 314.0 ],
 						"bglocked" : 0,
 						"openinpresentation" : 0,
 						"default_fontsize" : 12.0,
@@ -577,7 +577,7 @@
 									"numinlets" : 1,
 									"numoutlets" : 1,
 									"outlettype" : [ "" ],
-									"patching_rect" : [ 208.0, 209.0, 127.0, 22.0 ],
+									"patching_rect" : [ 208.0, 210.0, 127.0, 22.0 ],
 									"text" : "prepend activebgcolor"
 								}
 
@@ -589,7 +589,7 @@
 									"numinlets" : 1,
 									"numoutlets" : 1,
 									"outlettype" : [ "" ],
-									"patching_rect" : [ 25.0, 209.0, 127.0, 22.0 ],
+									"patching_rect" : [ 25.0, 210.0, 127.0, 22.0 ],
 									"text" : "prepend activebgcolor"
 								}
 
@@ -601,7 +601,7 @@
 									"numinlets" : 1,
 									"numoutlets" : 2,
 									"outlettype" : [ "int", "int" ],
-									"patching_rect" : [ 195.0, 120.0, 32.0, 22.0 ],
+									"patching_rect" : [ 195.0, 105.0, 32.0, 22.0 ],
 									"text" : "t 3 4"
 								}
 
@@ -613,7 +613,7 @@
 									"numinlets" : 1,
 									"numoutlets" : 2,
 									"outlettype" : [ "int", "int" ],
-									"patching_rect" : [ 25.0, 120.0, 32.0, 22.0 ],
+									"patching_rect" : [ 25.0, 105.0, 32.0, 22.0 ],
 									"text" : "t 1 2"
 								}
 
@@ -625,7 +625,7 @@
 									"numinlets" : 2,
 									"numoutlets" : 2,
 									"outlettype" : [ "bang", "" ],
-									"patching_rect" : [ 25.0, 83.0, 189.0, 22.0 ],
+									"patching_rect" : [ 25.0, 67.0, 189.0, 22.0 ],
 									"text" : "sel 0"
 								}
 
@@ -659,7 +659,7 @@
 									"numinlets" : 1,
 									"numoutlets" : 4,
 									"outlettype" : [ "", "", "", "" ],
-									"patching_rect" : [ 208.0, 172.0, 163.0, 22.0 ],
+									"patching_rect" : [ 208.0, 157.0, 163.0, 22.0 ],
 									"saved_object_attributes" : 									{
 										"embed" : 1,
 										"precision" : 6
@@ -677,7 +677,7 @@
 									"maxclass" : "outlet",
 									"numinlets" : 1,
 									"numoutlets" : 0,
-									"patching_rect" : [ 208.0, 253.0, 30.0, 30.0 ]
+									"patching_rect" : [ 208.0, 254.0, 30.0, 30.0 ]
 								}
 
 							}
@@ -710,7 +710,7 @@
 									"numinlets" : 1,
 									"numoutlets" : 4,
 									"outlettype" : [ "", "", "", "" ],
-									"patching_rect" : [ 25.0, 172.0, 163.0, 22.0 ],
+									"patching_rect" : [ 25.0, 157.0, 163.0, 22.0 ],
 									"saved_object_attributes" : 									{
 										"embed" : 1,
 										"precision" : 6
@@ -741,7 +741,7 @@
 									"maxclass" : "outlet",
 									"numinlets" : 1,
 									"numoutlets" : 0,
-									"patching_rect" : [ 25.0, 253.0, 30.0, 30.0 ]
+									"patching_rect" : [ 25.0, 254.0, 30.0, 30.0 ]
 								}
 
 							}
@@ -890,7 +890,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 449.0, 227.0, 135.0, 34.0 ],
+					"patching_rect" : [ 410.0, 222.0, 135.0, 34.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 14.0, 468.0, 438.0, 34.0 ],
 					"text" : "000%",
@@ -1161,10 +1161,10 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 1127.0, 192.0, 72.0, 23.0 ],
+					"patching_rect" : [ 1096.0, 191.5, 100.0, 23.0 ],
 					"presentation" : 1,
-					"presentation_rect" : [ 143.0, 181.0, 72.0, 23.0 ],
-					"text" : "Sensor 2:",
+					"presentation_rect" : [ 115.0, 181.0, 100.0, 23.0 ],
+					"text" : "Right Sensor:",
 					"varname" : "comSensors[2]"
 				}
 
@@ -1177,10 +1177,10 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 839.0, 242.0, 72.0, 23.0 ],
+					"patching_rect" : [ 822.5, 242.0, 90.0, 23.0 ],
 					"presentation" : 1,
-					"presentation_rect" : [ 143.0, 156.0, 72.0, 23.0 ],
-					"text" : "Sensor 1:",
+					"presentation_rect" : [ 125.0, 156.0, 90.0, 23.0 ],
+					"text" : "Left Sensor:",
 					"varname" : "comSensors[1]"
 				}
 
@@ -1318,11 +1318,10 @@
 , 			{
 				"box" : 				{
 					"id" : "obj-41",
-					"linecount" : 2,
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 647.0, 30.0, 83.0, 34.0 ],
+					"patching_rect" : [ 647.0, 30.0, 133.0, 20.0 ],
 					"text" : "Comments[1] Angle Val"
 				}
 
@@ -1336,18 +1335,17 @@
 					"numinlets" : 0,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 449.0, 25.0, 30.0, 30.0 ]
+					"patching_rect" : [ 410.0, 25.0, 30.0, 30.0 ]
 				}
 
 			}
 , 			{
 				"box" : 				{
 					"id" : "obj-29",
-					"linecount" : 2,
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 481.0, 30.0, 83.0, 34.0 ],
+					"patching_rect" : [ 442.0, 30.0, 130.0, 20.0 ],
 					"text" : "Comments[0] EMG Val"
 				}
 
@@ -1755,7 +1753,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 468.0, 265.0, 135.0, 34.0 ],
+					"patching_rect" : [ 429.0, 260.0, 135.0, 34.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 14.0, 468.0, 438.0, 34.0 ],
 					"text" : "000%",
@@ -2181,7 +2179,7 @@
 					"numinlets" : 3,
 					"numoutlets" : 3,
 					"outlettype" : [ "", "", "" ],
-					"patching_rect" : [ 449.0, 192.0, 56.0, 22.0 ],
+					"patching_rect" : [ 410.0, 187.0, 56.0, 22.0 ],
 					"text" : "route 0 1"
 				}
 
@@ -7457,7 +7455,7 @@
 					"patching_rect" : [ 1183.0, 537.0, 89.0, 34.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 495.0, 467.0, 89.0, 34.0 ],
-					"text" : "21%",
+					"text" : "0%",
 					"textcolor" : [ 1.0, 1.0, 1.0, 1.0 ]
 				}
 
@@ -7834,7 +7832,7 @@
 					"parameter_enable" : 0,
 					"patching_rect" : [ 1312.333333333333258, 548.5, 133.0, 133.0 ],
 					"presentation" : 1,
-					"presentation_rect" : [ 495.0, 226.0, 351.0, 276.0 ],
+					"presentation_rect" : [ 495.0, 257.5, 351.0, 244.0 ],
 					"setminmax" : [ 0.0, 100.0 ],
 					"setstyle" : 1,
 					"size" : 2,

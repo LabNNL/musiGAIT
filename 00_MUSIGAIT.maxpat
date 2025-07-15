@@ -10,7 +10,7 @@
 		}
 ,
 		"classnamespace" : "box",
-		"rect" : [ 200.0, 199.0, 1191.0, 585.0 ],
+		"rect" : [ 386.0, 199.0, 1191.0, 585.0 ],
 		"bglocked" : 0,
 		"openinpresentation" : 1,
 		"default_fontsize" : 12.0,
@@ -21,12 +21,12 @@
 		"gridsnaponopen" : 1,
 		"objectsnaponopen" : 1,
 		"statusbarvisible" : 2,
-		"toolbarvisible" : 1,
-		"lefttoolbarpinned" : 1,
-		"toptoolbarpinned" : 1,
-		"righttoolbarpinned" : 1,
-		"bottomtoolbarpinned" : 1,
-		"toolbars_unpinned_last_save" : 0,
+		"toolbarvisible" : 0,
+		"lefttoolbarpinned" : 2,
+		"toptoolbarpinned" : 2,
+		"righttoolbarpinned" : 2,
+		"bottomtoolbarpinned" : 2,
+		"toolbars_unpinned_last_save" : 15,
 		"tallnewobj" : 0,
 		"boxanimatetime" : 200,
 		"enablehscroll" : 1,
@@ -178,8 +178,8 @@
 									"numinlets" : 2,
 									"numoutlets" : 1,
 									"outlettype" : [ "" ],
-									"patching_rect" : [ 45.0, 129.0, 1336.0, 22.0 ],
-									"text" : "window flags nozoom, window flags nominimize, window flags nogrow, window flags nofloat, window flags close, window flags nomenu, window exec, toolbarvisible 0, lefttoolbarpinned 2, righttoolbarpinned 2, toptoolbarpinned 2, bottomtoolbarpinned 2"
+									"patching_rect" : [ 45.0, 129.0, 1309.0, 22.0 ],
+									"text" : "window flags zoom, window flags grow, window flags nominimize, window flags nofloat, window flags close, window flags nomenu, window exec, toolbarvisible 0, lefttoolbarpinned 2, righttoolbarpinned 2, toptoolbarpinned 2, bottomtoolbarpinned 2"
 								}
 
 							}
