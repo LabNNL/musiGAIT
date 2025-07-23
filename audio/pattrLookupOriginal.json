@@ -52,7 +52,9 @@
 					"live.numbox[6]" : [ 0.0 ],
 					"live.numbox[7]" : [ 10.0 ],
 					"live.numbox[8]" : [ 30.0 ],
-					"live.numbox[9]" : [ 50.0 ]
+					"live.numbox[9]" : [ 50.0 ],
+					"live.text" : [ 1.0 ],
+					"live.text[1]" : [ 0.0 ]
 				}
 
 			}
