@@ -2602,7 +2602,6 @@
 , 			{
 				"box" : 				{
 					"fontsize" : 14.0,
-					"hidden" : 1,
 					"id" : "obj-144",
 					"maxclass" : "live.text",
 					"numinlets" : 1,
@@ -3214,7 +3213,7 @@
 										}
 ,
 										"classnamespace" : "box",
-										"rect" : [ 59.0, 107.0, 581.0, 300.0 ],
+										"rect" : [ 59.0, 107.0, 641.0, 300.0 ],
 										"bglocked" : 0,
 										"openinpresentation" : 0,
 										"default_fontsize" : 12.0,
@@ -3249,7 +3248,7 @@
 													"numinlets" : 1,
 													"numoutlets" : 2,
 													"outlettype" : [ "path", "bang" ],
-													"patching_rect" : [ 315.0, 81.0, 168.0, 22.0 ],
+													"patching_rect" : [ 336.0, 81.0, 201.0, 22.0 ],
 													"text" : "t path b"
 												}
 
@@ -3261,8 +3260,8 @@
 													"numinlets" : 2,
 													"numoutlets" : 1,
 													"outlettype" : [ "" ],
-													"patching_rect" : [ 363.0, 158.0, 120.0, 22.0 ],
-													"text" : "sprintf symout %s%s"
+													"patching_rect" : [ 384.0, 158.0, 153.0, 22.0 ],
+													"text" : "sprintf symout %saudio/%s"
 												}
 
 											}
@@ -3273,7 +3272,7 @@
 													"numinlets" : 1,
 													"numoutlets" : 2,
 													"outlettype" : [ "", "" ],
-													"patching_rect" : [ 315.0, 116.0, 67.0, 22.0 ],
+													"patching_rect" : [ 336.0, 116.0, 67.0, 22.0 ],
 													"save" : [ "#N", "thispatcher", ";", "#Q", "end", ";" ],
 													"text" : "thispatcher"
 												}
@@ -3286,7 +3285,7 @@
 													"numinlets" : 1,
 													"numoutlets" : 1,
 													"outlettype" : [ "bang" ],
-													"patching_rect" : [ 315.0, 47.0, 58.0, 22.0 ],
+													"patching_rect" : [ 336.0, 47.0, 58.0, 22.0 ],
 													"text" : "loadbang"
 												}
 
@@ -3298,7 +3297,7 @@
 													"numinlets" : 2,
 													"numoutlets" : 1,
 													"outlettype" : [ "" ],
-													"patching_rect" : [ 464.0, 116.0, 89.0, 22.0 ],
+													"patching_rect" : [ 518.0, 116.0, 89.0, 22.0 ],
 													"text" : "audioPreset.txt"
 												}
 
@@ -3310,7 +3309,7 @@
 													"numinlets" : 1,
 													"numoutlets" : 1,
 													"outlettype" : [ "" ],
-													"patching_rect" : [ 363.0, 201.0, 80.0, 22.0 ],
+													"patching_rect" : [ 384.0, 201.0, 80.0, 22.0 ],
 													"text" : "prepend read"
 												}
 
@@ -3322,8 +3321,8 @@
 													"numinlets" : 2,
 													"numoutlets" : 1,
 													"outlettype" : [ "" ],
-													"patching_rect" : [ 83.0, 158.0, 120.0, 22.0 ],
-													"text" : "sprintf symout %s%s"
+													"patching_rect" : [ 83.0, 158.0, 153.0, 22.0 ],
+													"text" : "sprintf symout %saudio/%s"
 												}
 
 											}
@@ -3359,7 +3358,7 @@
 													"numinlets" : 1,
 													"numoutlets" : 1,
 													"outlettype" : [ "bang" ],
-													"patching_rect" : [ 184.0, 81.0, 58.0, 22.0 ],
+													"patching_rect" : [ 217.0, 81.0, 58.0, 22.0 ],
 													"text" : "loadbang"
 												}
 
@@ -3371,7 +3370,7 @@
 													"numinlets" : 2,
 													"numoutlets" : 1,
 													"outlettype" : [ "" ],
-													"patching_rect" : [ 184.0, 116.0, 89.0, 22.0 ],
+													"patching_rect" : [ 217.0, 116.0, 89.0, 22.0 ],
 													"text" : "audioPreset.txt"
 												}
 
@@ -4339,7 +4338,7 @@
 					"presentation" : 1,
 					"presentation_rect" : [ 167.0, 172.0, 18.0, 212.0 ],
 					"size" : 7,
-					"values" : [ 0, 0, 0, 0, 0, 0, 0 ]
+					"values" : [ 1, 0, 1, 0, 0, 1, 0 ]
 				}
 
 			}
@@ -4359,7 +4358,7 @@
 					"presentation" : 1,
 					"presentation_rect" : [ 110.0, 172.0, 18.0, 212.0 ],
 					"size" : 7,
-					"values" : [ 0, 1, 0, 0, 1, 0, 1 ]
+					"values" : [ 0, 1, 0, 1, 0, 0, 1 ]
 				}
 
 			}

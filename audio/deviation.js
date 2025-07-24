@@ -111,8 +111,8 @@ Sensor.prototype = {
 			var dt = 1 / fs;
 
 			// — 1) High‑pass @20Hz for DC‑removal —
-			if (this._prevRaw  === undefined) this._prevRaw  = x;
-			if (this._hpPrev   === undefined) this._hpPrev   = 0;
+			if (this._prevRaw === undefined) this._prevRaw  = x;
+			if (this._hpPrev === undefined) this._hpPrev   = 0;
 			var rc_hp = 1 / (2 * Math.PI * 20);
 			var α_hp = rc_hp / (rc_hp + dt);
 			var hp = α_hp * (this._hpPrev + x - this._prevRaw);
