@@ -3,11 +3,13 @@ autowatch = 1;
 inlets = 2; // 0: raw data or list, 1: control cmds
 outlets = 3; // 0: normalized, 1: measure, 2: normalized deviation
 
+
 // ——— Logging ———
 var printEnabled = false;
 function log(msg) {
 	if (printEnabled) post(msg);
 }
+
 
 // ——— Global settings ———
 var sensorType = "emg";
@@ -22,6 +24,7 @@ function setanglerange(v) {
 	angleRange = parseFloat(v);
 	log("[Global] angleRange → " + angleRange + "°\n");
 }
+
 
 // ——— Sensor class ———
 var sensors = [];
@@ -100,8 +103,38 @@ Sensor.prototype = {
 	handleData: function(v) {
 		if (this.recordingMin) this.minSamples.push(v);
 		if (this.recordingMax) this.maxSamples.push(v);
-		if (sensorType === "emg") v = Math.abs(v); // EMG values always positive
+		if (sensorType === "emg") v = this._processEMG(v, sampleRate); // EMG processing
 		return this.compute(v);
+	},
+
+	_processEMG: function(x, fs) {
+			var dt = 1 / fs;
+
+			// — 1) High‑pass @20Hz for DC‑removal —
+			if (this._prevRaw  === undefined) this._prevRaw  = x;
+			if (this._hpPrev   === undefined) this._hpPrev   = 0;
+			var rc_hp = 1 / (2 * Math.PI * 20);
+			var α_hp = rc_hp / (rc_hp + dt);
+			var hp = α_hp * (this._hpPrev + x - this._prevRaw);
+			this._prevRaw = x;
+			this._hpPrev = hp;
+
+			// — 2) Low‑pass @450Hz for band‑pass completion —
+			if (this._bpPrev === undefined) this._bpPrev = hp;
+			var rc_lp450 = 1 / (2 * Math.PI * 450);
+			var α_lp450 = dt / (rc_lp450 + dt);
+			var bp = α_lp450 * hp + (1 - α_lp450) * this._bpPrev;
+			this._bpPrev = bp;
+
+			// — 3) Rectify + envelope‑smooth @40Hz —
+			if (this._envPrev === undefined) this._envPrev = 0;
+			var rc_lp40 = 1 / (2 * Math.PI * 40);
+			var α_lp40 = dt / (rc_lp40 + dt);
+			var env = α_lp40 * Math.abs(bp) + (1 - α_lp40) * this._envPrev;
+			this._envPrev = env;
+
+			// — 4) Return the envelope —
+			return env;
 	},
 
 	// core compute: [ norm, measure, normDev ]
@@ -125,7 +158,7 @@ Sensor.prototype = {
 		var normDev = (scaled > 0) ? (outsideTol / scaled) * sign : 0;
 
 		return [norm, measure, normDev];
-	}
+	},
 };
 
 // ——— Control dispatch ———
@@ -151,6 +184,8 @@ function anything() {
 // ——— Data inlet handlers ———
 function msg_float(v) {
 	if (inlet !== 0) return;
+	updateSampleRate();
+
 	var out = ensureSensor(0).handleData(v);
 	if (out) {
 		outlet(0, out[0]);
@@ -161,6 +196,8 @@ function msg_float(v) {
 
 function list() {
 	if (inlet !== 0) return;
+	updateSampleRate();
+
 	var args = arrayfromargs(arguments);
 	var norms = [], measures = [], normDevs = [];
 
@@ -178,10 +215,37 @@ function list() {
 	outlet(2, normDevs);
 }
 
+
 // ——— Utility ———
 function median(arr) {
 	if (!arr.length) return 0;
 	arr.sort(function(a, b) { return a - b; });
 	var m = Math.floor(arr.length / 2);
 	return (arr.length % 2) ? arr[m] : (arr[m - 1] + arr[m]) / 2;
+}
+
+
+// ——— Sample Rate ———
+var sampleRate = 1000;
+
+var lastTime = null;
+var dtBuffer = [];
+var bufferSize = 50;
+
+function updateSampleRate() {
+		var now = Date.now();
+		if (lastTime) {
+				var dt = now - lastTime;
+				dtBuffer.push(dt);
+				if (dtBuffer.length > bufferSize) dtBuffer.shift();
+
+				if (dtBuffer.length > 0) {
+						var sumDt = dtBuffer.reduce(function(a, b) {
+								return a + b;
+						}, 0);
+						var avgDt = sumDt / dtBuffer.length;
+						sampleRate = 1000 / avgDt;
+				}
+		}
+		lastTime = now;
 }
