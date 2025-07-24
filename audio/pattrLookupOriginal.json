@@ -47,14 +47,28 @@
 					"live.numbox[45]" : [ 40.0 ],
 					"live.numbox[46]" : [ 4.999999999999997 ],
 					"live.numbox[47]" : [ 35.0 ],
+					"live.numbox[48]" : [ 0.0 ],
+					"live.numbox[49]" : [ 5.0 ],
 					"live.numbox[4]" : [ 10.0 ],
+					"live.numbox[50]" : [ 15.0 ],
+					"live.numbox[51]" : [ 5.0 ],
+					"live.numbox[52]" : [ 5.0 ],
+					"live.numbox[53]" : [ 35.0 ],
+					"live.numbox[54]" : [ 65.0 ],
+					"live.numbox[55]" : [ 35.0 ],
+					"live.numbox[56]" : [ 50.0 ],
+					"live.numbox[57]" : [ 70.0 ],
+					"live.numbox[58]" : [ 90.0 ],
+					"live.numbox[59]" : [ 5.0 ],
 					"live.numbox[5]" : [ 35.0 ],
+					"live.numbox[60]" : [ 25.0 ],
+					"live.numbox[61]" : [ 30.0 ],
+					"live.numbox[62]" : [ 40.0 ],
+					"live.numbox[63]" : [ 35.0 ],
 					"live.numbox[6]" : [ 0.0 ],
 					"live.numbox[7]" : [ 10.0 ],
 					"live.numbox[8]" : [ 30.0 ],
-					"live.numbox[9]" : [ 50.0 ],
-					"live.text" : [ 1.0 ],
-					"live.text[1]" : [ 0.0 ]
+					"live.numbox[9]" : [ 50.0 ]
 				}
 
 			}
