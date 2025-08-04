@@ -119,7 +119,7 @@
 						}
 ,
 						"classnamespace" : "box",
-						"rect" : [ 170.0, 769.0, 1430.0, 293.0 ],
+						"rect" : [ 176.0, 574.0, 1430.0, 293.0 ],
 						"bglocked" : 0,
 						"openinpresentation" : 0,
 						"default_fontsize" : 12.0,
@@ -178,8 +178,8 @@
 									"numinlets" : 2,
 									"numoutlets" : 1,
 									"outlettype" : [ "" ],
-									"patching_rect" : [ 45.0, 129.0, 1309.0, 22.0 ],
-									"text" : "window flags zoom, window flags grow, window flags nominimize, window flags nofloat, window flags close, window flags nomenu, window exec, toolbarvisible 0, lefttoolbarpinned 2, righttoolbarpinned 2, toptoolbarpinned 2, bottomtoolbarpinned 2"
+									"patching_rect" : [ 45.0, 129.0, 1296.0, 22.0 ],
+									"text" : "window flags zoom, window flags grow, window flags minimize, window flags nofloat, window flags close, window flags nomenu, window exec, toolbarvisible 0, lefttoolbarpinned 2, righttoolbarpinned 2, toptoolbarpinned 2, bottomtoolbarpinned 2"
 								}
 
 							}

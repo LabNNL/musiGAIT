@@ -5,13 +5,14 @@ from enum import Enum
 import threading
 import argparse
 import logging
+import random
 import struct
 import socket
 import json
 import time
 
-# Protocol Version
-VERSION = 1
+# Server Version
+VERSION = 2
 
 # OSC send to MaxMSP
 OSC_IP, OSC_PORT = "127.0.0.1", 8000
@@ -31,10 +32,10 @@ ANALYZER_IP, ANALYZER_PORT = "127.0.0.1", 8001
 DATA_MULTIPLIER = 10000
 
 # Analyzer configuration
-ANALYZER_LEFT_CHANNEL = -1
+ANALYZER_LEFT_CHANNEL = None
 ANALYZER_LEFT_THRESHOLD = 5
 
-ANALYZER_RIGHT_CHANNEL = -1
+ANALYZER_RIGHT_CHANNEL = None
 ANALYZER_RIGHT_THRESHOLD = 5
 
 ANALYZER_LEARNING_RATE = 0.8
@@ -56,7 +57,7 @@ analyzer_config_left = {
 				{
 					"type": "threshold",
 					"device": ANALYZER_DEVICE,
-					"channel": ANALYZER_LEFT_CHANNEL - 1,
+					"channel": ANALYZER_LEFT_CHANNEL,
 					"comparator": ">=",
 					"value": ANALYZER_LEFT_THRESHOLD
 				}
@@ -69,7 +70,7 @@ analyzer_config_left = {
 				{
 					"type": "threshold",
 					"device": ANALYZER_DEVICE,
-					"channel": ANALYZER_LEFT_CHANNEL - 1,
+					"channel": ANALYZER_LEFT_CHANNEL,
 					"comparator": "<",
 					"value": ANALYZER_LEFT_THRESHOLD
 				}
@@ -92,7 +93,7 @@ analyzer_config_right = {
 				{
 					"type": "threshold",
 					"device": ANALYZER_DEVICE,
-					"channel": ANALYZER_RIGHT_CHANNEL-1,
+					"channel": ANALYZER_RIGHT_CHANNEL,
 					"comparator": ">=",
 					"value": ANALYZER_RIGHT_THRESHOLD
 				}
@@ -105,7 +106,7 @@ analyzer_config_right = {
 				{
 					"type": "threshold",
 					"device": ANALYZER_DEVICE,
-					"channel": ANALYZER_RIGHT_CHANNEL-1,
+					"channel": ANALYZER_RIGHT_CHANNEL,
 					"comparator": "<",
 					"value": ANALYZER_RIGHT_THRESHOLD
 				}
@@ -114,6 +115,9 @@ analyzer_config_right = {
 	]
 }
 
+# Header size
+RESPONSE_HEADER_BYTES = 24
+
 logging.basicConfig(
 	level=logging.INFO, 
 	format='[%(asctime)s.%(msecs)03d] [%(levelname)s] %(message)s', 
@@ -121,24 +125,48 @@ logging.basicConfig(
 )
 log = logging.getLogger(__name__)
 
-
 # Commands
 class Command(Enum):
+	NONE = 0xFFFFFFFF
 	HANDSHAKE = 0
+	GET_STATES = 1
+
 	CONNECT_DELSYS_ANALOG = 10
 	CONNECT_DELSYS_EMG = 11
 	CONNECT_MAGSTIM = 12
-	ZERO_DELSYS_ANALOG = 40
-	ZERO_DELSYS_EMG = 41
+
 	DISCONNECT_DELSYS_ANALOG = 20
 	DISCONNECT_DELSYS_EMG = 21
 	DISCONNECT_MAGSTIM = 22
+
 	START_RECORDING = 30
 	STOP_RECORDING = 31
 	GET_LAST_TRIAL_DATA = 32
+
+	ZERO_DELSYS_ANALOG = 40
+	ZERO_DELSYS_EMG = 41
+
 	ADD_ANALYZER = 50
 	REMOVE_ANALYZER = 51
+
 	FAILED = 100
+
+# Server messages
+class ServerMessage(Enum):
+	OK = 0
+	NOK = 1
+	LISTENING_EXTRA_DATA = 2
+	SENDING_DATA = 10
+	STATES_CHANGED = 20
+
+# Data types
+class DataType(Enum):
+	STATES = 0
+	FULL_TRIAL = 1
+	LIVE_DATA = 10
+	LIVE_ANALYSES = 11
+	NONE_TYPE = 0xFFFFFFFF
+
 
 
 def to_packet(command_int: int) -> bytes:
@@ -151,44 +179,72 @@ def to_packet(command_int: int) -> bytes:
 	return struct.pack("<II", VERSION, command_int)
 
 
-def interpret_response(response: bytes) -> dict:
+def parse_header(response: bytes) -> dict:
 	"""
-	Interpret a 16-byte response from the server.
+	Interpret a response from the server.
 
-	Expected response structure:
-	- 4 bytes: Protocol version (little-endian, should be == VERSION)
-	- 8 bytes: Timestamp (little-endian, milliseconds since UNIX epoch)
-	- 4 bytes: Response code (little-endian, NOK = 0, OK = 1)
+	Header structure (little-endian):
+	  1) 4 bytes : protocol version (must == VERSION)
+	  2) 4 bytes : echoed command
+	  3) 4 bytes : server message (OK, NOK, etc.)
+	  4) 4 bytes : data type (STATES, FULL_TRIAL, NONE, etc.)
+	  5) 8 bytes : timestamp (ms since UNIX epoch)
 
 	Returns:
-		dict: Parsed response with protocol version, timestamp, human-readable time, and status.
+		On success, a dict with:
+			- protocol_version (int)
+			- command_echo (Command)
+			- server_msg (ServerMessage)
+			- data_type (DataType)
+			- timestamp (int)
+			- human_time (str, UTC)
+		
+		On failure, a dict with:
+			- error (str)
+			- raw_data (hex str or None)
 	"""
 
-	if not response or len(response) != 16:
+	if not response or len(response) != RESPONSE_HEADER_BYTES:
 		return {
 			"error": "Invalid response length",
 			"raw_data": response.hex() if response else None
 		}
 
-	# Unpack response (little-endian format)
-	protocol_version, timestamp, status = struct.unpack('<I Q I', response)
+	# Unpack raw fields
+	version, raw_cmd, raw_msg, raw_type, raw_ts = struct.unpack('<I I I I Q', response)
 
 	# Check protocol version
-	if protocol_version != VERSION:
+	if version != VERSION:
 		return {
-			"error": f"Invalid protocol version: {protocol_version}",
+			"error": f"Invalid protocol version: {version}",
 			"raw_data": response.hex() if response else None
 		}
 
-	# Convert timestamp to human-readable format
-	timestamp_seconds = timestamp / 1000.0
-	human_readable_time = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(timestamp_seconds))
+	# Convert to enums
+	try:
+		command = Command(raw_cmd)
+		server_msg = ServerMessage(raw_msg)
+		data_type = DataType(raw_type)
+	
+	except ValueError as e:
+		return {
+			"error": f"Unknown enum value: {e}",
+			"raw_data": response.hex() if response else None
+		}
+
+	# Format timestamp
+	human_time = time.strftime(
+		'%Y-%m-%d %H:%M:%S', 
+		time.gmtime(raw_ts / 1000.0)
+	)
 
 	return {
-		"protocol_version": protocol_version,
-		"timestamp": timestamp,
-		"human_time": human_readable_time,
-		"status": status,
+		"protocol_version": version,
+		"command_echo": command,
+		"server_msg": server_msg,
+		"data_type": data_type,
+		"timestamp": raw_ts,
+		"human_time": human_time
 	}
 
 
@@ -226,18 +282,23 @@ def send_command(sock, command: Command) -> bool:
 		sock.sendall(command_packet)
 		log.info(f"Sent command: {command.name} ({command.value})")
 
-		# Read the full 16-byte response
-		response = recv_exact(sock, 16)
-		parsed_response = interpret_response(response)
+		# Read the full response
+		response = recv_exact(sock, RESPONSE_HEADER_BYTES)
+		parsed_response = parse_header(response)
 
 		# Handle interpretation errors
 		if "error" in parsed_response:
 			log.error(f"Response interpretation error: {parsed_response['error']}")
 			return False
 
-		# Check if response is OK (1) or NOK (0)
-		if parsed_response["status"] != 1:
-			log.error(f"Command {command.name} failed")
+		# For ADD_ANALYZER / REMOVE_ANALYZER we also accept LISTENING_EXTRA_DATA
+		if command in (Command.ADD_ANALYZER, Command.REMOVE_ANALYZER):
+			allowed = (ServerMessage.OK, ServerMessage.LISTENING_EXTRA_DATA)
+		else:
+			allowed = (ServerMessage.OK,)
+
+		if parsed_response["server_msg"] not in allowed:
+			log.error(f"Command {command.name} failed (got {parsed_response['server_msg'].name})")
 			return False
 
 		return True
@@ -272,14 +333,14 @@ def send_extra_data(sock, response_sock, extra_data: dict) -> bool:
 		sock.sendall(header + json_data)
 
 		# Wait for the response
-		response = recv_exact(response_sock, 16)
-		parsed_response = interpret_response(response)
+		response = recv_exact(response_sock, RESPONSE_HEADER_BYTES)
+		parsed_response = parse_header(response)
 
 		if "error" in parsed_response:
 			log.error(f"Error in extra data response: {parsed_response['error']}")
 			return False
 
-		if parsed_response["status"] != 1:
+		if parsed_response["server_msg"] is not ServerMessage.OK:
 			log.error(f"Extra data failed (NOK received)")
 			return False
 
@@ -300,12 +361,17 @@ def connect_and_handshake(host: str, ports: list[int]) -> list[socket.socket] | 
 	"""
 	sockets = []
 
+	# Random ID
+	random_id = random.randint(0x10000000, 0xFFFFFFFE)
+	packet_id = struct.pack('<II', VERSION, random_id)
+
 	# Attempt to connect to all ports
 	for port in ports:
 		try:
 			sock = socket.create_connection((host, port))
 			sockets.append(sock)
 			log.info(f"Connected to {host}:{port}")
+			sock.sendall(packet_id)
 
 		except Exception as e:
 			log.error(f"Error connecting to {host}:{port}: {e}")
@@ -318,20 +384,20 @@ def connect_and_handshake(host: str, ports: list[int]) -> list[socket.socket] | 
 		handshake_message = to_packet(Command.HANDSHAKE.value)
 		sockets[0].sendall(handshake_message)
 
-		response = sockets[0].recv(16)
-		parsed_response = interpret_response(response)
+		response = recv_exact(sockets[0], RESPONSE_HEADER_BYTES)
+		parsed = parse_header(response)
 
-		if "error" in parsed_response:
-			log.error(f"Handshake error: {parsed_response['error']}")
+		if parsed.get("error") or parsed["server_msg"] is not ServerMessage.OK:
+			log.error(f"Handshake error: {parsed['error']}")
 			return False
 
 	log.info("Handshake successful")
 	return sockets
 
 
-def parse_data_length(data: bytes) -> int:
-	"""Extract expected data length from header bytes 12-15."""
-	return struct.unpack('<I', data[12:16])[0]
+def parse_data_length(length_bytes: bytes) -> int:
+	"""Unpack the 8-byte little-endian length field."""
+	return struct.unpack('<Q', length_bytes)[0]
 
 
 def send_osc_message(address: str, value: float) -> None:
@@ -340,31 +406,35 @@ def send_osc_message(address: str, value: float) -> None:
 		osc_client.send_message(address, value)
 
 
-def listen_to_live_data(sock: socket.socket) -> None:
+def listen_to_live_data(sock: socket.socket, stop_event: threading.Event) -> None:
 	"""Listen for live data packets and send them via OSC."""
 	sent_timestamps = set()
 	log.info(f"Sending live data via OSC on {OSC_IP}:{OSC_PORT}")
 
 	try:
-		while True:
-			header = recv_exact(sock, 16)
-			body_length = parse_data_length(header)
-			body = recv_exact(sock, body_length)
+		while not stop_event.is_set():
+			header = recv_exact(sock, RESPONSE_HEADER_BYTES)
+			parsed = parse_header(header)
 
-			try:
-				decoded = json.loads(body.decode('utf-8'))
-				for key, payload in decoded.items():
-					for entry in payload['data']['data']:
-						timestamp, channels = entry[0], entry[1]
-						if timestamp in sent_timestamps:
-							continue
-						sent_timestamps.add(timestamp)
-						for ch in CURRENT_SENSORS:
-							if 1 <= ch <= len(channels):
-								send_osc_message(f'/sensor_{ch}', channels[ch-1] * DATA_MULTIPLIER)
+			if parsed["data_type"] is not DataType.NONE_TYPE:
+				length_bytes = recv_exact(sock, 8)
+				body_length = parse_data_length(length_bytes)
+				body = recv_exact(sock, body_length)
 
-			except json.JSONDecodeError:
-				log.error("JSON decode error; skipping this packet.")
+				try:
+					decoded = json.loads(body.decode('utf-8'))
+					for key, payload in decoded.items():
+						for entry in payload['data']['data']:
+							timestamp, channels = entry[0], entry[1]
+							if timestamp in sent_timestamps:
+								continue
+							sent_timestamps.add(timestamp)
+							for ch in CURRENT_SENSORS:
+								if 1 <= ch <= len(channels):
+									send_osc_message(f'/sensor_{ch}', channels[ch-1] * DATA_MULTIPLIER)
+
+				except json.JSONDecodeError:
+					log.error("JSON decode error; skipping this packet.")
 
 	except (ConnectionError, socket.error) as e:
 		log.error(f"Live-data socket closed: {e}")
@@ -374,7 +444,7 @@ def listen_to_live_data(sock: socket.socket) -> None:
 		log.info("Live data connection closed")
 
 
-def listen_to_live_analyses(sock: socket) -> None:
+def listen_to_live_analyses(sock: socket, stop_event: threading.Event) -> None:
 	"""Listen for live analyses packets and send them via OSC."""
 	buffer = bytearray()
 	expected_length = None
@@ -382,32 +452,38 @@ def listen_to_live_analyses(sock: socket) -> None:
 	log.info(f"Sending live analyses via OSC on {OSC_IP}:{OSC_PORT}")
 
 	try:
-		while True:
-			header = recv_exact(sock, 16)
-			body_length = parse_data_length(header)
-			body = recv_exact(sock, body_length)
+		while not stop_event.is_set():
+			header = recv_exact(sock, RESPONSE_HEADER_BYTES)
+			parsed = parse_header(header)
 			
-			try:
-				decoded = json.loads(body.decode('utf-8'))
-				if "data" in decoded:
-					for key, analysis in decoded["data"].items():
-						# make OSC address safe
-						addr = f'/{key.replace(" ", "_")}'
-						# if analysis[1] is a list of values, send each separately:
-						if (
-							isinstance(analysis, list)
-							and len(analysis) >= 2
-							and isinstance(analysis[1], list)
-						):
-							for value in analysis[1]:
-								send_osc_message(addr, value)
-						else:
-							log.error(f"Unexpected format in '{key}' data")
-			except json.JSONDecodeError:
-				log.error("JSON decode error in live analyses; skipping this packet")
+			if parsed["data_type"] is not DataType.NONE_TYPE:
+				length_bytes = recv_exact(sock, 8)
+				body_length = parse_data_length(length_bytes)
+				body = recv_exact(sock, body_length)
+				
+				try:
+					decoded = json.loads(body.decode('utf-8'))
+					if "data" in decoded:
+						for key, analysis in decoded["data"].items():
+							# make OSC address safe
+							addr = f'/{key.replace(" ", "_")}'
+							# if analysis[1] is a list of values, send each separately
+							if (
+								isinstance(analysis, list)
+								and len(analysis) >= 2
+								and isinstance(analysis[1], list)
+							):
+								for value in analysis[1]:
+									send_osc_message(addr, value)
+							else:
+								log.error(f"Unexpected format in '{key}' data")
+				
+				except json.JSONDecodeError:
+					log.error("JSON decode error in live analyses; skipping this packet")
 
 	except (ConnectionError, socket.error) as e:
 		log.info(f"Live-analyses socket closed: {e}")
+	
 	finally:
 		sock.close()
 		log.info("Live analysis connection closed")
@@ -418,16 +494,16 @@ def analyzer_update_channels(address: str, *args) -> None:
 	global ANALYZER_LEFT_CHANNEL, ANALYZER_RIGHT_CHANNEL
 
 	try:
-		with osc_lock:
+		with osc_lock:	
 			if len(args) == 1:
-				ANALYZER_LEFT_CHANNEL = int(args[0])
-				ANALYZER_RIGHT_CHANNEL = -1
-				log.info(f"Updated ANALYZER_LEFT_CHANNEL: {ANALYZER_LEFT_CHANNEL}")
+				ANALYZER_LEFT_CHANNEL = int(args[0]) -1
+				ANALYZER_RIGHT_CHANNEL = None
+				log.info(f"Updated ANALYZER_LEFT_CHANNEL: {int(args[0])}")
 			
 			elif len(args) >= 2:
-				ANALYZER_LEFT_CHANNEL = int(args[0])
-				ANALYZER_RIGHT_CHANNEL = int(args[1])
-				log.info(f"Updated ANALYZER_CHANNELS: {ANALYZER_LEFT_CHANNEL}, {ANALYZER_RIGHT_CHANNEL}")
+				ANALYZER_LEFT_CHANNEL = int(args[0]) -1
+				ANALYZER_RIGHT_CHANNEL = int(args[1]) -1
+				log.info(f"Updated ANALYZER_CHANNELS: {int(args[0])}, {int(args[1])}")
 			
 			else:
 				raise IndexError("No channel data provided.")
@@ -484,15 +560,15 @@ def update_analyzer_config() -> None:
 
 	with osc_lock:
 		# Left
-		analyzer_config_left["events"][0]["start_when"][0]["channel"] = ANALYZER_LEFT_CHANNEL - 1
+		analyzer_config_left["events"][0]["start_when"][0]["channel"] = ANALYZER_LEFT_CHANNEL
 		analyzer_config_left["events"][0]["start_when"][0]["value"] = ANALYZER_LEFT_THRESHOLD
-		analyzer_config_left["events"][1]["start_when"][0]["channel"] = ANALYZER_LEFT_CHANNEL - 1
+		analyzer_config_left["events"][1]["start_when"][0]["channel"] = ANALYZER_LEFT_CHANNEL
 		analyzer_config_left["events"][1]["start_when"][0]["value"] = ANALYZER_LEFT_THRESHOLD
 
 		# Right
-		analyzer_config_right["events"][0]["start_when"][0]["channel"] = ANALYZER_RIGHT_CHANNEL - 1
+		analyzer_config_right["events"][0]["start_when"][0]["channel"] = ANALYZER_RIGHT_CHANNEL
 		analyzer_config_right["events"][0]["start_when"][0]["value"] = ANALYZER_RIGHT_THRESHOLD
-		analyzer_config_right["events"][1]["start_when"][0]["channel"] = ANALYZER_RIGHT_CHANNEL - 1
+		analyzer_config_right["events"][1]["start_when"][0]["channel"] = ANALYZER_RIGHT_CHANNEL
 		analyzer_config_right["events"][1]["start_when"][0]["value"] = ANALYZER_RIGHT_THRESHOLD
 
 
@@ -528,7 +604,7 @@ def send_analyzer_config() -> None:
 		active_attr = f"{side}_active"
 		is_active = getattr(send_analyzer_config, active_attr)
 
-		if channel == -1:
+		if channel == None:
 			if is_active:
 				if not send_command(SOCKETS[0], Command.REMOVE_ANALYZER):
 					log.error(f"Failed to remove {side} analyzer '{config['name']}'")
@@ -544,7 +620,7 @@ def send_analyzer_config() -> None:
 			if is_active:
 				if not send_command(SOCKETS[0], Command.REMOVE_ANALYZER):
 					log.error(f"Failed to remove {side} analyzer '{config['name']}'")
-					continue  # Skip adding if we can't remove
+					continue
 
 				elif not send_extra_data(SOCKETS[1], SOCKETS[0], {"analyzer": config["name"]}):
 					log.error(f"Failed to send {side} analyzer name '{config['name']}'")
@@ -575,7 +651,7 @@ def change_current_sensors(address: str, *args) -> None:
 		log.error(f"Error changing current sensor: {e}")
 
 
-def listen_to_osc_updates() -> None:
+def start_osc_server() -> tuple[BlockingOSCUDPServer, threading.Thread]:
 	"""Starts an OSC server to listen for threshold and channel updates from Max/MSP."""
 	dispatcher = Dispatcher()
 	dispatcher.map("/sensors", change_current_sensors)
@@ -584,26 +660,31 @@ def listen_to_osc_updates() -> None:
 	dispatcher.map("/analyzer_learningrate", analyzer_update_learningrate)
 
 	server = BlockingOSCUDPServer((ANALYZER_IP, ANALYZER_PORT), dispatcher)
-	log.info(f"Listening for OSC updates on port {ANALYZER_PORT}...")
-	server.serve_forever()
+	thread = threading.Thread(target=server.serve_forever, daemon=True)
+	thread.start()
+	log.info(f"OSC server listening on {ANALYZER_IP}:{ANALYZER_PORT}")
+	return server, thread
 
 
 def main():
 	"""Main function to parse CLI args, establish connections and start data processing."""
+	stop_event = threading.Event()
 
 	# Parse server ports
 	parser = argparse.ArgumentParser(description="TCP→OSC bridge: specify Delsys EMG ports to use")
 	parser.add_argument("--portCommand", type=int, default=5000, help="EMG command port")
-	parser.add_argument("--portResponse", type=int, default=5001, help="EMG response port")
+	parser.add_argument("--portMessage", type=int, default=5001, help="EMG message port")
 	parser.add_argument("--portLiveData", type=int, default=5002, help="EMG data stream port")
 	parser.add_argument("--portLiveAnalyses", type=int, default=5003, help="EMG analyses stream port")
+	parser.add_argument("--useMock", type=str, default="false", choices=["true", "false"], 
+		help="Use MOCK server instead of real EMG: 'true' or 'false'")
 	args = parser.parse_args()
 
 	# Override the default ports
 	global EMG_PORTS
 	EMG_PORTS = [
 		args.portCommand,
-		args.portResponse,
+		args.portMessage,
 		args.portLiveData,
 		args.portLiveAnalyses,
 	]
@@ -622,38 +703,45 @@ def main():
 		return
 
 	# Start live data listener thread
-	data_thread = threading.Thread(target=listen_to_live_data, args=(SOCKETS[2],), daemon=True)
+	data_thread = threading.Thread(
+		target=listen_to_live_data, 
+		args=(SOCKETS[2], stop_event), 
+		daemon=True
+	)
 	data_thread.start()
 
-	# # Send ADD_ANALYZER command
-	# if not send_command(SOCKETS[0], Command.ADD_ANALYZER):
-	# 	log.error("Failed to send ADD_ANALYZER command. Exiting...")
-	# 	return
-
-	# # Send the analyzer configuration
-	# if not send_extra_data(SOCKETS[1], SOCKETS[0], analyzer_config_left):
-	# 	log.error("Failed to send analyzer configuration. Exiting...")
-	# 	return
-
-	# Send analyzer config (only if channel != -1)
+	# Send analyzer config (only if channel != None)
 	send_analyzer_config()
 
 	# Start live analyses listener thread
-	analyses_thread = threading.Thread(target=listen_to_live_analyses, args=(SOCKETS[3],), daemon=True)
+	analyses_thread = threading.Thread(
+		target=listen_to_live_analyses, 
+		args=(SOCKETS[3], stop_event), 
+		daemon=True
+	)
 	analyses_thread.start()
 
 	# Start the OSC listener to change analyzer configuration
-	analyzer_update_thread = threading.Thread(target=listen_to_osc_updates, daemon=True)
-	analyzer_update_thread.start()
+	osc_server, osc_thread = start_osc_server()
 
 	try:
 		log.info("Connections established. Running... Press Ctrl+C to exit.")
-		threading.Event().wait()
+		stop_event.wait()
+	
 	except KeyboardInterrupt:
 		log.info("\nShutting down...")
+		stop_event.set()
+		osc_server.shutdown()
+		osc_server.server_close()
+	
 	finally:
+		data_thread.join()
+		analyses_thread.join()
+		osc_thread.join()
+		
 		for sock in SOCKETS:
 			sock.close()
+		
 		log.info("Connections closed")
 
 
