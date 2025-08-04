@@ -10,7 +10,7 @@
 		}
 ,
 		"classnamespace" : "box",
-		"rect" : [ 34.0, 77.0, 1443.0, 921.0 ],
+		"rect" : [ 359.0, 177.0, 1068.0, 671.0 ],
 		"bglocked" : 0,
 		"openinpresentation" : 1,
 		"default_fontsize" : 12.0,
@@ -2387,8 +2387,8 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 26.0, 212.0, 65.0, 22.0 ],
-					"text" : "0 0 0 0 0 0"
+					"patching_rect" : [ 26.0, 212.0, 75.0, 22.0 ],
+					"text" : "0 0 0 0 0 0 0"
 				}
 
 			}
@@ -33466,13 +33466,6 @@
 		}
 ,
 		"dependency_cache" : [ 			{
-				"name" : "audioPreset.txt",
-				"bootpath" : "D:/musiGAIT/audio",
-				"patcherrelativepath" : ".",
-				"type" : "TEXT",
-				"implicit" : 1
-			}
-, 			{
 				"name" : "crossFade.maxpat",
 				"bootpath" : "D:/musiGAIT/audio",
 				"patcherrelativepath" : ".",
