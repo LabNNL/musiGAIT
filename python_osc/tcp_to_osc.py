@@ -8,6 +8,7 @@ import logging
 import random
 import struct
 import socket
+import select
 import json
 import time
 
@@ -23,7 +24,12 @@ osc_lock = threading.Lock()
 EMG_HOST = "127.0.0.1"
 
 CURRENT_SENSORS = []
+
 SOCKETS = []
+IDX_COMMAND = 0  # ports[0] → command port
+IDX_MESSAGE = 1  # ports[1] → message port
+IDX_LIVE_DATA = 2  # ports[2] → live data port
+IDX_LIVE_ANALYSES = 3  # ports[3] → analyses port
 
 # OSC to change analyzer configuration
 ANALYZER_IP, ANALYZER_PORT = "127.0.0.1", 8001
@@ -166,7 +172,6 @@ class DataType(Enum):
 	LIVE_DATA = 10
 	LIVE_ANALYSES = 11
 	NONE_TYPE = 0xFFFFFFFF
-
 
 
 def to_packet(command_int: int) -> bytes:
@@ -321,6 +326,7 @@ def send_extra_data(sock, response_sock, extra_data: dict) -> bool:
 		bool: True if extra data was sent successfully, False otherwise.
 	"""
 
+	flusher.pause()
 	try:
 		# Serialize extra data as JSON
 		json_data = json.dumps(extra_data).encode('utf-8')
@@ -330,7 +336,7 @@ def send_extra_data(sock, response_sock, extra_data: dict) -> bool:
 		header = struct.pack('<II', VERSION, data_length)
 
 		# Send the header and JSON data
-		sock.sendall(header + json_data)
+		response_sock.sendall(header + json_data)
 
 		# Wait for the response
 		response = recv_exact(response_sock, RESPONSE_HEADER_BYTES)
@@ -340,8 +346,8 @@ def send_extra_data(sock, response_sock, extra_data: dict) -> bool:
 			log.error(f"Error in extra data response: {parsed_response['error']}")
 			return False
 
-		if parsed_response["server_msg"] is not ServerMessage.OK:
-			log.error(f"Extra data failed (NOK received)")
+		if parsed_response["server_msg"] not in (ServerMessage.OK, ServerMessage.STATES_CHANGED):
+			log.error(f"Extra data failed (`{parsed_response['server_msg']}` received)")
 			return False
 
 		log.info(f"Extra data sent successfully")
@@ -349,6 +355,28 @@ def send_extra_data(sock, response_sock, extra_data: dict) -> bool:
 
 	except socket.error as e:
 		log.error(f"Socket error while sending extra data: {e}")
+		return False
+
+	finally:
+		flusher.resume()
+
+
+def forward_response(response: bytes) -> bool:
+	"""
+	Forwards a STATES response (JSON) to Max/MSP via OSC at /states.
+	Returns True on success, False otherwise.
+	"""
+	try:
+		json_str = response.decode("utf-8")
+		
+		with osc_lock:
+			osc_client.send_message("/states", json_str)
+		
+		log.info("Forwarded /states to Max/MSP")
+		return True
+
+	except Exception as e:
+		log.error(f"Error forwarding STATES to Max/MSP: {e}")
 		return False
 
 
@@ -382,9 +410,9 @@ def connect_and_handshake(host: str, ports: list[int]) -> list[socket.socket] | 
 	# Perform handshake on the first socket
 	if len(sockets) == len(ports):
 		handshake_message = to_packet(Command.HANDSHAKE.value)
-		sockets[0].sendall(handshake_message)
+		sockets[IDX_COMMAND].sendall(handshake_message)
 
-		response = recv_exact(sockets[0], RESPONSE_HEADER_BYTES)
+		response = recv_exact(sockets[IDX_COMMAND], RESPONSE_HEADER_BYTES)
 		parsed = parse_header(response)
 
 		if parsed.get("error") or parsed["server_msg"] is not ServerMessage.OK:
@@ -493,6 +521,10 @@ def analyzer_update_channels(address: str, *args) -> None:
 	"""Handles incoming OSC messages to update ANALYZER_CHANNEL."""
 	global ANALYZER_LEFT_CHANNEL, ANALYZER_RIGHT_CHANNEL
 
+	log.info('-------------------------------------------------------')
+	log.info(args)
+	log.info('-------------------------------------------------------')
+
 	try:
 		with osc_lock:	
 			if len(args) == 1:
@@ -598,43 +630,46 @@ def send_analyzer_config() -> None:
 		}
 	}
 
+	cmd_sock = SOCKETS[IDX_COMMAND]
+	msg_sock = SOCKETS[IDX_MESSAGE]
+
 	for side, values in sides.items():
 		channel = values["channel"]
 		config = values["config"]
 		active_attr = f"{side}_active"
 		is_active = getattr(send_analyzer_config, active_attr)
 
-		if channel == None:
-			if is_active:
-				if not send_command(SOCKETS[0], Command.REMOVE_ANALYZER):
-					log.error(f"Failed to remove {side} analyzer '{config['name']}'")
-				
-				elif not send_extra_data(SOCKETS[1], SOCKETS[0], {"analyzer": config["name"]}):
-					log.error(f"Failed to send {side} analyzer name '{config['name']}'")
-				
-				else:
+		# Removing an analyzer
+		if channel is None and is_active:
+			if send_command(cmd_sock, Command.REMOVE_ANALYZER):
+				if send_extra_data(cmd_sock, msg_sock, {"analyzer": config["name"]}):
 					log.info(f"{side.capitalize()} analyzer '{config['name']}' removed due to disabled channel.")
 					setattr(send_analyzer_config, active_attr, False)
-		
-		else:
-			if is_active:
-				if not send_command(SOCKETS[0], Command.REMOVE_ANALYZER):
-					log.error(f"Failed to remove {side} analyzer '{config['name']}'")
-					continue
-
-				elif not send_extra_data(SOCKETS[1], SOCKETS[0], {"analyzer": config["name"]}):
-					log.error(f"Failed to send {side} analyzer name '{config['name']}'")
-					continue
-
-			if not send_command(SOCKETS[0], Command.ADD_ANALYZER):
-				log.error(f"Failed to send ADD_ANALYZER for {side} '{config['name']}'")
-
-			elif not send_extra_data(SOCKETS[1], SOCKETS[0], config):
-				log.error(f"Failed to send configuration for {side} '{config['name']}'")
-
+				else:
+					log.error(f"Failed to send {side} analyzer name '{config['name']}' for removal.")
 			else:
-				log.info(f"{side.capitalize()} analyzer '{config['name']}' updated successfully.")
-				setattr(send_analyzer_config, active_attr, True)
+				log.error(f"Failed to remove {side} analyzer '{config['name']}'.")
+		
+		# Adding or updating analyzer
+		elif channel is not None:
+			# If already active, remove first
+			if is_active:
+				if send_command(cmd_sock, Command.REMOVE_ANALYZER):
+					if not send_extra_data(cmd_sock, msg_sock, {"analyzer": config["name"]}):
+						log.error(f"Failed to send {side} analyzer name '{config['name']}' for re-add.")
+						continue
+				else:
+					log.error(f"Failed to remove {side} analyzer '{config['name']}' for re-add.")
+					continue
+
+			if send_command(cmd_sock, Command.ADD_ANALYZER):
+				if send_extra_data(cmd_sock, msg_sock, config):
+					log.info(f"{side.capitalize()} analyzer '{config['name']}' updated successfully.")
+					setattr(send_analyzer_config, active_attr, True)
+				else:
+					log.error(f"Failed to send configuration for {side} '{config['name']}'.")
+			else:
+				log.error(f"Failed to send ADD_ANALYZER for {side} '{config['name']}'")
 
 
 def change_current_sensors(address: str, *args) -> None:
@@ -666,12 +701,99 @@ def start_osc_server() -> tuple[BlockingOSCUDPServer, threading.Thread]:
 	return server, thread
 
 
+def request_states():
+	pkt = to_packet(Command.GET_STATES.value)
+	SOCKETS[IDX_COMMAND].sendall(pkt)
+	log.info("Requested STATES")
+	
+
+def flush_socket(sock):
+	"""
+	Drains any bytes waiting on sock.recv() without blocking.
+	Leaves sock in its original blocking state.
+	"""
+	orig_timeout = sock.gettimeout()
+	sock.setblocking(False)
+	
+	try:
+		while True:
+			r, _, _ = select.select([sock], [], [], 0)
+			if not r:
+				break
+
+			try:
+				header = recv_exact(sock, RESPONSE_HEADER_BYTES)
+			except (BlockingIOError, ConnectionError):
+				break
+			
+			parsed = parse_header(header)
+
+			if parsed.get("server_msg") is ServerMessage.STATES_CHANGED:
+				log.info("Detected STATES_CHANGED: requesting GET_STATES")
+				request_states()
+
+				hdr2 = recv_exact(sock, RESPONSE_HEADER_BYTES)
+				parsed2 = parse_header(hdr2)
+				length2 = recv_exact(sock, 8)
+				body2_len = parse_data_length(length2)
+				body2 = recv_exact(sock, body2_len)
+
+				if parsed2.get("data_type") is DataType.STATES:
+					forward_response(body2)
+			
+			length_bytes = recv_exact(sock, 8)
+			body_length = parse_data_length(length_bytes)
+			body = recv_exact(sock, body_length)
+			
+			if parsed.get("data_type") is DataType.STATES:
+				forward_response(body)
+				
+	except (BlockingIOError, InterruptedError):
+		pass
+	
+	finally:
+		sock.settimeout(orig_timeout)
+
+
+class SocketFlusher:
+	def __init__(self, sock, interval: float = 0.05):
+		"""
+		:param sock: the socket to flush
+		:param interval: how often (in seconds) to attempt a flush
+		"""
+		self.sock = sock
+		self.interval = interval
+		self._stop = threading.Event()
+		self._pause = threading.Event()
+		self._thread = threading.Thread(target=self._run, daemon=True)
+		self._thread.start()
+
+	def _run(self):
+		while not self._stop.is_set():
+			if not self._pause.is_set():
+				flush_socket(self.sock)
+			time.sleep(self.interval)
+
+	def pause(self):
+		"""Stop flushing so you can do a controlled recv/send."""
+		self._pause.set()
+
+	def resume(self):
+		"""Resume automatic flushing."""
+		self._pause.clear()
+
+	def stop(self):
+		"""Kill the background thread."""
+		self._stop.set()
+		self._thread.join()
+
+
 def main():
 	"""Main function to parse CLI args, establish connections and start data processing."""
 	stop_event = threading.Event()
 
 	# Parse server ports
-	parser = argparse.ArgumentParser(description="TCP→OSC bridge: specify Delsys EMG ports to use")
+	parser = argparse.ArgumentParser(description="TCP/OSC bridge: specify Delsys EMG ports to use")
 	parser.add_argument("--portCommand", type=int, default=5000, help="EMG command port")
 	parser.add_argument("--portMessage", type=int, default=5001, help="EMG message port")
 	parser.add_argument("--portLiveData", type=int, default=5002, help="EMG data stream port")
@@ -693,19 +815,22 @@ def main():
 	global SOCKETS
 	SOCKETS = connect_and_handshake(EMG_HOST, EMG_PORTS)
 
+	global flusher
+	flusher = SocketFlusher(SOCKETS[IDX_MESSAGE])
+
 	if not SOCKETS:
 		log.error("Failed to establish all connections. Exiting...")
 		return
 
 	# Send CONNECT_DELSYS_EMG command
-	if not send_command(SOCKETS[0], Command.CONNECT_DELSYS_EMG):
+	if not send_command(SOCKETS[IDX_COMMAND], Command.CONNECT_DELSYS_EMG):
 		log.error("Failed to send CONNECT_DELSYS_EMG command. Exiting...")
 		return
 
 	# Start live data listener thread
 	data_thread = threading.Thread(
 		target=listen_to_live_data, 
-		args=(SOCKETS[2], stop_event), 
+		args=(SOCKETS[IDX_LIVE_DATA], stop_event), 
 		daemon=True
 	)
 	data_thread.start()
@@ -716,7 +841,7 @@ def main():
 	# Start live analyses listener thread
 	analyses_thread = threading.Thread(
 		target=listen_to_live_analyses, 
-		args=(SOCKETS[3], stop_event), 
+		args=(SOCKETS[IDX_LIVE_ANALYSES], stop_event), 
 		daemon=True
 	)
 	analyses_thread.start()
@@ -738,6 +863,7 @@ def main():
 		data_thread.join()
 		analyses_thread.join()
 		osc_thread.join()
+		flusher.stop()
 		
 		for sock in SOCKETS:
 			sock.close()
