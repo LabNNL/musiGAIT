@@ -1,6 +1,7 @@
 from pythonosc.osc_server import BlockingOSCUDPServer
 from pythonosc.udp_client import SimpleUDPClient
 from pythonosc.dispatcher import Dispatcher
+from typing import Callable
 from enum import Enum
 import threading
 import argparse
@@ -18,7 +19,8 @@ VERSION = 2
 # OSC send to MaxMSP
 OSC_IP, OSC_PORT = "127.0.0.1", 8000
 osc_client = SimpleUDPClient(OSC_IP, OSC_PORT)
-osc_lock = threading.Lock()
+osc_lock = threading.RLock()
+msg_lock = threading.Lock()
 
 # EMG to Delsys server
 EMG_HOST = "127.0.0.1"
@@ -131,6 +133,10 @@ logging.basicConfig(
 )
 log = logging.getLogger(__name__)
 
+stop_event = threading.Event()
+
+# ----------------------------- Enums & Protocol Definitions -----------------------------
+
 # Commands
 class Command(Enum):
 	NONE = 0xFFFFFFFF
@@ -173,6 +179,9 @@ class DataType(Enum):
 	LIVE_ANALYSES = 11
 	NONE_TYPE = 0xFFFFFFFF
 
+
+
+# ----------------------------- Utilities -----------------------------
 
 def to_packet(command_int: int) -> bytes:
 	"""
@@ -264,6 +273,13 @@ def recv_exact(sock: socket.socket, n: int) -> bytes:
 	return buf
 
 
+def parse_data_length(length_bytes: bytes) -> int:
+	"""Unpack the 8-byte little-endian length field."""
+	return struct.unpack('<Q', length_bytes)[0]
+
+
+
+# ----------------------------- Socket Communication -----------------------------
 def send_command(sock, command: Command) -> bool:
 	"""
 	Send a command to the server using the required protocol format.
@@ -313,7 +329,7 @@ def send_command(sock, command: Command) -> bool:
 		return False
 
 
-def send_extra_data(sock, response_sock, extra_data: dict) -> bool:
+def send_extra_data(msg_sock, extra_data: dict) -> bool:
 	"""
 	Sends extra data in the correct format.
 
@@ -326,27 +342,41 @@ def send_extra_data(sock, response_sock, extra_data: dict) -> bool:
 		bool: True if extra data was sent successfully, False otherwise.
 	"""
 
-	flusher.pause()
 	try:
-		# Serialize extra data as JSON
+		# Serialize
 		json_data = json.dumps(extra_data).encode('utf-8')
-		data_length = len(json_data)
+		header = struct.pack('<II', VERSION, len(json_data))
+		payload = header + json_data
 
-		# Create the header (VERSION, DATA SIZE)
-		header = struct.pack('<II', VERSION, data_length)
+		with msg_lock:
+			# Temporarily force blocking mode
+			orig_blocking = msg_sock.getblocking()
+			msg_sock.setblocking(True)
+			
+			try:
+				msg_sock.sendall(payload)
+				response_header = recv_exact(msg_sock, RESPONSE_HEADER_BYTES)
+				parsed_response = parse_header(response_header)
 
-		# Send the header and JSON data
-		response_sock.sendall(header + json_data)
+				if parsed_response.get("data_type") is not DataType.NONE_TYPE:
+					length_bytes = recv_exact(msg_sock, 8)
+					body_len = parse_data_length(length_bytes)
+					_ = recv_exact(msg_sock, body_len)
+			
+			finally:
+				msg_sock.setblocking(orig_blocking)
 
-		# Wait for the response
-		response = recv_exact(response_sock, RESPONSE_HEADER_BYTES)
-		parsed_response = parse_header(response)
-
+		# Check parsed
 		if "error" in parsed_response:
 			log.error(f"Error in extra data response: {parsed_response['error']}")
 			return False
 
-		if parsed_response["server_msg"] not in (ServerMessage.OK, ServerMessage.STATES_CHANGED):
+		if parsed_response["server_msg"] not in (
+			ServerMessage.OK,
+			ServerMessage.LISTENING_EXTRA_DATA,
+			ServerMessage.SENDING_DATA,
+			ServerMessage.STATES_CHANGED
+		):
 			log.error(f"Extra data failed (`{parsed_response['server_msg']}` received)")
 			return False
 
@@ -355,28 +385,6 @@ def send_extra_data(sock, response_sock, extra_data: dict) -> bool:
 
 	except socket.error as e:
 		log.error(f"Socket error while sending extra data: {e}")
-		return False
-
-	finally:
-		flusher.resume()
-
-
-def forward_response(response: bytes) -> bool:
-	"""
-	Forwards a STATES response (JSON) to Max/MSP via OSC at /states.
-	Returns True on success, False otherwise.
-	"""
-	try:
-		json_str = response.decode("utf-8")
-		
-		with osc_lock:
-			osc_client.send_message("/states", json_str)
-		
-		log.info("Forwarded /states to Max/MSP")
-		return True
-
-	except Exception as e:
-		log.error(f"Error forwarding STATES to Max/MSP: {e}")
 		return False
 
 
@@ -423,16 +431,8 @@ def connect_and_handshake(host: str, ports: list[int]) -> list[socket.socket] | 
 	return sockets
 
 
-def parse_data_length(length_bytes: bytes) -> int:
-	"""Unpack the 8-byte little-endian length field."""
-	return struct.unpack('<Q', length_bytes)[0]
 
-
-def send_osc_message(address: str, value: float) -> None:
-	"""Thread-safe function to send OSC messages."""
-	with osc_lock:
-		osc_client.send_message(address, value)
-
+# ----------------------------- Live Data Handling -----------------------------
 
 def listen_to_live_data(sock: socket.socket, stop_event: threading.Event) -> None:
 	"""Listen for live data packets and send them via OSC."""
@@ -491,20 +491,23 @@ def listen_to_live_analyses(sock: socket, stop_event: threading.Event) -> None:
 				
 				try:
 					decoded = json.loads(body.decode('utf-8'))
-					if "data" in decoded:
-						for key, analysis in decoded["data"].items():
-							# make OSC address safe
-							addr = f'/{key.replace(" ", "_")}'
-							# if analysis[1] is a list of values, send each separately
-							if (
-								isinstance(analysis, list)
-								and len(analysis) >= 2
-								and isinstance(analysis[1], list)
-							):
-								for value in analysis[1]:
-									send_osc_message(addr, value)
+					for key, analysis in decoded.get("data", {}).items():
+						addr = "/" + key.replace(" ", "_")
+						# analysis might be [timestamp, scalar] or [timestamp, [a,b,c]]
+						if isinstance(analysis, list) and len(analysis) >= 2:
+							vals = analysis[1]
+							# wrap a scalar in a list
+							if not isinstance(vals, list):
+								vals = [vals]
+							for v in vals:
+								send_osc_message(addr, v)
+						else:
+							# if it's a dict, flatten:
+							if isinstance(analysis, dict):
+								for subkey, v in analysis.items():
+									send_osc_message(f"{addr}/{subkey}", v)
 							else:
-								log.error(f"Unexpected format in '{key}' data")
+								log.error(f"Unexpected format for analysis '{key}': {analysis}")
 				
 				except json.JSONDecodeError:
 					log.error("JSON decode error in live analyses; skipping this packet")
@@ -517,13 +520,47 @@ def listen_to_live_analyses(sock: socket, stop_event: threading.Event) -> None:
 		log.info("Live analysis connection closed")
 
 
+
+# ----------------------------- OSC Communication -----------------------------
+
+def start_osc_server() -> tuple[BlockingOSCUDPServer, threading.Thread]:
+	"""Starts an OSC server to listen for threshold and channel updates from Max/MSP."""
+	dispatcher = Dispatcher()
+	dispatcher.map("/sensors", change_current_sensors)
+	dispatcher.map("/analyzer_channels", analyzer_update_channels)
+	dispatcher.map("/analyzer_thresholds", analyzer_update_thresholds)
+	dispatcher.map("/analyzer_learningrate", analyzer_update_learningrate)
+
+	server = BlockingOSCUDPServer((ANALYZER_IP, ANALYZER_PORT), dispatcher)
+	thread = threading.Thread(target=server.serve_forever, daemon=True)
+	thread.start()
+	log.info(f"OSC server listening on {ANALYZER_IP}:{ANALYZER_PORT}")
+	return server, thread
+
+
+def send_osc_message(address: str, value: float) -> None:
+	"""Thread-safe function to send OSC messages."""
+	with osc_lock:
+		osc_client.send_message(address, value)
+
+
+def change_current_sensors(address: str, *args) -> None:
+	"""Handles incoming OSC messages to change the current sensor."""
+	global CURRENT_SENSORS
+
+	try:
+		with osc_lock:
+			CURRENT_SENSORS = [int(arg) for arg in args]
+
+		log.info(f"Changed current sensors to {CURRENT_SENSORS}")
+
+	except (ValueError, IndexError) as e:
+		log.error(f"Error changing current sensor: {e}")
+
+
 def analyzer_update_channels(address: str, *args) -> None:
 	"""Handles incoming OSC messages to update ANALYZER_CHANNEL."""
 	global ANALYZER_LEFT_CHANNEL, ANALYZER_RIGHT_CHANNEL
-
-	log.info('-------------------------------------------------------')
-	log.info(args)
-	log.info('-------------------------------------------------------')
 
 	try:
 		with osc_lock:	
@@ -585,6 +622,9 @@ def analyzer_update_learningrate(address: str, *args) -> None:
 		log.error(f"Error updating ANALYZER_LEARNING_RATE: {e}")
 
 
+
+# ----------------------------- Analyzer Configuration -----------------------------
+
 def update_analyzer_config() -> None:
 	"""Update the analyzer configuration."""
 	global analyzer_config_left, ANALYZER_LEFT_CHANNEL, ANALYZER_LEFT_THRESHOLD
@@ -604,6 +644,44 @@ def update_analyzer_config() -> None:
 		analyzer_config_right["events"][1]["start_when"][0]["value"] = ANALYZER_RIGHT_THRESHOLD
 
 
+def _remove_analyzer(side: str, cmd_sock, msg_sock, config: dict) -> bool:
+	"""
+	Send REMOVE_ANALYZER + analyzer name.
+	Returns True on success.
+	"""
+	if not config:
+		log.error(f"No cached config to remove for {side}")
+		return False
+
+	if not send_command(cmd_sock, Command.REMOVE_ANALYZER):
+		log.error(f"Failed to send REMOVE_ANALYZER command for {side}")
+		return False
+
+	if not send_extra_data(msg_sock, {"analyzer": config["name"]}):
+		log.error(f"Failed to send analyzer name for removal of {side}")
+		return False
+
+	log.info(f"Removed {side} analyzer {config['name']}'")
+	return True
+
+
+def _add_analyzer(side: str, cmd_sock, msg_sock, config: dict) -> bool:
+	"""
+	Send ADD_ANALYZER + full config.
+	Returns True on success.
+	"""
+	if not send_command(cmd_sock, Command.ADD_ANALYZER):
+		log.error(f"Failed to send ADD_ANALYZER command for {side}")
+		return False
+
+	if not send_extra_data(msg_sock, config):
+		log.error(f"Failed to send configuration for {side} analyzer '{config.get('name')}'")
+		return False
+
+	log.info(f"Added/updated {side} analyzer '{config['name']}'")
+	return True
+
+
 def send_analyzer_config() -> None:
 	"""Send the updated analyzer configuration to the server."""
 	global SOCKETS
@@ -612,185 +690,132 @@ def send_analyzer_config() -> None:
 		log.error("Sockets not initialized, cannot send analyzer configuration.")
 		return
 
+	cmd_sock = SOCKETS[IDX_COMMAND]
+	msg_sock = SOCKETS[IDX_MESSAGE]
+
 	# One-time function attribute initialization
-	if not hasattr(send_analyzer_config, "left_active"):
-		send_analyzer_config.left_active = False
-		send_analyzer_config.right_active = False
+	if not hasattr(send_analyzer_config, "_cache"):
+		send_analyzer_config._cache = {
+			"left": {"active": False, "config": None},
+			"right": {"active": False, "config": None}
+	}
 
 	update_analyzer_config()
 
 	sides = {
-		"left": {
-			"channel": ANALYZER_LEFT_CHANNEL,
-			"config": analyzer_config_left,
-		},
-		"right": {
-			"channel": ANALYZER_RIGHT_CHANNEL,
-			"config": analyzer_config_right,
-		}
+		"left": (ANALYZER_LEFT_CHANNEL, analyzer_config_left),
+		"right": (ANALYZER_RIGHT_CHANNEL, analyzer_config_right),
 	}
+	cache = send_analyzer_config._cache
+	
+	for side, (channel, config) in sides.items():
+		entry = cache[side]
+		was_active = entry["active"]
+		last_config = entry["config"]
 
-	cmd_sock = SOCKETS[IDX_COMMAND]
-	msg_sock = SOCKETS[IDX_MESSAGE]
-
-	for side, values in sides.items():
-		channel = values["channel"]
-		config = values["config"]
-		active_attr = f"{side}_active"
-		is_active = getattr(send_analyzer_config, active_attr)
-
-		# Removing an analyzer
-		if channel is None and is_active:
-			if send_command(cmd_sock, Command.REMOVE_ANALYZER):
-				if send_extra_data(cmd_sock, msg_sock, {"analyzer": config["name"]}):
-					log.info(f"{side.capitalize()} analyzer '{config['name']}' removed due to disabled channel.")
-					setattr(send_analyzer_config, active_attr, False)
-				else:
-					log.error(f"Failed to send {side} analyzer name '{config['name']}' for removal.")
+		if channel is None:
+			if was_active:
+				if _remove_analyzer(side, cmd_sock, msg_sock, last_config):
+					entry["active"] = False
+					entry["config"] = None
 			else:
-				log.error(f"Failed to remove {side} analyzer '{config['name']}'.")
+				log.debug(f"No {side} analyzer to remove; skipping.")
+			continue
+
+		if was_active and last_config == config:
+			log.debug(f"No change in {side} analyzer; skipping.")
+			continue
+
+		if was_active:
+			if not _remove_analyzer(side, cmd_sock, msg_sock, last_config):
+				continue
+
+		if _add_analyzer(side, cmd_sock, msg_sock, config):
+			entry["active"] = True
+			entry["config"] = json.loads(json.dumps(config))
+
+
+
+# ----------------------------- Message Dispatcher -----------------------------
+
+def _handle_states_changed(parsed, body) -> None:
+	log.info("Detected STATES_CHANGED: requesting GET_STATES")
+	if not send_command(SOCKETS[IDX_COMMAND], Command.GET_STATES):
+		log.error("GET_STATES request failed")
+
+
+def _handle_states(parsed, body) -> None:
+	"""
+	Forwards a STATES response (JSON) to Max/MSP via OSC at /states.
+	"""
+	try:
+		json_str = body.decode("utf-8")
 		
-		# Adding or updating analyzer
-		elif channel is not None:
-			# If already active, remove first
-			if is_active:
-				if send_command(cmd_sock, Command.REMOVE_ANALYZER):
-					if not send_extra_data(cmd_sock, msg_sock, {"analyzer": config["name"]}):
-						log.error(f"Failed to send {side} analyzer name '{config['name']}' for re-add.")
-						continue
-				else:
-					log.error(f"Failed to remove {side} analyzer '{config['name']}' for re-add.")
-					continue
-
-			if send_command(cmd_sock, Command.ADD_ANALYZER):
-				if send_extra_data(cmd_sock, msg_sock, config):
-					log.info(f"{side.capitalize()} analyzer '{config['name']}' updated successfully.")
-					setattr(send_analyzer_config, active_attr, True)
-				else:
-					log.error(f"Failed to send configuration for {side} '{config['name']}'.")
-			else:
-				log.error(f"Failed to send ADD_ANALYZER for {side} '{config['name']}'")
-
-
-def change_current_sensors(address: str, *args) -> None:
-	"""Handles incoming OSC messages to change the current sensor."""
-	global CURRENT_SENSORS
-
-	try:
 		with osc_lock:
-			CURRENT_SENSORS = [int(arg) for arg in args]
+			osc_client.send_message("/states", json_str)
+		
+		log.info("Forwarded /states to Max/MSP")
 
-		log.info(f"Changed current sensors to {CURRENT_SENSORS}")
-
-	except (ValueError, IndexError) as e:
-		log.error(f"Error changing current sensor: {e}")
-
-
-def start_osc_server() -> tuple[BlockingOSCUDPServer, threading.Thread]:
-	"""Starts an OSC server to listen for threshold and channel updates from Max/MSP."""
-	dispatcher = Dispatcher()
-	dispatcher.map("/sensors", change_current_sensors)
-	dispatcher.map("/analyzer_channels", analyzer_update_channels)
-	dispatcher.map("/analyzer_thresholds", analyzer_update_thresholds)
-	dispatcher.map("/analyzer_learningrate", analyzer_update_learningrate)
-
-	server = BlockingOSCUDPServer((ANALYZER_IP, ANALYZER_PORT), dispatcher)
-	thread = threading.Thread(target=server.serve_forever, daemon=True)
-	thread.start()
-	log.info(f"OSC server listening on {ANALYZER_IP}:{ANALYZER_PORT}")
-	return server, thread
+	except Exception as e:
+		log.error(f"Error forwarding STATES to Max/MSP: {e}")
 
 
-def request_states():
-	pkt = to_packet(Command.GET_STATES.value)
-	SOCKETS[IDX_COMMAND].sendall(pkt)
-	log.info("Requested STATES")
-	
+def _handle_unexpected(parsed, body) -> None:
+	log.debug(f"No handler for server_msg={parsed['server_msg']} data_type={parsed['data_type']}")
 
-def flush_socket(sock):
-	"""
-	Drains any bytes waiting on sock.recv() without blocking.
-	Leaves sock in its original blocking state.
-	"""
-	orig_timeout = sock.gettimeout()
+
+MESSAGE_HANDLERS: dict[Enum, Callable] = {
+	ServerMessage.STATES_CHANGED: _handle_states_changed,
+	DataType.STATES: _handle_states,
+}
+
+
+def message_dispatcher(sock: socket.socket, stop_event: threading.Event) -> None:
 	sock.setblocking(False)
-	
-	try:
-		while True:
-			r, _, _ = select.select([sock], [], [], 0)
-			if not r:
-				break
+	while not stop_event.is_set():
+		
+		if msg_lock.locked():
+			time.sleep(0.5)
+			continue
 
-			try:
-				header = recv_exact(sock, RESPONSE_HEADER_BYTES)
-			except (BlockingIOError, ConnectionError):
-				break
-			
+		# wait up to 0.1s for data to arrive
+		ready, _, _ = select.select([sock], [], [], 0.1)
+		if not ready:
+			continue
+
+		try:
+			# parse header & body
+			header = recv_exact(sock, RESPONSE_HEADER_BYTES)
 			parsed = parse_header(header)
 
-			if parsed.get("server_msg") is ServerMessage.STATES_CHANGED:
-				log.info("Detected STATES_CHANGED: requesting GET_STATES")
-				request_states()
+			if parsed.get("error"):
+				log.error(f"Header parse error: {parsed['error']}")
+				continue
 
-				hdr2 = recv_exact(sock, RESPONSE_HEADER_BYTES)
-				parsed2 = parse_header(hdr2)
-				length2 = recv_exact(sock, 8)
-				body2_len = parse_data_length(length2)
-				body2 = recv_exact(sock, body2_len)
+			# read body if present
+			body = None
+			if parsed["data_type"] is not DataType.NONE_TYPE:
+				length_bytes = recv_exact(sock, 8)
+				body_len = parse_data_length(length_bytes)
+				body = recv_exact(sock, body_len)
 
-				if parsed2.get("data_type") is DataType.STATES:
-					forward_response(body2)
-			
-			length_bytes = recv_exact(sock, 8)
-			body_length = parse_data_length(length_bytes)
-			body = recv_exact(sock, body_length)
-			
-			if parsed.get("data_type") is DataType.STATES:
-				forward_response(body)
-				
-	except (BlockingIOError, InterruptedError):
-		pass
-	
-	finally:
-		sock.settimeout(orig_timeout)
+			# pick a handler by server_msg first, then data_type
+			handler = MESSAGE_HANDLERS.get(parsed["server_msg"]) \
+					or MESSAGE_HANDLERS.get(parsed["data_type"]) \
+					or _handle_unexpected
+
+			handler(parsed, body)
+
+		except Exception as e:
+			log.error(f"Message dispatcher error: {e}")
+			break
 
 
-class SocketFlusher:
-	def __init__(self, sock, interval: float = 0.05):
-		"""
-		:param sock: the socket to flush
-		:param interval: how often (in seconds) to attempt a flush
-		"""
-		self.sock = sock
-		self.interval = interval
-		self._stop = threading.Event()
-		self._pause = threading.Event()
-		self._thread = threading.Thread(target=self._run, daemon=True)
-		self._thread.start()
 
-	def _run(self):
-		while not self._stop.is_set():
-			if not self._pause.is_set():
-				flush_socket(self.sock)
-			time.sleep(self.interval)
-
-	def pause(self):
-		"""Stop flushing so you can do a controlled recv/send."""
-		self._pause.set()
-
-	def resume(self):
-		"""Resume automatic flushing."""
-		self._pause.clear()
-
-	def stop(self):
-		"""Kill the background thread."""
-		self._stop.set()
-		self._thread.join()
-
+# ----------------------------- Main -----------------------------
 
 def main():
 	"""Main function to parse CLI args, establish connections and start data processing."""
-	stop_event = threading.Event()
 
 	# Parse server ports
 	parser = argparse.ArgumentParser(description="TCP/OSC bridge: specify Delsys EMG ports to use")
@@ -815,8 +840,12 @@ def main():
 	global SOCKETS
 	SOCKETS = connect_and_handshake(EMG_HOST, EMG_PORTS)
 
-	global flusher
-	flusher = SocketFlusher(SOCKETS[IDX_MESSAGE])
+	reader_thread = threading.Thread(
+		target=message_dispatcher,
+		args=(SOCKETS[IDX_MESSAGE], stop_event),
+		daemon=True
+	)
+	reader_thread.start()
 
 	if not SOCKETS:
 		log.error("Failed to establish all connections. Exiting...")
@@ -863,7 +892,6 @@ def main():
 		data_thread.join()
 		analyses_thread.join()
 		osc_thread.join()
-		flusher.stop()
 		
 		for sock in SOCKETS:
 			sock.close()
