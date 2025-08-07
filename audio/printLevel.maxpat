@@ -10,7 +10,7 @@
 		}
 ,
 		"classnamespace" : "box",
-		"rect" : [ 829.0, 478.0, 547.0, 322.0 ],
+		"rect" : [ 363.0, 413.0, 650.0, 322.0 ],
 		"bglocked" : 0,
 		"openinpresentation" : 0,
 		"default_fontsize" : 12.0,
@@ -57,7 +57,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 1,
 					"outlettype" : [ "int" ],
-					"patching_rect" : [ 455.0, 140.0, 22.0, 22.0 ],
+					"patching_rect" : [ 507.0, 140.0, 22.0, 22.0 ],
 					"text" : "t 2"
 				}
 
@@ -105,8 +105,8 @@
 					"numinlets" : 1,
 					"numoutlets" : 5,
 					"outlettype" : [ "", "", "", "", "" ],
-					"patching_rect" : [ 415.0, 107.0, 99.0, 22.0 ],
-					"text" : "regexp (?i:fatal?)"
+					"patching_rect" : [ 415.0, 107.0, 203.0, 22.0 ],
+					"text" : "regexp (?i:fail?|error?|invalid?|fatal?)"
 				}
 
 			}
@@ -150,7 +150,7 @@
 				"box" : 				{
 					"comment" : "",
 					"id" : "obj-63",
-					"index" : 1,
+					"index" : 0,
 					"maxclass" : "inlet",
 					"numinlets" : 0,
 					"numoutlets" : 1,
@@ -163,7 +163,7 @@
 				"box" : 				{
 					"comment" : "",
 					"id" : "obj-65",
-					"index" : 1,
+					"index" : 0,
 					"maxclass" : "outlet",
 					"numinlets" : 1,
 					"numoutlets" : 0,
@@ -263,7 +263,15 @@
 				}
 
 			}
- ]
+ ],
+		"dependency_cache" : [ 			{
+				"name" : "thru.maxpat",
+				"bootpath" : "C74:/patchers/m4l/Pluggo for Live resources/patches",
+				"type" : "JSON",
+				"implicit" : 1
+			}
+ ],
+		"autosave" : 0
 	}
 
 }
