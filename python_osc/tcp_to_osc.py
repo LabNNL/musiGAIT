@@ -350,27 +350,32 @@ def send_extra_data(msg_sock, extra_data: dict) -> bool:
 		try:
 			msg_sock.sendall(payload)
 
-			# first header: could be OK (if no LISTENING_EXTRA_DATA) or LISTENING_EXTRA_DATA
-			hdr = recv_exact(msg_sock, RESPONSE_HEADER_BYTES)
-			parsed = parse_header(hdr)
-			if "error" in parsed:
-				log.error(f"Error in extra data response: {parsed['error']}")
-				return False
-
-			# if server signals it's listening for extra data, grab the next header
-			if parsed["server_msg"] == ServerMessage.LISTENING_EXTRA_DATA:
+			while True:
 				hdr = recv_exact(msg_sock, RESPONSE_HEADER_BYTES)
 				parsed = parse_header(hdr)
 				if "error" in parsed:
 					log.error(f"Error in extra data response: {parsed['error']}")
 					return False
 
+				# server ready for extra data? just loop again
+				if parsed["server_msg"] == ServerMessage.LISTENING_EXTRA_DATA:
+					continue
+
+				# if it's sending some data (live or analyses), drain its body
+				if parsed["data_type"] is not DataType.NONE_TYPE:
+					length = parse_data_length(recv_exact(msg_sock, 8))
+					_ = recv_exact(msg_sock, length)
+					continue
+
+				# OK or STATES_CHANGED? break to final check
+				break
+
 		finally:
 			msg_sock.setblocking(orig_blocking)
 
 	# allow either OK or STATES_CHANGED as the final ack
 	if parsed["server_msg"] not in (ServerMessage.OK, ServerMessage.STATES_CHANGED):
-		log.error(f"Unexpected server_msg: {parsed['server_msg']}")
+		log.error(f"Unexpected server_msg after extra-data: {parsed['server_msg']}")
 		return False
 
 	log.info("Extra data sent successfully")
