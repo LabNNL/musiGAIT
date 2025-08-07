@@ -20,6 +20,9 @@ VERSION = 2
 OSC_IP, OSC_PORT = "127.0.0.1", 8000
 osc_client = SimpleUDPClient(OSC_IP, OSC_PORT)
 osc_lock = threading.RLock()
+
+# States
+LAST_STATES: str | None = None
 msg_lock = threading.Lock()
 
 # EMG to Delsys server
@@ -315,8 +318,8 @@ def send_command(sock, command: Command) -> bool:
 			log.error(f"Response interpretation error: {parsed_response['error']}")
 			return False
 
-		# For ADD_ANALYZER / REMOVE_ANALYZER we also accept LISTENING_EXTRA_DATA
-		if command in (Command.ADD_ANALYZER, Command.REMOVE_ANALYZER):
+		# For ADD_ANALYZER / REMOVE_ANALYZER / GET_STATES we also accept LISTENING_EXTRA_DATA
+		if command in (Command.ADD_ANALYZER, Command.REMOVE_ANALYZER, Command.GET_STATES):
 			allowed = (ServerMessage.OK, ServerMessage.LISTENING_EXTRA_DATA)
 		else:
 			allowed = (ServerMessage.OK,)
@@ -358,29 +361,32 @@ def send_extra_data(msg_sock, extra_data: dict) -> bool:
 			
 			try:
 				msg_sock.sendall(payload)
-				response_header = recv_exact(msg_sock, RESPONSE_HEADER_BYTES)
-				parsed_response = parse_header(response_header)
+				hdr = recv_exact(msg_sock, RESPONSE_HEADER_BYTES)
+				parsed = parse_header(hdr)
 
-				if parsed_response.get("data_type") is not DataType.NONE_TYPE:
-					length_bytes = recv_exact(msg_sock, 8)
-					body_len = parse_data_length(length_bytes)
-					_ = recv_exact(msg_sock, body_len)
+				if parsed["data_type"] is not DataType.NONE_TYPE:
+					length = parse_data_length(recv_exact(msg_sock, 8))
+					_ = recv_exact(msg_sock, length)
 			
 			finally:
 				msg_sock.setblocking(orig_blocking)
 
 		# Check parsed
-		if "error" in parsed_response:
-			log.error(f"Error in extra data response: {parsed_response['error']}")
+		if "error" in parsed:
+			log.error(f"Error in extra data response: {parsed['error']}")
 			return False
 
-		if parsed_response["server_msg"] not in (
+		# Ask for updated states
+		if parsed["server_msg"] is ServerMessage.STATES_CHANGED:
+			send_command(SOCKETS[IDX_COMMAND], Command.GET_STATES)
+
+		if parsed["server_msg"] not in (
 			ServerMessage.OK,
 			ServerMessage.LISTENING_EXTRA_DATA,
 			ServerMessage.SENDING_DATA,
 			ServerMessage.STATES_CHANGED
 		):
-			log.error(f"Extra data failed (`{parsed_response['server_msg']}` received)")
+			log.error(f"Extra data failed (`{parsed['server_msg']}` received)")
 			return False
 
 		log.info(f"Extra data sent successfully")
@@ -749,14 +755,22 @@ def _handle_states_changed(parsed, body) -> None:
 
 def _handle_states(parsed, body) -> None:
 	"""
-	Forwards a STATES response (JSON) to Max/MSP via OSC at /states.
+	Forwards a STATES response (JSON) to Max/MSP via OSC at /states,
+	but only if it has changed since the last forward.
 	"""
+	global LAST_STATES
+
 	try:
 		json_str = body.decode("utf-8")
+		data = json.loads(json_str)
+
+		if LAST_STATES is not None and data == LAST_STATES:
+			log.debug("States unchanged; skipping forward")
+			return
 		
+		LAST_STATES = data
 		with osc_lock:
 			osc_client.send_message("/states", json_str)
-		
 		log.info("Forwarded /states to Max/MSP")
 
 	except Exception as e:
