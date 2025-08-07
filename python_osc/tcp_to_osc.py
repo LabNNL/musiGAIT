@@ -10,6 +10,7 @@ import random
 import struct
 import socket
 import select
+import copy
 import json
 import time
 import os
@@ -732,7 +733,7 @@ def send_analyzer_config() -> None:
 
 		if _add_analyzer(side, cmd_sock, msg_sock, config):
 			entry["active"] = True
-			entry["config"] = json.loads(json.dumps(config))
+			entry["config"] = copy.deepcopy(config)
 
 
 
