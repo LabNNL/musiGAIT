@@ -337,68 +337,44 @@ def send_command(sock, command: Command) -> bool:
 
 def send_extra_data(msg_sock, extra_data: dict) -> bool:
 	"""
-	Sends extra data in the correct format.
-
-	Format:
-	- 4 bytes: Protocol version (little-endian, should be == VERSION)
-	- 4 bytes: Length of the JSON string (little-endian)
-	- Remaining bytes: The JSON string itself
-
-	Returns:
-		bool: True if extra data was sent successfully, False otherwise.
+	Sends extra data (ADD/REMOVE_ANALYZER payload) and waits for:
+	  1) LISTENING_EXTRA_DATA (server ready)
+	  2) OK or STATES_CHANGED (final confirmation)
 	"""
+	json_data = json.dumps(extra_data).encode('utf-8')
+	payload = struct.pack('<II', VERSION, len(json_data)) + json_data
 
-	try:
-		# Serialize
-		json_data = json.dumps(extra_data).encode('utf-8')
-		header = struct.pack('<II', VERSION, len(json_data))
-		payload = header + json_data
+	with msg_lock:
+		orig_blocking = msg_sock.getblocking()
+		msg_sock.setblocking(True)
+		try:
+			msg_sock.sendall(payload)
 
-		with msg_lock:
-			orig_blocking = msg_sock.getblocking()
-			msg_sock.setblocking(True)
-			try:
-				msg_sock.sendall(payload)
+			# first header: could be OK (if no LISTENING_EXTRA_DATA) or LISTENING_EXTRA_DATA
+			hdr = recv_exact(msg_sock, RESPONSE_HEADER_BYTES)
+			parsed = parse_header(hdr)
+			if "error" in parsed:
+				log.error(f"Error in extra data response: {parsed['error']}")
+				return False
 
-				while True:
-					hdr = recv_exact(msg_sock, RESPONSE_HEADER_BYTES)
-					parsed = parse_header(hdr)
-					if "error" in parsed:
-						log.error(f"Error in extra data response: {parsed['error']}")
-						return False
+			# if server signals it's listening for extra data, grab the next header
+			if parsed["server_msg"] == ServerMessage.LISTENING_EXTRA_DATA:
+				hdr = recv_exact(msg_sock, RESPONSE_HEADER_BYTES)
+				parsed = parse_header(hdr)
+				if "error" in parsed:
+					log.error(f"Error in extra data response: {parsed['error']}")
+					return False
 
-					if parsed["data_type"] is not DataType.NONE_TYPE:
-						length = parse_data_length(recv_exact(msg_sock, 8))
-						body = recv_exact(msg_sock, length)
-						if parsed["data_type"] is DataType.STATES:
-							_handle_states(parsed, body)
+		finally:
+			msg_sock.setblocking(orig_blocking)
 
-					if parsed["command_echo"] in (Command.ADD_ANALYZER, Command.REMOVE_ANALYZER):
-						break
-			
-			finally:
-				msg_sock.setblocking(orig_blocking)
-
-
-		# Ask for updated states
-		if parsed["server_msg"] is ServerMessage.STATES_CHANGED:
-			send_command(SOCKETS[IDX_COMMAND], Command.GET_STATES)
-
-		if parsed["server_msg"] not in (
-			ServerMessage.OK,
-			ServerMessage.LISTENING_EXTRA_DATA,
-			ServerMessage.SENDING_DATA,
-			ServerMessage.STATES_CHANGED
-		):
-			log.error(f"Extra data failed (`{parsed['server_msg']}` received)")
-			return False
-
-		log.info(f"Extra data sent successfully")
-		return True
-
-	except socket.error as e:
-		log.error(f"Socket error while sending extra data: {e}")
+	# allow either OK or STATES_CHANGED as the final ack
+	if parsed["server_msg"] not in (ServerMessage.OK, ServerMessage.STATES_CHANGED):
+		log.error(f"Unexpected server_msg: {parsed['server_msg']}")
 		return False
+
+	log.info("Extra data sent successfully")
+	return True
 
 
 def connect_and_handshake(host: str, ports: list[int]) -> list[socket.socket] | bool:
@@ -674,7 +650,7 @@ def _remove_analyzer(side: str, cmd_sock, msg_sock, config: dict) -> bool:
 		log.error(f"Failed to send analyzer name for removal of {side}")
 		return False
 
-	log.info(f"Removed {side} analyzer {config['name']}'")
+	log.info(f"Removed {side} analyzer '{config['name']}'")
 	return True
 
 
