@@ -33,6 +33,8 @@ EMG_HOST = "127.0.0.1"
 CURRENT_SENSORS = []
 
 SOCKETS = []
+SOCKETS_TIMEOUT = 3.0
+
 IDX_COMMAND = 0  # ports[0] → command port
 IDX_MESSAGE = 1  # ports[1] → message port
 IDX_LIVE_DATA = 2  # ports[2] → live data port
@@ -353,7 +355,9 @@ def send_extra_data(msg_sock, extra_data: dict) -> bool:
 
 	with msg_lock:
 		orig_blocking = msg_sock.getblocking()
+		orig_timeout = msg_sock.gettimeout()
 		msg_sock.setblocking(True)
+		msg_sock.settimeout(SOCKETS_TIMEOUT)
 		try:
 			msg_sock.sendall(payload)
 
@@ -378,6 +382,7 @@ def send_extra_data(msg_sock, extra_data: dict) -> bool:
 				break
 
 		finally:
+			msg_sock.settimeout(orig_timeout)
 			msg_sock.setblocking(orig_blocking)
 
 	# allow either OK or STATES_CHANGED as the final ack
