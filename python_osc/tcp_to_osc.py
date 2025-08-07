@@ -355,26 +355,30 @@ def send_extra_data(msg_sock, extra_data: dict) -> bool:
 		payload = header + json_data
 
 		with msg_lock:
-			# Temporarily force blocking mode
 			orig_blocking = msg_sock.getblocking()
 			msg_sock.setblocking(True)
-			
 			try:
 				msg_sock.sendall(payload)
-				hdr = recv_exact(msg_sock, RESPONSE_HEADER_BYTES)
-				parsed = parse_header(hdr)
 
-				if parsed["data_type"] is not DataType.NONE_TYPE:
-					length = parse_data_length(recv_exact(msg_sock, 8))
-					_ = recv_exact(msg_sock, length)
+				while True:
+					hdr = recv_exact(msg_sock, RESPONSE_HEADER_BYTES)
+					parsed = parse_header(hdr)
+					if "error" in parsed:
+						log.error(f"Error in extra data response: {parsed['error']}")
+						return False
+
+					if parsed["data_type"] is not DataType.NONE_TYPE:
+						length = parse_data_length(recv_exact(msg_sock, 8))
+						body = recv_exact(msg_sock, length)
+						if parsed["data_type"] is DataType.STATES:
+							_handle_states(parsed, body)
+
+					if parsed["command_echo"] in (Command.ADD_ANALYZER, Command.REMOVE_ANALYZER):
+						break
 			
 			finally:
 				msg_sock.setblocking(orig_blocking)
 
-		# Check parsed
-		if "error" in parsed:
-			log.error(f"Error in extra data response: {parsed['error']}")
-			return False
 
 		# Ask for updated states
 		if parsed["server_msg"] is ServerMessage.STATES_CHANGED:
