@@ -12,6 +12,7 @@ import socket
 import select
 import json
 import time
+import os
 
 # Server Version
 VERSION = 2
@@ -138,6 +139,11 @@ log = logging.getLogger(__name__)
 logging.addLevelName(logging.ERROR, "FATAL")
 
 stop_event = threading.Event()
+
+
+# PID to kill the process
+with open("tcp_to_osc.pid", "w") as f:
+    f.write(str(os.getpid()))
 
 
 
