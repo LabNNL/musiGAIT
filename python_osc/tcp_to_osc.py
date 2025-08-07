@@ -132,8 +132,11 @@ logging.basicConfig(
 	datefmt='%Y-%m-%d %H:%M:%S'
 )
 log = logging.getLogger(__name__)
+logging.addLevelName(logging.ERROR, "FATAL")
 
 stop_event = threading.Event()
+
+
 
 # ----------------------------- Enums & Protocol Definitions -----------------------------
 

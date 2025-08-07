@@ -14,11 +14,19 @@ let savedDateTime = new Date();
 let savedDict = null;
 let sensorsNum = null;
 
+// Scores
 let stats = {
 	valDev: { count: 0, mean: 0, M2: 0 },
 	stepsDev: { count: 0, mean: 0, M2: 0 }
 };
 
+// Reroute posts
+Max.post = (...args) => {
+	const msg = args.map(String).join(' ');
+	Max.outlet(msg);
+};
+
+// Init the logs
 function initRealtimeLog() {
 	if (realtimeStream) realtimeStream.end();
 
@@ -34,7 +42,7 @@ function initRealtimeLog() {
 
 	realtimeStream = fs.createWriteStream(realtimeFilePath, { flags: 'a' });
 	realtimeStream.on('error', err => {
-		Max.post(`[ERROR] CSV stream error: ${err.message}`);
+		Max.post(`[WARNING] CSV stream error: ${err.message}`);
 	});
 
 	// only write the BOM + sep=; on a fresh file
@@ -51,6 +59,7 @@ function initRealtimeLog() {
 	].join("|");
 }
 
+// Build the CSV Header
 function buildHeaderLine() {
 	const delim = ';';
 	const labels = [
@@ -89,6 +98,7 @@ function buildHeaderLine() {
 	return cols.map(escapeCSV).join(delim) + "\n";
 }
 
+// Write CSV header
 function writeHeader(isInitial = false) {
 	if (isInitial) {
 		// BOM + Excel “sep=” hint only once
@@ -204,13 +214,14 @@ function calculateSessionScore(std, baseline = 1) {
 	return Math.max(0, parseFloat((maxScore - penalty).toFixed(2)));
 }
 
+// Close the stream
 function closeStream() {
 	clearTimeout(closeStreamTimeout);
 	if (!realtimeStream) return;
 	realtimeStream.end();
 	realtimeStream = null;
 	realtimeFilePath = null;
-	Max.post("Realtime CSV stream closed.");
+	Max.post("[INFO] Realtime CSV stream closed.");
 }
 
 // Handler to set the current time
@@ -274,7 +285,7 @@ Max.addHandler("save", () => {
 	try {
 		fs.writeFileSync(filePath, csvData, 'utf8');
 	} catch (err) {
-		Max.post(`[ERROR] Failed to save parameters as CSV. ${err.message}`);
+		Max.post(`[FATAL] Failed to save parameters as CSV. ${err.message}`);
 	}
 });
 
@@ -308,7 +319,6 @@ Max.addHandler("set", (dict) => {
 	}
 
 	const { name, dateTime } = generateFilename();
-	Max.outlet('filename', name);
 	
 	// if we’re already logging, move the old _Sensors.csv to the new name
 	if (realtimeStream && realtimeFilePath) {
@@ -323,7 +333,7 @@ Max.addHandler("set", (dict) => {
 				realtimeStream = fs.createWriteStream(newPath, { flags: 'a' });
 				realtimeFilePath = newPath;
 			} catch (err) {
-				Max.post(`[WARN] could not rename sensors file: ${err.message}`);
+				Max.post(`[WARNING] could not rename sensors file: ${err.message}`);
 			}
 		});
 	}
@@ -354,10 +364,10 @@ Max.addHandler("values", (...args) => {
 
 	// figure out N
 	const ids = Array.isArray(sensorsNum)
-	 			? sensorsNum
-	 			: (typeof sensorsNum === "number"
-	 				? [sensorsNum]
-	 				: [1]);
+				? sensorsNum
+				: (typeof sensorsNum === "number"
+					? [sensorsNum]
+					: [1]);
 	const N = ids.length;
 	
 	// args layout: [ cycle1…cycleN,
@@ -366,7 +376,7 @@ Max.addHandler("values", (...args) => {
 	//                steps,
 	//                stepsDev ]
 	if (args.length < 3*N + 2) {
-		return Max.post(`[WARN] expected at least ${3*N+2} args, got ${args.length}`);
+		return Max.post(`[WARNING] expected at least ${3*N+2} args, got ${args.length}`);
 	}
 
 	// slice out each array
@@ -419,7 +429,7 @@ Max.addHandler("values", (...args) => {
 // Handler to set current sensor type
 Max.addHandler("sensor_type", (sensorType) => {
 	if (typeof sensorType !== 'string') {
-		return Max.post("[ERROR] 'sensor_type' must be a string.");
+		return Max.post("[WARNING] 'sensor_type' must be a string.");
 	}
 	currentSensorType = sensorType.toLowerCase();
 });
@@ -427,7 +437,7 @@ Max.addHandler("sensor_type", (sensorType) => {
 // Handler to set which sensors are enabled for logging
 Max.addHandler("log_sensors", (...sensorFlags) => {
 	if (sensorFlags.length !== 5 || !sensorFlags.every(v => v === 0 || v === 1)) {
-		return Max.post("[ERROR] 'log_sensors' requires a list of 5 integers (0 or 1).");
+		return Max.post("[WARNING] 'log_sensors' requires a list of 5 integers (0 or 1).");
 	}
 	enabledSensors = sensorFlags;
 });
@@ -435,7 +445,7 @@ Max.addHandler("log_sensors", (...sensorFlags) => {
 // Handler to manually close the realtime file
 Max.addHandler("endFile", () => {
 	if (!realtimeStream) {
-		return Max.post("[WARN] No realtime stream is open.");
+		return Max.post("[WARNING] No realtime stream is open.");
 	}
 
 	// stop the stream

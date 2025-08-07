@@ -4,7 +4,7 @@ set VENV_DIR=.venv
 
 :: Check if virtual environment exists, if not create it
 if not exist %VENV_DIR% (
-    echo Creating virtual environment...
+    echo [INFO] Creating virtual environment...
     python -m venv %VENV_DIR%
 )
 
@@ -18,12 +18,12 @@ set PIP_EXEC=%VENV_DIR%\Scripts\pip.exe
 :: Check if python-osc is already installed
 %PIP_EXEC% show python-osc >nul 2>&1
 if %errorlevel% neq 0 (
-    echo python-osc is not installed. Checking internet connection...
+    echo [WARNING] python-osc is not installed. Checking internet connection...
 
     :: Check internet connection
     ping -n 1 www.google.com >nul 2>&1
     if %errorlevel% neq 0 (
-        echo No internet connection detected. Cannot install missing dependencies.
+        echo [FATAL] No internet connection detected. Cannot install missing dependencies.
         exit /b 1
     ) else (
         echo Installing python-osc...
@@ -31,7 +31,7 @@ if %errorlevel% neq 0 (
         %PIP_EXEC% install python-osc
     )
 ) else (
-    echo python-osc is already installed.
+    echo [INFO] python-osc is already installed.
 )
 
 :: Run TCP2OSC.py script using the virtual environment's Python
@@ -41,5 +41,5 @@ if %errorlevel% neq 0 (
 deactivate
 
 :: Keep the terminal open to see output
-echo Press Enter to close...
+echo [INFO] Press Enter to close...
 pause
