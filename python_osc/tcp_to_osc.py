@@ -33,7 +33,7 @@ EMG_HOST = "127.0.0.1"
 CURRENT_SENSORS = []
 
 SOCKETS = []
-SOCKETS_TIMEOUT = 3.0
+SOCKETS_TIMEOUT = 1.0  # seconds
 
 IDX_COMMAND = 0  # ports[0] → command port
 IDX_MESSAGE = 1  # ports[1] → message port
@@ -362,7 +362,11 @@ def send_extra_data(msg_sock, extra_data: dict) -> bool:
 			msg_sock.sendall(payload)
 
 			while True:
-				hdr = recv_exact(msg_sock, RESPONSE_HEADER_BYTES)
+				try:
+					hdr = recv_exact(msg_sock, RESPONSE_HEADER_BYTES)
+				except socket.timeout:
+					log.warning("Timeout waiting for server response (extra data).")
+					return False
 				parsed = parse_header(hdr)
 				if "error" in parsed:
 					log.error(f"Error in extra data response: {parsed['error']}")
