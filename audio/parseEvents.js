@@ -1,46 +1,64 @@
 autowatch = 1;
-
-// outlet 0 = connected flag, outlet 1 = analyzer data
 outlets = 2;
 
+var SIDE_RE = /(left|right)/i;
+
 function anything() {
-	var inJSON = arrayfromargs(messagename, arguments).join(" ");
-	var data;
+    var inJSON = arrayfromargs(messagename, arguments).join(" ");
+    var data;
+    try {
+        data = JSON.parse(inJSON);
+    } catch (e) {
+        outlet(1, "[FATAL] JSON parse error in analyzerParse.js: " + e.message);
+        return;
+    }
 
-	try {
-		data = JSON.parse(inJSON);
-	} catch (e) {
-		post("JSON parse error in analyzerParse.js:", e.message, "\n");
-		return;
-	}
+    var analyzers = data.connected_analyzers || {};
+    var sides = { left: null, right: null };
+    var fallback = [];
 
-	// 1) output connected_devices flag on outlet 0
-	var devices = data.connected_devices || {};
-	var hasConnected = 0;
-	for (var devName in devices) {
-		if (devices[devName].is_connected) {
-			hasConnected = 1;
-			break;
-		}
-	}
-	outlet(0, hasConnected);
+    // single pass: categorize by explicit side or fallback
+    Object.keys(analyzers).forEach(function(name) {
+        var m = SIDE_RE.exec(name);
+        if (m) {
+            sides[m[1].toLowerCase()] = name;
+        } else {
+            fallback.push(name);
+        }
+    });
 
-	// 2) iterate analyzers and output data on outlet 1
-	var analyzers = data.connected_analyzers || {};
-	for (var name in analyzers) {
-		var cfg = analyzers[name].configuration;
-		var lr  = cfg.learning_rate;
-		var events = cfg.events || [];
-		
-		// derive "left" or "right" from analyzer name
-		var side = name.split("_").pop();
-		for (var i = 0; i < events.length; i++) {
-			var startArr = events[i].start_when || [];
-			
-			for (var j = 0; j < startArr.length; j++) {
-				var sw = startArr[j];
-				outlet(1, side, sw.channel + 1, sw.value, lr);
-			}
-		}
-	}
+    // assign any missing side from fallback
+    ["left", "right"].forEach(function(side) {
+        if (!sides[side] && fallback.length) {
+            sides[side] = fallback.shift();
+        }
+    });
+
+    // log explicit vs unmatched
+    var explicit = Object.keys(sides).filter(function(side) { return sides[side] && SIDE_RE.test(sides[side]); });
+    if (explicit.length) outlet(1, "[INFO] Explicit analyzers found: " + explicit.join(", "));
+    if (fallback.length) outlet(1, "[WARNING] Unmatched analyzers: " + fallback.join(", "));
+
+    // process each side or emit "None"
+    Object.keys(sides).forEach(function(side) {
+        var name = sides[side];
+        if (name) {
+            outlet(1, "[INFO] Assigning analyzer '" + name + "' to side '" + side + "'");
+            var cfg = (analyzers[name] || {}).configuration;
+            if (!cfg || !Array.isArray(cfg.events)) {
+                outlet(1, "[WARNING] No configuration/events for analyzer '" + name + "'");
+                return;
+            }
+            // flatten all start_when entries
+            var starts = cfg.events.reduce(function(acc, evt) {
+                return acc.concat(evt.start_when || []);
+            }, []);
+            starts.forEach(function(sw) {
+                outlet(0, side, sw.channel + 1, sw.value, cfg.learning_rate);
+            });
+        } else {
+            outlet(1, "[WARNING] No " + side + " analyzer found");
+            outlet(0, side, "None");
+        }
+    });
 }
