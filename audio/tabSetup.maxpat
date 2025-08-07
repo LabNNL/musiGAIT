@@ -7107,7 +7107,7 @@
 										}
 ,
 										"classnamespace" : "box",
-										"rect" : [ 554.0, 171.0, 1237.0, 771.0 ],
+										"rect" : [ 498.0, 167.0, 1237.0, 807.0 ],
 										"bglocked" : 0,
 										"openinpresentation" : 0,
 										"default_fontsize" : 12.0,
@@ -7136,6 +7136,30 @@
 										"subpatcher_template" : "",
 										"assistshowspatchername" : 0,
 										"boxes" : [ 											{
+												"box" : 												{
+													"id" : "obj-23",
+													"maxclass" : "newobj",
+													"numinlets" : 1,
+													"numoutlets" : 2,
+													"outlettype" : [ "bang", "bang" ],
+													"patching_rect" : [ 527.0, 65.0, 280.0, 22.0 ],
+													"text" : "b"
+												}
+
+											}
+, 											{
+												"box" : 												{
+													"id" : "obj-22",
+													"maxclass" : "message",
+													"numinlets" : 2,
+													"numoutlets" : 1,
+													"outlettype" : [ "" ],
+													"patching_rect" : [ 788.0, 615.0, 29.5, 22.0 ],
+													"text" : "pkill"
+												}
+
+											}
+, 											{
 												"box" : 												{
 													"color" : [ 0.847058823529412, 0.768627450980392, 0.356862745098039, 1.0 ],
 													"id" : "obj-12",
@@ -7503,7 +7527,7 @@
  ]
 													}
 ,
-													"patching_rect" : [ 892.0, 666.0, 110.0, 22.0 ],
+													"patching_rect" : [ 892.0, 711.0, 110.0, 22.0 ],
 													"saved_object_attributes" : 													{
 														"description" : "",
 														"digest" : "",
@@ -7523,7 +7547,7 @@
 													"maxclass" : "outlet",
 													"numinlets" : 1,
 													"numoutlets" : 0,
-													"patching_rect" : [ 892.0, 710.0, 30.0, 30.0 ]
+													"patching_rect" : [ 892.0, 755.0, 30.0, 30.0 ]
 												}
 
 											}
@@ -7535,7 +7559,7 @@
 													"numinlets" : 1,
 													"numoutlets" : 1,
 													"outlettype" : [ "" ],
-													"patching_rect" : [ 527.0, 59.0, 73.0, 22.0 ],
+													"patching_rect" : [ 527.0, 104.0, 73.0, 22.0 ],
 													"text" : "v systemOS"
 												}
 
@@ -7547,7 +7571,7 @@
 													"numinlets" : 1,
 													"numoutlets" : 2,
 													"outlettype" : [ "", "" ],
-													"patching_rect" : [ 1185.0, 477.0, 29.5, 22.0 ],
+													"patching_rect" : [ 1185.0, 522.0, 29.5, 22.0 ],
 													"text" : "t l l"
 												}
 
@@ -7559,7 +7583,7 @@
 													"numinlets" : 2,
 													"numoutlets" : 1,
 													"outlettype" : [ "" ],
-													"patching_rect" : [ 527.0, 528.0, 29.5, 22.0 ],
+													"patching_rect" : [ 527.0, 573.0, 29.5, 22.0 ],
 													"text" : "join"
 												}
 
@@ -7571,7 +7595,7 @@
 													"numinlets" : 1,
 													"numoutlets" : 1,
 													"outlettype" : [ "stop" ],
-													"patching_rect" : [ 444.0, 333.0, 38.0, 22.0 ],
+													"patching_rect" : [ 444.0, 378.0, 38.0, 22.0 ],
 													"text" : "t stop"
 												}
 
@@ -7583,7 +7607,7 @@
 													"numinlets" : 0,
 													"numoutlets" : 1,
 													"outlettype" : [ "" ],
-													"patching_rect" : [ 444.0, 292.0, 70.0, 22.0 ],
+													"patching_rect" : [ 444.0, 337.0, 70.0, 22.0 ],
 													"text" : "r systemKill"
 												}
 
@@ -7595,7 +7619,7 @@
 													"numinlets" : 2,
 													"numoutlets" : 1,
 													"outlettype" : [ "" ],
-													"patching_rect" : [ 834.0, 528.0, 29.5, 22.0 ],
+													"patching_rect" : [ 834.0, 573.0, 29.5, 22.0 ],
 													"text" : "join"
 												}
 
@@ -7620,7 +7644,7 @@
 													"numinlets" : 1,
 													"numoutlets" : 2,
 													"outlettype" : [ "bang", "int" ],
-													"patching_rect" : [ 834.0, 211.0, 120.0, 22.0 ],
+													"patching_rect" : [ 834.0, 256.0, 120.0, 22.0 ],
 													"text" : "t b i"
 												}
 
@@ -7632,7 +7656,7 @@
 													"numinlets" : 1,
 													"numoutlets" : 1,
 													"outlettype" : [ "" ],
-													"patching_rect" : [ 527.0, 617.0, 54.0, 22.0 ],
+													"patching_rect" : [ 527.0, 662.0, 54.0, 22.0 ],
 													"text" : "deferlow"
 												}
 
@@ -7644,7 +7668,7 @@
 													"numinlets" : 1,
 													"numoutlets" : 1,
 													"outlettype" : [ "" ],
-													"patching_rect" : [ 527.0, 367.0, 54.0, 22.0 ],
+													"patching_rect" : [ 527.0, 412.0, 54.0, 22.0 ],
 													"text" : "deferlow"
 												}
 
@@ -7657,7 +7681,7 @@
 													"numinlets" : 2,
 													"numoutlets" : 1,
 													"outlettype" : [ "bang" ],
-													"patching_rect" : [ 527.0, 333.0, 55.0, 22.0 ],
+													"patching_rect" : [ 527.0, 378.0, 55.0, 22.0 ],
 													"text" : "del 1000"
 												}
 
@@ -7669,7 +7693,7 @@
 													"numinlets" : 2,
 													"numoutlets" : 1,
 													"outlettype" : [ "int" ],
-													"patching_rect" : [ 527.0, 403.0, 118.0, 22.0 ],
+													"patching_rect" : [ 527.0, 448.0, 118.0, 22.0 ],
 													"text" : "i"
 												}
 
@@ -7681,7 +7705,7 @@
 													"numinlets" : 1,
 													"numoutlets" : 2,
 													"outlettype" : [ "bang", "int" ],
-													"patching_rect" : [ 527.0, 292.0, 118.0, 22.0 ],
+													"patching_rect" : [ 527.0, 337.0, 118.0, 22.0 ],
 													"text" : "t b i"
 												}
 
@@ -7693,7 +7717,7 @@
 													"numinlets" : 1,
 													"numoutlets" : 2,
 													"outlettype" : [ "path", "bang" ],
-													"patching_rect" : [ 33.0, 133.0, 192.0, 22.0 ],
+													"patching_rect" : [ 33.0, 178.0, 192.0, 22.0 ],
 													"text" : "t path b"
 												}
 
@@ -7705,7 +7729,7 @@
 													"numinlets" : 2,
 													"numoutlets" : 1,
 													"outlettype" : [ "" ],
-													"patching_rect" : [ 206.0, 176.0, 284.0, 22.0 ],
+													"patching_rect" : [ 206.0, 221.0, 284.0, 22.0 ],
 													"text" : "external/neurobiomech_software/backend/build/run/"
 												}
 
@@ -7717,7 +7741,7 @@
 													"numinlets" : 2,
 													"numoutlets" : 1,
 													"outlettype" : [ "" ],
-													"patching_rect" : [ 105.0, 242.0, 120.0, 22.0 ],
+													"patching_rect" : [ 105.0, 287.0, 120.0, 22.0 ],
 													"text" : "sprintf symout %s%s"
 												}
 
@@ -7729,7 +7753,7 @@
 													"numinlets" : 1,
 													"numoutlets" : 2,
 													"outlettype" : [ "", "" ],
-													"patching_rect" : [ 81.0, 211.0, 43.0, 22.0 ],
+													"patching_rect" : [ 81.0, 256.0, 43.0, 22.0 ],
 													"text" : "t s s"
 												}
 
@@ -7741,7 +7765,7 @@
 													"numinlets" : 1,
 													"numoutlets" : 2,
 													"outlettype" : [ "", "int" ],
-													"patching_rect" : [ 81.0, 367.0, 128.0, 22.0 ],
+													"patching_rect" : [ 81.0, 412.0, 128.0, 22.0 ],
 													"text" : "conformpath max boot"
 												}
 
@@ -7753,7 +7777,7 @@
 													"numinlets" : 1,
 													"numoutlets" : 1,
 													"outlettype" : [ "" ],
-													"patching_rect" : [ 81.0, 333.0, 165.0, 22.0 ],
+													"patching_rect" : [ 81.0, 378.0, 165.0, 22.0 ],
 													"text" : "sprintf symout %spython_osc"
 												}
 
@@ -7765,7 +7789,7 @@
 													"numinlets" : 1,
 													"numoutlets" : 1,
 													"outlettype" : [ "" ],
-													"patching_rect" : [ 81.0, 570.0, 71.0, 22.0 ],
+													"patching_rect" : [ 81.0, 615.0, 71.0, 22.0 ],
 													"text" : "prepend wd"
 												}
 
@@ -7777,7 +7801,7 @@
 													"numinlets" : 1,
 													"numoutlets" : 1,
 													"outlettype" : [ "bang" ],
-													"patching_rect" : [ 33.0, 96.0, 58.0, 22.0 ],
+													"patching_rect" : [ 33.0, 141.0, 58.0, 22.0 ],
 													"text" : "loadbang"
 												}
 
@@ -7789,7 +7813,7 @@
 													"numinlets" : 1,
 													"numoutlets" : 2,
 													"outlettype" : [ "", "" ],
-													"patching_rect" : [ 33.0, 176.0, 67.0, 22.0 ],
+													"patching_rect" : [ 33.0, 221.0, 67.0, 22.0 ],
 													"save" : [ "#N", "thispatcher", ";", "#Q", "end", ";" ],
 													"text" : "thispatcher"
 												}
@@ -7802,7 +7826,7 @@
 													"numinlets" : 1,
 													"numoutlets" : 2,
 													"outlettype" : [ "bang", "" ],
-													"patching_rect" : [ 527.0, 570.0, 100.0, 22.0 ],
+													"patching_rect" : [ 527.0, 615.0, 100.0, 22.0 ],
 													"text" : "t b l"
 												}
 
@@ -7814,7 +7838,7 @@
 													"numinlets" : 2,
 													"numoutlets" : 1,
 													"outlettype" : [ "" ],
-													"patching_rect" : [ 1091.0, 292.0, 75.0, 22.0 ],
+													"patching_rect" : [ 1091.0, 337.0, 75.0, 22.0 ],
 													"text" : "main_server"
 												}
 
@@ -7826,7 +7850,7 @@
 													"numinlets" : 2,
 													"numoutlets" : 1,
 													"outlettype" : [ "" ],
-													"patching_rect" : [ 636.0, 477.0, 145.0, 22.0 ],
+													"patching_rect" : [ 636.0, 522.0, 145.0, 22.0 ],
 													"text" : "./SETUP_MAC.command"
 												}
 
@@ -7838,7 +7862,7 @@
 													"numinlets" : 2,
 													"numoutlets" : 2,
 													"outlettype" : [ "bang", "" ],
-													"patching_rect" : [ 527.0, 441.0, 128.0, 22.0 ],
+													"patching_rect" : [ 527.0, 486.0, 128.0, 22.0 ],
 													"text" : "sel 1"
 												}
 
@@ -7851,7 +7875,7 @@
 													"numinlets" : 1,
 													"numoutlets" : 2,
 													"outlettype" : [ "", "bang" ],
-													"patching_rect" : [ 608.0, 617.0, 33.0, 22.0 ],
+													"patching_rect" : [ 608.0, 662.0, 33.0, 22.0 ],
 													"saved_object_attributes" : 													{
 														"shell" : "(default)",
 														"stderr" : 1
@@ -7868,7 +7892,7 @@
 													"numinlets" : 1,
 													"numoutlets" : 1,
 													"outlettype" : [ "int" ],
-													"patching_rect" : [ 581.0, 133.0, 22.0, 22.0 ],
+													"patching_rect" : [ 581.0, 178.0, 22.0, 22.0 ],
 													"text" : "t 2"
 												}
 
@@ -7880,7 +7904,7 @@
 													"numinlets" : 1,
 													"numoutlets" : 1,
 													"outlettype" : [ "int" ],
-													"patching_rect" : [ 527.0, 133.0, 22.0, 22.0 ],
+													"patching_rect" : [ 527.0, 178.0, 22.0, 22.0 ],
 													"text" : "t 1"
 												}
 
@@ -7892,7 +7916,7 @@
 													"numinlets" : 2,
 													"numoutlets" : 2,
 													"outlettype" : [ "bang", "" ],
-													"patching_rect" : [ 935.0, 242.0, 175.0, 22.0 ],
+													"patching_rect" : [ 935.0, 287.0, 175.0, 22.0 ],
 													"text" : "sel 1"
 												}
 
@@ -7904,7 +7928,7 @@
 													"numinlets" : 2,
 													"numoutlets" : 1,
 													"outlettype" : [ "" ],
-													"patching_rect" : [ 935.0, 292.0, 144.0, 22.0 ],
+													"patching_rect" : [ 935.0, 337.0, 144.0, 22.0 ],
 													"text" : "Release/main_server.exe"
 												}
 
@@ -7916,7 +7940,7 @@
 													"numinlets" : 1,
 													"numoutlets" : 2,
 													"outlettype" : [ "", "int" ],
-													"patching_rect" : [ 834.0, 367.0, 128.0, 22.0 ],
+													"patching_rect" : [ 834.0, 412.0, 128.0, 22.0 ],
 													"text" : "conformpath max boot"
 												}
 
@@ -7928,7 +7952,7 @@
 													"numinlets" : 2,
 													"numoutlets" : 1,
 													"outlettype" : [ "" ],
-													"patching_rect" : [ 527.0, 477.0, 99.0, 22.0 ],
+													"patching_rect" : [ 527.0, 522.0, 99.0, 22.0 ],
 													"text" : "SETUP_WIN.bat"
 												}
 
@@ -7940,7 +7964,7 @@
 													"numinlets" : 1,
 													"numoutlets" : 2,
 													"outlettype" : [ "int", "int" ],
-													"patching_rect" : [ 527.0, 176.0, 326.0, 22.0 ],
+													"patching_rect" : [ 527.0, 221.0, 326.0, 22.0 ],
 													"text" : "t i i"
 												}
 
@@ -7952,7 +7976,7 @@
 													"numinlets" : 2,
 													"numoutlets" : 2,
 													"outlettype" : [ "bang", "" ],
-													"patching_rect" : [ 527.0, 96.0, 73.0, 22.0 ],
+													"patching_rect" : [ 527.0, 141.0, 73.0, 22.0 ],
 													"text" : "sel windows"
 												}
 
@@ -7964,7 +7988,7 @@
 													"numinlets" : 2,
 													"numoutlets" : 2,
 													"outlettype" : [ "", "" ],
-													"patching_rect" : [ 834.0, 292.0, 38.0, 22.0 ],
+													"patching_rect" : [ 834.0, 337.0, 38.0, 22.0 ],
 													"text" : "zl.reg"
 												}
 
@@ -7976,7 +8000,7 @@
 													"numinlets" : 2,
 													"numoutlets" : 1,
 													"outlettype" : [ "" ],
-													"patching_rect" : [ 834.0, 333.0, 120.0, 22.0 ],
+													"patching_rect" : [ 834.0, 378.0, 120.0, 22.0 ],
 													"text" : "sprintf symout %s%s"
 												}
 
@@ -7989,7 +8013,7 @@
 													"numinlets" : 1,
 													"numoutlets" : 2,
 													"outlettype" : [ "", "bang" ],
-													"patching_rect" : [ 834.0, 617.0, 33.0, 22.0 ],
+													"patching_rect" : [ 834.0, 662.0, 33.0, 22.0 ],
 													"saved_object_attributes" : 													{
 														"shell" : "(default)",
 														"stderr" : 1
@@ -8020,7 +8044,7 @@
 													"maxclass" : "outlet",
 													"numinlets" : 1,
 													"numoutlets" : 0,
-													"patching_rect" : [ 834.0, 710.0, 30.0, 30.0 ]
+													"patching_rect" : [ 834.0, 755.0, 30.0, 30.0 ]
 												}
 
 											}
@@ -8032,7 +8056,7 @@
 													"maxclass" : "outlet",
 													"numinlets" : 1,
 													"numoutlets" : 0,
-													"patching_rect" : [ 527.0, 710.0, 30.0, 30.0 ]
+													"patching_rect" : [ 527.0, 755.0, 30.0, 30.0 ]
 												}
 
 											}
@@ -8044,7 +8068,7 @@
 													"maxclass" : "outlet",
 													"numinlets" : 1,
 													"numoutlets" : 0,
-													"patching_rect" : [ 608.0, 710.0, 30.0, 30.0 ]
+													"patching_rect" : [ 608.0, 755.0, 30.0, 30.0 ]
 												}
 
 											}
@@ -8174,6 +8198,36 @@
 													"destination" : [ "obj-59", 0 ],
 													"order" : 1,
 													"source" : [ "obj-216", 0 ]
+												}
+
+											}
+, 											{
+												"patchline" : 												{
+													"destination" : [ "obj-216", 0 ],
+													"order" : 0,
+													"source" : [ "obj-22", 0 ]
+												}
+
+											}
+, 											{
+												"patchline" : 												{
+													"destination" : [ "obj-32", 0 ],
+													"order" : 1,
+													"source" : [ "obj-22", 0 ]
+												}
+
+											}
+, 											{
+												"patchline" : 												{
+													"destination" : [ "obj-22", 0 ],
+													"source" : [ "obj-23", 1 ]
+												}
+
+											}
+, 											{
+												"patchline" : 												{
+													"destination" : [ "obj-6", 0 ],
+													"source" : [ "obj-23", 0 ]
 												}
 
 											}
@@ -8386,7 +8440,7 @@
 											}
 , 											{
 												"patchline" : 												{
-													"destination" : [ "obj-6", 0 ],
+													"destination" : [ "obj-23", 0 ],
 													"source" : [ "obj-58", 0 ]
 												}
 
