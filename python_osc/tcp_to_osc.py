@@ -858,6 +858,11 @@ def main():
 	global SOCKETS
 	SOCKETS = connect_and_handshake(EMG_HOST, EMG_PORTS)
 
+	if not SOCKETS:
+		log.error("Failed to establish all connections. Exiting...")
+		return
+
+	# Start message dispatcher thread
 	reader_thread = threading.Thread(
 		target=message_dispatcher,
 		args=(SOCKETS[IDX_MESSAGE], stop_event),
@@ -909,6 +914,7 @@ def main():
 	finally:
 		data_thread.join()
 		analyses_thread.join()
+		reader_thread.join()
 		osc_thread.join()
 		
 		for sock in SOCKETS:
