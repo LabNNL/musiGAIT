@@ -841,8 +841,7 @@ def main():
 	parser.add_argument("--portMessage", type=int, default=5001, help="EMG message port")
 	parser.add_argument("--portLiveData", type=int, default=5002, help="EMG data stream port")
 	parser.add_argument("--portLiveAnalyses", type=int, default=5003, help="EMG analyses stream port")
-	parser.add_argument("--useMock", type=str, default="false", choices=["true", "false"], 
-		help="Use MOCK server instead of real EMG: 'true' or 'false'")
+	parser.add_argument('--useMock', action='store_true', help=argparse.SUPPRESS)
 	args = parser.parse_args()
 
 	# Override the default ports
@@ -869,10 +868,6 @@ def main():
 		daemon=True
 	)
 	reader_thread.start()
-
-	if not SOCKETS:
-		log.error("Failed to establish all connections. Exiting...")
-		return
 
 	# Send CONNECT_DELSYS_EMG command
 	if not send_command(SOCKETS[IDX_COMMAND], Command.CONNECT_DELSYS_EMG):
