@@ -876,8 +876,7 @@ def main():
 	parser.add_argument("--portMessage", type=int, default=5001, help="EMG message port")
 	parser.add_argument("--portLiveData", type=int, default=5002, help="EMG data stream port")
 	parser.add_argument("--portLiveAnalyses", type=int, default=5003, help="EMG analyses stream port")
-	parser.add_argument('--useMock', action='store_true', help=argparse.SUPPRESS)
-	args = parser.parse_args()
+	args, _ = parser.parse_known_args()
 
 	# Override the default ports
 	global EMG_PORTS
