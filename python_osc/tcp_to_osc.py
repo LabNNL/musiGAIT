@@ -377,7 +377,7 @@ def send_extra_data(msg_sock, extra_data: dict) -> bool:
 					continue
 
 				# if it's sending some data (live or analyses), drain its body
-				if parsed["data_type"] is not DataType.NONE_TYPE:
+				if parsed["data_type"] != DataType.NONE_TYPE:
 					length = parse_data_length(recv_exact(msg_sock, 8))
 					_ = recv_exact(msg_sock, length)
 					continue
@@ -433,8 +433,8 @@ def connect_and_handshake(host: str, ports: list[int]) -> list[socket.socket] | 
 		response = recv_exact(sockets[IDX_COMMAND], RESPONSE_HEADER_BYTES)
 		parsed = parse_header(response)
 
-		if parsed.get("error") or parsed["server_msg"] is not ServerMessage.OK:
-			log.error(f"Handshake error: {parsed['error']}")
+		if parsed.get("error") or parsed["server_msg"] != ServerMessage.OK:
+			log.error(f"Handshake error: {parsed.get('error') or parsed['server_msg']}")
 			return False
 
 	log.info("Handshake successful")
@@ -497,7 +497,7 @@ def listen_to_live_analyses(sock: socket, stop_event: threading.Event) -> None:
 			if parsed["data_type"] is not DataType.NONE_TYPE:
 				length_bytes = recv_exact(sock, 8)
 				body_length = parse_data_length(length_bytes)
-				body = recv_exact(sock, body_length)
+			if parsed["data_type"] != DataType.NONE_TYPE:
 				
 				try:
 					decoded = json.loads(body.decode('utf-8'))
@@ -812,7 +812,7 @@ def message_dispatcher(sock: socket.socket, stop_event: threading.Event) -> None
 
 			# read body if present
 			body = None
-			if parsed["data_type"] is not DataType.NONE_TYPE:
+			if parsed["data_type"] != DataType.NONE_TYPE:
 				length_bytes = recv_exact(sock, 8)
 				body_len = parse_data_length(length_bytes)
 				body = recv_exact(sock, body_len)
