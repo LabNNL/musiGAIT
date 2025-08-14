@@ -24,7 +24,7 @@ osc_client = SimpleUDPClient(OSC_IP, OSC_PORT)
 osc_lock = threading.RLock()
 
 # States
-LAST_STATES: str | None = None
+LAST_STATES: dict | None = None
 msg_lock = threading.Lock()
 
 # EMG to Delsys server
