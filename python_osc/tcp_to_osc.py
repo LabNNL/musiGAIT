@@ -904,6 +904,13 @@ def main():
 	# Send CONNECT_DELSYS_EMG command
 	if not send_command(SOCKETS[IDX_COMMAND], Command.CONNECT_DELSYS_EMG):
 		log.error("Failed to send CONNECT_DELSYS_EMG command. Exiting...")
+		stop_event.set()
+		reader_thread.join(timeout=1.0)
+		for sock in SOCKETS:
+			try:
+				sock.close()
+			except Exception:
+				pass
 		return
 
 	# Start live data listener thread
