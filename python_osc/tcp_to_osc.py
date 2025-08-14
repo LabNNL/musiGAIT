@@ -697,11 +697,11 @@ def _remove_analyzer(side: str, cmd_sock: socket.socket, msg_sock: socket.socket
 		return False
 
 	if not send_command(cmd_sock, Command.REMOVE_ANALYZER):
-		log.error(f"Failed to send REMOVE_ANALYZER command for {side} analyzer")
+		log.warning(f"Failed to send REMOVE_ANALYZER command for {side} analyzer")
 		return False
 
 	if not send_extra_data(msg_sock, {"analyzer": config["name"]}):
-		log.error(f"Failed to remove {side} analyzer")
+		log.warning(f"Failed to remove {side} analyzer")
 		return False
 
 	log.info(f"Removed {side} analyzer '{config['name']}'")
@@ -714,11 +714,11 @@ def _add_analyzer(side: str, cmd_sock: socket.socket, msg_sock: socket.socket, c
 	Returns True on success.
 	"""
 	if not send_command(cmd_sock, Command.ADD_ANALYZER):
-		log.error(f"Failed to send ADD_ANALYZER command for {side}")
+		log.warning(f"Failed to send ADD_ANALYZER command for {side}")
 		return False
 
 	if not send_extra_data(msg_sock, config):
-		log.error(f"Failed to send configuration for {side} analyzer '{config.get('name')}'")
+		log.warning(f"Failed to send configuration for {side} analyzer '{config.get('name')}'")
 		return False
 
 	log.info(f"Added/updated {side} analyzer '{config['name']}'")
@@ -866,7 +866,7 @@ def message_dispatcher(sock: socket.socket, stop_event: threading.Event) -> None
 		
 		except BlockingIOError:
 			continue
-			
+
 		except Exception as e:
 			log.warning(f"Message dispatcher error: {e}")
 			continue
