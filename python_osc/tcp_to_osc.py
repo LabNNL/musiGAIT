@@ -1,6 +1,7 @@
 from pythonosc.osc_server import BlockingOSCUDPServer
 from pythonosc.udp_client import SimpleUDPClient
 from pythonosc.dispatcher import Dispatcher
+from collections import deque
 from typing import Callable
 from enum import Enum
 import threading
