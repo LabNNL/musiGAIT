@@ -26,6 +26,7 @@ osc_lock = threading.RLock()
 
 # States
 LAST_STATES: Optional[dict] = None
+cmd_lock = threading.Lock()
 msg_lock = threading.Lock()
 
 # EMG to Delsys server
@@ -313,109 +314,115 @@ def send_command(sock: socket.socket, command: Command) -> bool:
 		log.error(f"Invalid command {command}")
 		return False
 
-	# Send the 8B command packet
-	try:
-		sock.sendall(to_packet(command.value))
-		log.info(f"Sent command: {command.name} ({command.value})")
-	except socket.error as e:
-		log.error(f"Socket error while sending command: {e}")
-		return False
-
-	# Read the first response
-	orig_to = sock.gettimeout()
-	sock.settimeout(SOCKETS_TIMEOUT)
-	try:
+	with cmd_lock:
+		# Send the 8B command packet
 		try:
-			first_hdr = recv_exact(sock, RESPONSE_HEADER_BYTES)
-		finally:
-			sock.settimeout(orig_to)
-	except socket.timeout:
-		log.error("Timeout waiting for command response header")
-		return False
-	except Exception as e:
-		log.error(f"Error reading command response header: {e}")
-		return False
-
-	parsed = parse_header(first_hdr)
-	if "error" in parsed:
-		log.error(f"Response interpretation error: {parsed['error']}")
-		return False
-
-	# Decide behavior by command type
-	is_extra = command in (Command.ADD_ANALYZER, Command.REMOVE_ANALYZER)
-	is_data_returning = command in (Command.GET_STATES, Command.GET_LAST_TRIAL_DATA)
-
-	if is_extra:
-		# server can reply OK or LISTENING_EXTRA_DATA to mean "send JSON on message socket now"
-		if parsed["server_msg"] not in (ServerMessage.OK, ServerMessage.LISTENING_EXTRA_DATA):
-			log.error(f"{command.name}: expected OK/LISTENING_EXTRA_DATA before extra data, got {parsed['server_msg'].name}")
-			return False
-		# defensively drain any unexpected body
-		try:
-			if parsed["data_type"] != DataType.NONE_TYPE:
-				length = parse_data_length(recv_exact(sock, 8))
-				_ = recv_exact(sock, length)
-		except Exception:
-			pass
-		return True
-
-	if is_data_returning:
-		# Accept SENDING_DATA, then drain until final OK/NOK to keep stream aligned
-		if parsed["server_msg"] not in (ServerMessage.SENDING_DATA, ServerMessage.OK):
-			log.error(f"{command.name}: unexpected first msg {parsed['server_msg'].name}")
+			sock.sendall(to_packet(command.value))
+			log.info(f"Sent command: {command.name} ({command.value})")
+		except socket.error as e:
+			log.error(f"Socket error while sending command: {e}")
 			return False
 
-		# If the server put a body on the command socket (unlikely, but defensive), drain it
+		# Read the first response
+		orig_to = sock.gettimeout()
+		sock.settimeout(SOCKETS_TIMEOUT)
 		try:
-			if parsed["data_type"] != DataType.NONE_TYPE:
-				length = parse_data_length(recv_exact(sock, 8))
-				_ = recv_exact(sock, length)
-		except Exception:
-			# Non-fatal; data should be on the message socket anyway
-			pass
+			try:
+				first_hdr = recv_exact(sock, RESPONSE_HEADER_BYTES)
+			finally:
+				sock.settimeout(orig_to)
+		except socket.timeout:
+			log.error("Timeout waiting for command response header")
+			return False
+		except Exception as e:
+			log.error(f"Error reading command response header: {e}")
+			return False
 
-		# If we already got OK, we're done
-		if parsed["server_msg"] == ServerMessage.OK:
+		parsed = parse_header(first_hdr)
+		if "error" in parsed:
+			log.error(f"Response interpretation error: {parsed['error']}")
+			return False
+
+		# Decide behavior by command type
+		is_extra = command in (Command.ADD_ANALYZER, Command.REMOVE_ANALYZER)
+		is_data_returning = command in (Command.GET_STATES, Command.GET_LAST_TRIAL_DATA)
+
+		if is_extra:
+			# server can reply OK or LISTENING_EXTRA_DATA to mean "send JSON on message socket now"
+			if parsed["server_msg"] not in (ServerMessage.OK, ServerMessage.LISTENING_EXTRA_DATA):
+				log.error(f"{command.name}: expected OK/LISTENING_EXTRA_DATA before extra data, got {parsed['server_msg'].name}")
+				return False
+			# defensively drain any unexpected body
+			try:
+				if parsed["data_type"] != DataType.NONE_TYPE:
+					length = parse_data_length(recv_exact(sock, 8))
+					_ = recv_exact(sock, length)
+			except Exception:
+				pass
 			return True
 
-		# Otherwise poll briefly for the trailing OK/NOK
-		end = time.time() + SOCKETS_TIMEOUT
-		sock.settimeout(0.15)
-		try:
-			while time.time() < end:
-				try:
-					hdr2 = recv_exact(sock, RESPONSE_HEADER_BYTES)
-				except socket.timeout:
-					continue
-				p2 = parse_header(hdr2)
-				if "error" in p2:
-					break
+		if is_data_returning:
+			# Accept SENDING_DATA and LISTENING_EXTRA_DATA,
+			# then drain until final OK/NOK to keep stream aligned
+			if parsed["server_msg"] not in (
+				ServerMessage.SENDING_DATA, 
+				ServerMessage.OK,
+				ServerMessage.LISTENING_EXTRA_DATA
+			):
+				log.error(f"{command.name}: unexpected first msg {parsed['server_msg'].name}")
+				return False
 
-				# Drain any optional body defensively
-				if p2["data_type"] != DataType.NONE_TYPE:
+			# If the server put a body on the command socket (unlikely, but defensive), drain it
+			try:
+				if parsed["data_type"] != DataType.NONE_TYPE:
+					length = parse_data_length(recv_exact(sock, 8))
+					_ = recv_exact(sock, length)
+			except Exception:
+				# Non-fatal; data should be on the message socket anyway
+				pass
+
+			# If we already got OK, we're done
+			if parsed["server_msg"] == ServerMessage.OK:
+				return True
+
+			# Otherwise poll briefly for the trailing OK/NOK
+			end = time.time() + SOCKETS_TIMEOUT
+			sock.settimeout(0.15)
+			try:
+				while time.time() < end:
 					try:
-						l2 = parse_data_length(recv_exact(sock, 8))
-						_ = recv_exact(sock, l2)
-					except Exception:
-						pass
+						hdr2 = recv_exact(sock, RESPONSE_HEADER_BYTES)
+					except socket.timeout:
+						continue
+					p2 = parse_header(hdr2)
+					if "error" in p2:
+						break
 
-				if p2["server_msg"] == ServerMessage.OK:
-					return True
-				if p2["server_msg"] == ServerMessage.NOK:
-					log.error(f"{command.name}: server returned NOK after SENDING_DATA")
-					return False
+					# Drain any optional body defensively
+					if p2["data_type"] != DataType.NONE_TYPE:
+						try:
+							l2 = parse_data_length(recv_exact(sock, 8))
+							_ = recv_exact(sock, l2)
+						except Exception:
+							pass
 
-			log.warning(f"{command.name}: timed out waiting for trailing OK; continuing")
-			# Treat as success so the dispatcher can process the STATES on message socket
-			return True
-		finally:
-			sock.settimeout(orig_to)
+					if p2["server_msg"] == ServerMessage.OK:
+						return True
+					if p2["server_msg"] == ServerMessage.NOK:
+						log.error(f"{command.name}: server returned NOK after SENDING_DATA")
+						return False
 
-	# Default: require immediate OK
-	if parsed["server_msg"] != ServerMessage.OK:
-		log.error(f"{command.name}: expected OK, got {parsed['server_msg'].name}")
-		return False
-	return True
+				log.warning(f"{command.name}: timed out waiting for trailing OK; continuing")
+				# Treat as success so the dispatcher can process the STATES on message socket
+				return True
+			finally:
+				sock.settimeout(orig_to)
+
+		# Default: require immediate OK
+		if parsed["server_msg"] != ServerMessage.OK:
+			log.error(f"{command.name}: expected OK, got {parsed['server_msg'].name}")
+			return False
+		return True
 
 
 def send_extra_data(cmd_sock: socket.socket, msg_sock: socket.socket, extra_data: dict) -> bool:
@@ -434,6 +441,7 @@ def send_extra_data(cmd_sock: socket.socket, msg_sock: socket.socket, extra_data
 			log.error(f"send_extra_data: write error: {e}")
 			return False
 
+	with cmd_lock:
 		# wait for final ACK on the command socket
 		orig_to = cmd_sock.gettimeout()
 		cmd_sock.settimeout(SOCKETS_TIMEOUT)
