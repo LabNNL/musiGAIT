@@ -141,10 +141,7 @@ Sensor.prototype = {
 	compute: function(v) {
 		var minv = this.minVal;
 		var maxv = this.maxVal;
-
 		var span = (maxv !== minv) ? (v - minv) / (maxv - minv) : 0;
-		if (sensorType === "emg") span = Math.abs(span); // EMG: always positive
-
 		var norm = (sensorType === "emg") ? span : span * 2 - 1;
 
 		var useOutMap = this.outMin !== null && this.outMax !== null;
@@ -191,9 +188,15 @@ function msg_float(v) {
 
 	var out = ensureSensor(0).handleData(v);
 	if (out) {
-		outlet(0, out[0]);
-		outlet(1, out[1]);
-		outlet(2, out[2]);
+		if (sensorType === "emg") {
+			outlet(0, Math.abs(out[0])); // norm always positive
+			outlet(1, Math.abs(out[1])); // measure always positive
+			outlet(2, out[2]);           // deviation can be negative
+		} else {
+			outlet(0, out[0]);
+			outlet(1, out[1]);
+			outlet(2, out[2]);
+		}
 	}
 }
 
@@ -207,9 +210,15 @@ function list() {
 	for (var i = 0; i < args.length; i++) {
 		var out = ensureSensor(i).handleData(parseFloat(args[i]));
 		if (out) {
-			norms.push(out[0]);
-			measures.push(out[1]);
-			normDevs.push(out[2]);
+			if (sensorType === "emg") {
+				norms.push(Math.abs(out[0]));
+				measures.push(Math.abs(out[1]));
+				normDevs.push(out[2]); // keep sign
+			} else {
+				norms.push(out[0]);
+				measures.push(out[1]);
+				normDevs.push(out[2]);
+			}
 		}
 	}
 
