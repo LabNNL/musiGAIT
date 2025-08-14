@@ -345,10 +345,17 @@ def send_command(sock: socket.socket, command: Command) -> bool:
 	is_data_returning = command in (Command.GET_STATES, Command.GET_LAST_TRIAL_DATA)
 
 	if is_extra:
-		# Strictly require immediate OK before sending extra data
-		if parsed["server_msg"] != ServerMessage.OK:
-			log.error(f"{command.name}: expected OK before extra data, got {parsed['server_msg'].name}")
+		# server can reply OK or LISTENING_EXTRA_DATA to mean "send JSON on message socket now"
+		if parsed["server_msg"] not in (ServerMessage.OK, ServerMessage.LISTENING_EXTRA_DATA):
+			log.error(f"{command.name}: expected OK/LISTENING_EXTRA_DATA before extra data, got {parsed['server_msg'].name}")
 			return False
+		# defensively drain any unexpected body
+		try:
+			if parsed["data_type"] != DataType.NONE_TYPE:
+				length = parse_data_length(recv_exact(sock, 8))
+				_ = recv_exact(sock, length)
+		except Exception:
+			pass
 		return True
 
 	if is_data_returning:
@@ -411,58 +418,68 @@ def send_command(sock: socket.socket, command: Command) -> bool:
 
 
 
-def send_extra_data(msg_sock: socket.socket, extra_data: dict) -> bool:
+def send_extra_data(cmd_sock: socket.socket, msg_sock: socket.socket, extra_data: dict) -> bool:
 	"""
-	Sends extra data (ADD/REMOVE_ANALYZER payload) and waits for:
-	  1) LISTENING_EXTRA_DATA (server ready)
-	  2) OK or STATES_CHANGED (final confirmation)
+	Send the extra JSON on the message socket, then wait for the final ACK on the *command* socket.
+	Accept final OK or STATES_CHANGED; NOK means failure.
 	"""
 	json_data = json.dumps(extra_data).encode('utf-8')
 	payload = struct.pack('<II', VERSION, len(json_data)) + json_data
 
 	with msg_lock:
-		orig_blocking = msg_sock.getblocking()
-		orig_timeout = msg_sock.gettimeout()
-		msg_sock.setblocking(True)
-		msg_sock.settimeout(SOCKETS_TIMEOUT)
+		# send payload
 		try:
 			msg_sock.sendall(payload)
+		except socket.error as e:
+			log.error(f"send_extra_data: write error: {e}")
+			return False
 
-			while True:
+		# wait for final ACK on the command socket
+		orig_to = cmd_sock.gettimeout()
+		cmd_sock.settimeout(SOCKETS_TIMEOUT)
+		
+		try:
+			deadline = time.time() + SOCKETS_TIMEOUT
+			while time.time() < deadline:
 				try:
-					hdr = recv_exact(msg_sock, RESPONSE_HEADER_BYTES)
+					hdr = recv_exact(cmd_sock, RESPONSE_HEADER_BYTES)
 				except socket.timeout:
-					log.warning("Timeout waiting for server response (extra data).")
-					return False
-				parsed = parse_header(hdr)
-				if "error" in parsed:
-					log.error(f"Error in extra data response: {parsed['error']}")
+					continue
+				except Exception as e:
+					log.error(f"send_extra_data: read error on command socket: {e}")
 					return False
 
-				# server ready for extra data? just loop again
-				if parsed["server_msg"] == ServerMessage.LISTENING_EXTRA_DATA:
-					continue
+				p = parse_header(hdr)
+				if "error" in p:
+					log.error(f"send_extra_data: header parse error: {p['error']}")
+					return False
 
-				# if it's sending some data (live or analyses), drain its body
-				if parsed["data_type"] != DataType.NONE_TYPE:
-					length = parse_data_length(recv_exact(msg_sock, 8))
-					_ = recv_exact(msg_sock, length)
-					continue
+				# drain any optional body
+				try:
+					if p["data_type"] != DataType.NONE_TYPE:
+						l = parse_data_length(recv_exact(cmd_sock, 8))
+						_ = recv_exact(cmd_sock, l)
+				except Exception:
+					pass
 
-				# OK or STATES_CHANGED? break to final check
-				break
-
+				if p["server_msg"] == ServerMessage.OK:
+					log.info("Extra data accepted (OK).")
+					return True
+				
+				if p["server_msg"] == ServerMessage.NOK:
+					log.error("Extra data rejected (NOK).")
+					return False
+				
+				if p["server_msg"] == ServerMessage.STATES_CHANGED:
+					# treat as success (server applied new config and broadcasted)
+					log.info("Extra data applied (STATES_CHANGED).")
+					return True
+				# otherwise (e.g., SENDING_DATA), keep looping
+			log.warning("send_extra_data: timeout waiting for final ACK on command socket.")
+			return False
+		
 		finally:
-			msg_sock.settimeout(orig_timeout)
-			msg_sock.setblocking(orig_blocking)
-
-	# allow either OK or STATES_CHANGED as the final ack
-	if parsed["server_msg"] not in (ServerMessage.OK, ServerMessage.STATES_CHANGED):
-		log.error(f"Unexpected server_msg after extra-data: {parsed['server_msg']}")
-		return False
-
-	log.info("Extra data sent successfully")
-	return True
+			cmd_sock.settimeout(orig_to)
 
 
 def connect_and_handshake(host: str, ports: list[int]) -> list[socket.socket] | bool:
@@ -760,8 +777,8 @@ def _remove_analyzer(side: str, cmd_sock: socket.socket, msg_sock: socket.socket
 		log.error(f"Failed to send REMOVE_ANALYZER command for {side} analyzer")
 		return False
 
-	if not send_extra_data(msg_sock, {"analyzer": config["name"]}):
-		log.error(f"Failed to remove {side} analyzer")
+	if not send_extra_data(cmd_sock, msg_sock, {"analyzer": config["name"]}):
+		log.error(f"Failed to send configuraiton for {side} analyzer")
 		return False
 
 	log.info(f"Removed {side} analyzer '{config['name']}'")
@@ -774,11 +791,11 @@ def _add_analyzer(side: str, cmd_sock: socket.socket, msg_sock: socket.socket, c
 	Returns True on success.
 	"""
 	if not send_command(cmd_sock, Command.ADD_ANALYZER):
-		log.error(f"Failed to send ADD_ANALYZER command for {side}")
+		log.error(f"Failed to send ADD_ANALYZER command for {side} analyzer")
 		return False
 
-	if not send_extra_data(msg_sock, config):
-		log.error(f"Failed to send configuration for {side} analyzer '{config.get('name')}'")
+	if not send_extra_data(cmd_sock, msg_sock, config):
+		log.error(f"Failed to send configuration for {side} analyzer")
 		return False
 
 	log.info(f"Added/updated {side} analyzer '{config['name']}'")
