@@ -826,7 +826,7 @@ def message_dispatcher(sock: socket.socket, stop_event: threading.Event) -> None
 
 	while not stop_event.is_set():	
 		if msg_lock.locked():
-			time.sleep(0.5)
+			time.sleep(0.05)
 			continue
 
 		try:
