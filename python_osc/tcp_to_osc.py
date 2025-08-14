@@ -147,7 +147,7 @@ stop_event = threading.Event()
 
 # PID to kill the process
 with open("tcp_to_osc.pid", "w") as f:
-    f.write(str(os.getpid()))
+	f.write(str(os.getpid()))
 
 
 
@@ -298,57 +298,117 @@ def parse_data_length(length_bytes: bytes) -> int:
 # ----------------------------- Socket Communication -----------------------------
 def send_command(sock: socket.socket, command: Command) -> bool:
 	"""
-	Send a command to the server using the required protocol format.
+	Send a command on the command socket and validate the server's response.
 
-	The command is structured as:
-	- 4 bytes (little-endian) for protocol version
-	- 4 bytes (little-endian) for the command
-
-	Returns:
-		bool: True if the command was successful, False otherwise.
+	- For ADD/REMOVE_ANALYZER: require an immediate OK (strict), then caller can
+	  send the extra JSON on the message socket.
+	- For data-returning commands (GET_STATES, GET_LAST_TRIAL_DATA): accept an
+	  initial SENDING_DATA and non-blockingly drain until the trailing OK/NOK
+	  to keep the command stream aligned. The data itself comes on the message
+	  socket and is handled by the dispatcher.
+	- For other commands: require an immediate OK.
 	"""
 	if not isinstance(command, Command):
 		log.error(f"Invalid command {command}")
 		return False
 
-	# Pack command as 8 bytes (4-byte version + 4-byte command)
-	command_packet = to_packet(command.value)
-
+	# Send the 8B command packet
 	try:
-		# Send the command
-		sock.sendall(command_packet)
+		sock.sendall(to_packet(command.value))
 		log.info(f"Sent command: {command.name} ({command.value})")
+	except socket.error as e:
+		log.error(f"Socket error while sending command: {e}")
+		return False
 
-		# Read the full response
-		orig = sock.gettimeout()
-		sock.settimeout(SOCKETS_TIMEOUT)
+	# Read the first response
+	orig_to = sock.gettimeout()
+	sock.settimeout(SOCKETS_TIMEOUT)
+	try:
 		try:
-			response = recv_exact(sock, RESPONSE_HEADER_BYTES)
+			first_hdr = recv_exact(sock, RESPONSE_HEADER_BYTES)
 		finally:
-			sock.settimeout(orig)
+			sock.settimeout(orig_to)
+	except socket.timeout:
+		log.error("Timeout waiting for command response header")
+		return False
+	except Exception as e:
+		log.error(f"Error reading command response header: {e}")
+		return False
 
-		parsed_response = parse_header(response)
+	parsed = parse_header(first_hdr)
+	if "error" in parsed:
+		log.error(f"Response interpretation error: {parsed['error']}")
+		return False
 
-		# Handle interpretation errors
-		if "error" in parsed_response:
-			log.error(f"Response interpretation error: {parsed_response['error']}")
+	# Decide behavior by command type
+	is_extra = command in (Command.ADD_ANALYZER, Command.REMOVE_ANALYZER)
+	is_data_returning = command in (Command.GET_STATES, Command.GET_LAST_TRIAL_DATA)
+
+	if is_extra:
+		# Strictly require immediate OK before sending extra data
+		if parsed["server_msg"] != ServerMessage.OK:
+			log.error(f"{command.name}: expected OK before extra data, got {parsed['server_msg'].name}")
 			return False
-
-		# For ADD_ANALYZER / REMOVE_ANALYZER / GET_STATES we also accept LISTENING_EXTRA_DATA
-		if command in (Command.ADD_ANALYZER, Command.REMOVE_ANALYZER, Command.GET_STATES):
-			allowed = (ServerMessage.OK, ServerMessage.LISTENING_EXTRA_DATA)
-		else:
-			allowed = (ServerMessage.OK,)
-
-		if parsed_response["server_msg"] not in allowed:
-			log.error(f"Command {command.name} failed (got {parsed_response['server_msg'].name})")
-			return False
-
 		return True
 
-	except socket.error as e:
-		log.error(f"Socket error: {e}")
+	if is_data_returning:
+		# Accept SENDING_DATA, then drain until final OK/NOK to keep stream aligned
+		if parsed["server_msg"] not in (ServerMessage.SENDING_DATA, ServerMessage.OK):
+			log.error(f"{command.name}: unexpected first msg {parsed['server_msg'].name}")
+			return False
+
+		# If the server put a body on the command socket (unlikely, but defensive), drain it
+		try:
+			if parsed["data_type"] != DataType.NONE_TYPE:
+				length = parse_data_length(recv_exact(sock, 8))
+				_ = recv_exact(sock, length)
+		except Exception:
+			# Non-fatal; data should be on the message socket anyway
+			pass
+
+		# If we already got OK, we're done
+		if parsed["server_msg"] == ServerMessage.OK:
+			return True
+
+		# Otherwise poll briefly for the trailing OK/NOK
+		end = time.time() + SOCKETS_TIMEOUT
+		sock.settimeout(0.15)
+		try:
+			while time.time() < end:
+				try:
+					hdr2 = recv_exact(sock, RESPONSE_HEADER_BYTES)
+				except socket.timeout:
+					continue
+				p2 = parse_header(hdr2)
+				if "error" in p2:
+					break
+
+				# Drain any optional body defensively
+				if p2["data_type"] != DataType.NONE_TYPE:
+					try:
+						l2 = parse_data_length(recv_exact(sock, 8))
+						_ = recv_exact(sock, l2)
+					except Exception:
+						pass
+
+				if p2["server_msg"] == ServerMessage.OK:
+					return True
+				if p2["server_msg"] == ServerMessage.NOK:
+					log.error(f"{command.name}: server returned NOK after SENDING_DATA")
+					return False
+
+			log.warning(f"{command.name}: timed out waiting for trailing OK; continuing")
+			# Treat as success so the dispatcher can process the STATES on message socket
+			return True
+		finally:
+			sock.settimeout(orig_to)
+
+	# Default: require immediate OK
+	if parsed["server_msg"] != ServerMessage.OK:
+		log.error(f"{command.name}: expected OK, got {parsed['server_msg'].name}")
 		return False
+	return True
+
 
 
 def send_extra_data(msg_sock: socket.socket, extra_data: dict) -> bool:
@@ -697,11 +757,11 @@ def _remove_analyzer(side: str, cmd_sock: socket.socket, msg_sock: socket.socket
 		return False
 
 	if not send_command(cmd_sock, Command.REMOVE_ANALYZER):
-		log.warning(f"Failed to send REMOVE_ANALYZER command for {side} analyzer")
+		log.error(f"Failed to send REMOVE_ANALYZER command for {side} analyzer")
 		return False
 
 	if not send_extra_data(msg_sock, {"analyzer": config["name"]}):
-		log.warning(f"Failed to remove {side} analyzer")
+		log.error(f"Failed to remove {side} analyzer")
 		return False
 
 	log.info(f"Removed {side} analyzer '{config['name']}'")
@@ -714,11 +774,11 @@ def _add_analyzer(side: str, cmd_sock: socket.socket, msg_sock: socket.socket, c
 	Returns True on success.
 	"""
 	if not send_command(cmd_sock, Command.ADD_ANALYZER):
-		log.warning(f"Failed to send ADD_ANALYZER command for {side}")
+		log.error(f"Failed to send ADD_ANALYZER command for {side}")
 		return False
 
 	if not send_extra_data(msg_sock, config):
-		log.warning(f"Failed to send configuration for {side} analyzer '{config.get('name')}'")
+		log.error(f"Failed to send configuration for {side} analyzer '{config.get('name')}'")
 		return False
 
 	log.info(f"Added/updated {side} analyzer '{config['name']}'")
