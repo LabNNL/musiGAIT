@@ -295,7 +295,7 @@ def parse_data_length(length_bytes: bytes) -> int:
 
 
 # ----------------------------- Socket Communication -----------------------------
-def send_command(sock, command: Command) -> bool:
+def send_command(sock: socket.socket, command: Command) -> bool:
 	"""
 	Send a command to the server using the required protocol format.
 
