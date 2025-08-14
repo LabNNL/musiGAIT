@@ -10,7 +10,6 @@ import logging
 import random
 import struct
 import socket
-import select
 import copy
 import json
 import time
@@ -320,7 +319,13 @@ def send_command(sock: socket.socket, command: Command) -> bool:
 		log.info(f"Sent command: {command.name} ({command.value})")
 
 		# Read the full response
-		response = recv_exact(sock, RESPONSE_HEADER_BYTES)
+		orig = sock.gettimeout()
+		sock.settimeout(SOCKETS_TIMEOUT)
+		try:
+			response = recv_exact(sock, RESPONSE_HEADER_BYTES)
+		finally:
+			sock.settimeout(orig)
+
 		parsed_response = parse_header(response)
 
 		# Handle interpretation errors
@@ -431,9 +436,14 @@ def connect_and_handshake(host: str, ports: list[int]) -> list[socket.socket] | 
 		handshake_message = to_packet(Command.HANDSHAKE.value)
 		sockets[IDX_COMMAND].sendall(handshake_message)
 
-		response = recv_exact(sockets[IDX_COMMAND], RESPONSE_HEADER_BYTES)
+		orig = sockets[IDX_COMMAND].gettimeout()
+		sockets[IDX_COMMAND].settimeout(SOCKETS_TIMEOUT)
+		try:
+			response = recv_exact(sockets[IDX_COMMAND], RESPONSE_HEADER_BYTES)
+		finally:
+			sockets[IDX_COMMAND].settimeout(orig)
+		
 		parsed = parse_header(response)
-
 		if parsed.get("error") or parsed["server_msg"] != ServerMessage.OK:
 			log.error(f"Handshake error: {parsed.get('error') or parsed['server_msg']}")
 			return False
@@ -447,23 +457,32 @@ def connect_and_handshake(host: str, ports: list[int]) -> list[socket.socket] | 
 
 def listen_to_live_data(sock: socket.socket, stop_event: threading.Event) -> None:
 	"""Listen for live data packets and send them via OSC."""
-	sent_timestamps = set()
+	sock.settimeout(SOCKETS_TIMEOUT)
 	log.info(f"Sending live data via OSC on {OSC_IP}:{OSC_PORT}")
+
+	sent_timestamps = set()
+	sent_order = deque(maxlen=10000)
 
 	try:
 		while not stop_event.is_set():
-			header = recv_exact(sock, RESPONSE_HEADER_BYTES)
-			parsed = parse_header(header)
+			try:
+				header = recv_exact(sock, RESPONSE_HEADER_BYTES)
+			except socket.timeout:
+				continue  # check stop_event again
 
-			if parsed["data_type"] is not DataType.NONE_TYPE:
-				length_bytes = recv_exact(sock, 8)
-				body_length = parse_data_length(length_bytes)
-				body = recv_exact(sock, body_length)
+			parsed = parse_header(header)
+			if parsed["data_type"] != DataType.NONE_TYPE:
+				try:
+					length_bytes = recv_exact(sock, 8)
+					body_length = parse_data_length(length_bytes)
+					body = recv_exact(sock, body_length)
+				except socket.timeout:
+					continue
 
 				try:
 					decoded = json.loads(body.decode('utf-8'))
 					for key, payload in decoded.items():
-						for entry in payload['data']['data']:
+						for entry in payload.get('data', {}).get('data', []):
 							timestamp, channels = entry[0], entry[1]
 							
 							if timestamp in sent_timestamps:
@@ -493,21 +512,25 @@ def listen_to_live_data(sock: socket.socket, stop_event: threading.Event) -> Non
 
 def listen_to_live_analyses(sock: socket.socket, stop_event: threading.Event) -> None:
 	"""Listen for live analyses packets and send them via OSC."""
-	buffer = bytearray()
-	expected_length = None
-
+	sock.settimeout(SOCKETS_TIMEOUT)
 	log.info(f"Sending live analyses via OSC on {OSC_IP}:{OSC_PORT}")
 
 	try:
 		while not stop_event.is_set():
-			header = recv_exact(sock, RESPONSE_HEADER_BYTES)
+			try:
+				header = recv_exact(sock, RESPONSE_HEADER_BYTES)
+			except socket.timeout:
+				continue  # check _stop_event again
+
 			parsed = parse_header(header)
-			
-			if parsed["data_type"] is not DataType.NONE_TYPE:
-				length_bytes = recv_exact(sock, 8)
-				body_length = parse_data_length(length_bytes)
 			if parsed["data_type"] != DataType.NONE_TYPE:
-				
+				try:
+					length_bytes = recv_exact(sock, 8)
+					body_length = parse_data_length(length_bytes)
+					body = recv_exact(sock, body_length)
+				except socket.timeout:
+					continue
+
 				try:
 					decoded = json.loads(body.decode('utf-8'))
 					for key, analysis in decoded.get("data", {}).items():
@@ -798,21 +821,21 @@ MESSAGE_HANDLERS: dict[Enum, Callable] = {
 
 
 def message_dispatcher(sock: socket.socket, stop_event: threading.Event) -> None:
-	sock.setblocking(False)
-	while not stop_event.is_set():
-		
+	sock.setblocking(True)
+	sock.settimeout(SOCKETS_TIMEOUT)
+
+	while not stop_event.is_set():	
 		if msg_lock.locked():
 			time.sleep(0.5)
 			continue
 
-		# wait up to 0.1s for data to arrive
-		ready, _, _ = select.select([sock], [], [], 0.1)
-		if not ready:
-			continue
-
 		try:
 			# parse header & body
-			header = recv_exact(sock, RESPONSE_HEADER_BYTES)
+			try:
+				header = recv_exact(sock, RESPONSE_HEADER_BYTES)
+			except socket.timeout:
+				continue
+
 			parsed = parse_header(header)
 
 			if parsed.get("error"):
@@ -834,8 +857,8 @@ def message_dispatcher(sock: socket.socket, stop_event: threading.Event) -> None
 			handler(parsed, body)
 
 		except Exception as e:
-			log.error(f"Message dispatcher error: {e}")
-			break
+			log.warning(f"Message dispatcher error: {e}")
+			continue
 
 
 
