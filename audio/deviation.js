@@ -101,9 +101,11 @@ Sensor.prototype = {
 
 	// process incoming raw data
 	handleData: function(v) {
+		if (sensorType === "emg") v = this._processEMG(v, sampleRate); // EMG processing
+
 		if (this.recordingMin) this.minSamples.push(v);
 		if (this.recordingMax) this.maxSamples.push(v);
-		if (sensorType === "emg") v = this._processEMG(v, sampleRate); // EMG processing
+		
 		return this.compute(v);
 	},
 
@@ -141,7 +143,10 @@ Sensor.prototype = {
 	compute: function(v) {
 		var minv = this.minVal;
 		var maxv = this.maxVal;
+
 		var span = (maxv !== minv) ? (v - minv) / (maxv - minv) : 0;
+		if (sensorType === "emg") span = Math.max(0, Math.min(1, span));
+
 		var norm = (sensorType === "emg") ? span : span * 2 - 1;
 
 		var useOutMap = this.outMin !== null && this.outMax !== null;
@@ -187,6 +192,7 @@ function msg_float(v) {
 	updateSampleRate();
 
 	var out = ensureSensor(0).handleData(v);
+	post("[Data] " + out + "\n");
 	if (out) {
 		if (sensorType === "emg") {
 			outlet(0, Math.abs(out[0])); // norm always positive
