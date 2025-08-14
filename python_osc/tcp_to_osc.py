@@ -503,7 +503,7 @@ def listen_to_live_data(sock: socket.socket, stop_event: threading.Event) -> Non
 					log.error("JSON decode error; skipping this packet.")
 
 	except (ConnectionError, socket.error) as e:
-		log.error(f"Live-data socket closed: {e}")
+		log.error(f"Live data socket closed: {e}")
 
 	finally:
 		sock.close()
@@ -555,7 +555,7 @@ def listen_to_live_analyses(sock: socket.socket, stop_event: threading.Event) ->
 					log.error("JSON decode error in live analyses; skipping this packet")
 
 	except (ConnectionError, socket.error) as e:
-		log.info(f"Live-analyses socket closed: {e}")
+		log.error(f"Live analysis socket closed: {e}")
 	
 	finally:
 		sock.close()
