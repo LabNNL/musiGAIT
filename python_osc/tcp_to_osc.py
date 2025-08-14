@@ -696,11 +696,11 @@ def _remove_analyzer(side: str, cmd_sock: socket.socket, msg_sock: socket.socket
 		return False
 
 	if not send_command(cmd_sock, Command.REMOVE_ANALYZER):
-		log.error(f"Failed to send REMOVE_ANALYZER command for {side}")
+		log.error(f"Failed to send REMOVE_ANALYZER command for {side} analyzer")
 		return False
 
 	if not send_extra_data(msg_sock, {"analyzer": config["name"]}):
-		log.error(f"Failed to send analyzer name for removal of {side}")
+		log.error(f"Failed to remove {side} analyzer")
 		return False
 
 	log.info(f"Removed {side} analyzer '{config['name']}'")
@@ -821,12 +821,16 @@ MESSAGE_HANDLERS: dict[Enum, Callable] = {
 
 
 def message_dispatcher(sock: socket.socket, stop_event: threading.Event) -> None:
-	sock.setblocking(True)
-	sock.settimeout(SOCKETS_TIMEOUT)
+	sock.setblocking(False)
 
 	while not stop_event.is_set():	
 		if msg_lock.locked():
 			time.sleep(0.5)
+			continue
+
+		# wait up to 0.1s for data to arrive
+		ready, _, _ = select.select([sock], [], [], 0.1)
+		if not ready:
 			continue
 
 		try:
@@ -859,6 +863,9 @@ def message_dispatcher(sock: socket.socket, stop_event: threading.Event) -> None
 			)
 			handler(parsed, body)
 
+		except BlockingIOError:
+			continue
+		
 		except Exception as e:
 			log.warning(f"Message dispatcher error: {e}")
 			continue
