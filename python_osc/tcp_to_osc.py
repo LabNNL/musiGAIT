@@ -464,9 +464,17 @@ def listen_to_live_data(sock: socket.socket, stop_event: threading.Event) -> Non
 					for key, payload in decoded.items():
 						for entry in payload['data']['data']:
 							timestamp, channels = entry[0], entry[1]
+							
 							if timestamp in sent_timestamps:
 								continue
+							
 							sent_timestamps.add(timestamp)
+							sent_order.append(timestamp)
+								
+							if len(sent_timestamps) > sent_order.maxlen:
+								old = sent_order.popleft()
+								sent_timestamps.discard(old)
+
 							for ch in CURRENT_SENSORS:
 								if 1 <= ch <= len(channels):
 									send_osc_message(f'/sensor_{ch}', channels[ch-1] * DATA_MULTIPLIER)
