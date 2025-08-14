@@ -4,7 +4,7 @@
 		"appversion" : 		{
 			"major" : 8,
 			"minor" : 6,
-			"revision" : 4,
+			"revision" : 5,
 			"architecture" : "x64",
 			"modernui" : 1
 		}
@@ -87,7 +87,7 @@
 						"appversion" : 						{
 							"major" : 8,
 							"minor" : 6,
-							"revision" : 4,
+							"revision" : 5,
 							"architecture" : "x64",
 							"modernui" : 1
 						}
@@ -130,7 +130,7 @@
 									"numoutlets" : 1,
 									"outlettype" : [ "" ],
 									"patching_rect" : [ 194.0, 343.0, 142.0, 36.0 ],
-									"text" : ";\r\nmax wheelzoomfactor 75"
+									"text" : ";\rmax wheelzoomfactor 75"
 								}
 
 							}
@@ -155,7 +155,7 @@
 									"numoutlets" : 1,
 									"outlettype" : [ "" ],
 									"patching_rect" : [ 137.0, 202.0, 135.0, 36.0 ],
-									"text" : ";\r\nmax wheelzoomfactor 0"
+									"text" : ";\rmax wheelzoomfactor 0"
 								}
 
 							}

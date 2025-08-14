@@ -5652,8 +5652,13 @@
 													"id" : "obj-44",
 													"maxclass" : "newobj",
 													"numinlets" : 1,
-													"numoutlets" : 0,
+													"numoutlets" : 2,
+													"outlettype" : [ "", "bang" ],
 													"patching_rect" : [ 31.0, 243.0, 33.0, 22.0 ],
+													"saved_object_attributes" : 													{
+														"shell" : "(default)"
+													}
+,
 													"text" : "shell"
 												}
 
@@ -6765,9 +6770,13 @@
 													"id" : "obj-44",
 													"maxclass" : "newobj",
 													"numinlets" : 1,
-													"numoutlets" : 1,
-													"outlettype" : [ "" ],
+													"numoutlets" : 2,
+													"outlettype" : [ "", "bang" ],
 													"patching_rect" : [ 273.0, 281.0, 33.0, 22.0 ],
+													"saved_object_attributes" : 													{
+														"shell" : "(default)"
+													}
+,
 													"text" : "shell"
 												}
 
@@ -7755,9 +7764,13 @@
 													"id" : "obj-32",
 													"maxclass" : "newobj",
 													"numinlets" : 1,
-													"numoutlets" : 1,
-													"outlettype" : [ "" ],
+													"numoutlets" : 2,
+													"outlettype" : [ "", "bang" ],
 													"patching_rect" : [ 608.0, 662.0, 33.0, 22.0 ],
+													"saved_object_attributes" : 													{
+														"shell" : "(default)"
+													}
+,
 													"text" : "shell"
 												}
 
@@ -7888,9 +7901,13 @@
 													"id" : "obj-216",
 													"maxclass" : "newobj",
 													"numinlets" : 1,
-													"numoutlets" : 1,
-													"outlettype" : [ "" ],
+													"numoutlets" : 2,
+													"outlettype" : [ "", "bang" ],
 													"patching_rect" : [ 834.0, 662.0, 33.0, 22.0 ],
+													"saved_object_attributes" : 													{
+														"shell" : "(default)"
+													}
+,
 													"text" : "shell"
 												}
 
@@ -12584,6 +12601,10 @@
 				"patcherrelativepath" : ".",
 				"type" : "JSON",
 				"implicit" : 1
+			}
+, 			{
+				"name" : "shell.mxo",
+				"type" : "iLaX"
 			}
 , 			{
 				"name" : "smooth.maxpat",
