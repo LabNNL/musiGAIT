@@ -344,7 +344,7 @@ def send_command(sock: socket.socket, command: Command) -> bool:
 		return False
 
 
-def send_extra_data(msg_sock, extra_data: dict) -> bool:
+def send_extra_data(msg_sock: socket.socket, extra_data: dict) -> bool:
 	"""
 	Sends extra data (ADD/REMOVE_ANALYZER payload) and waits for:
 	  1) LISTENING_EXTRA_DATA (server ready)
@@ -482,7 +482,7 @@ def listen_to_live_data(sock: socket.socket, stop_event: threading.Event) -> Non
 		log.info("Live data connection closed")
 
 
-def listen_to_live_analyses(sock: socket, stop_event: threading.Event) -> None:
+def listen_to_live_analyses(sock: socket.socket, stop_event: threading.Event) -> None:
 	"""Listen for live analyses packets and send them via OSC."""
 	buffer = bytearray()
 	expected_length = None
@@ -654,7 +654,7 @@ def update_analyzer_config() -> None:
 		analyzer_config_right["events"][1]["start_when"][0]["value"] = ANALYZER_RIGHT_THRESHOLD
 
 
-def _remove_analyzer(side: str, cmd_sock, msg_sock, config: dict) -> bool:
+def _remove_analyzer(side: str, cmd_sock: socket.socket, msg_sock: socket.socket, config: dict) -> bool:
 	"""
 	Send REMOVE_ANALYZER + analyzer name.
 	Returns True on success.
@@ -675,7 +675,7 @@ def _remove_analyzer(side: str, cmd_sock, msg_sock, config: dict) -> bool:
 	return True
 
 
-def _add_analyzer(side: str, cmd_sock, msg_sock, config: dict) -> bool:
+def _add_analyzer(side: str, cmd_sock: socket.socket, msg_sock: socket.socket, config: dict) -> bool:
 	"""
 	Send ADD_ANALYZER + full config.
 	Returns True on success.
