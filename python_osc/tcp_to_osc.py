@@ -908,7 +908,7 @@ MESSAGE_HANDLERS: dict[Enum, Callable] = {
 
 def message_dispatcher(sock: socket.socket, stop_event: threading.Event) -> None:
 	sock.setblocking(True)
-	sock.timeout(SOCKETS_TIMEOUT)
+	sock.settimeout(SOCKETS_TIMEOUT)
 
 	while not stop_event.is_set():	
 		if msg_lock.locked():
