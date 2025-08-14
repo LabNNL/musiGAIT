@@ -1,48 +1,77 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+set -o pipefail
+
+cd "$(dirname "$0")" || {
+	echo "[FATAL] Can't cd to script directory."
+	exit 1
+}
 
 VENV_DIR=".venv"
 
-# Navigate to the script's directory
-cd "$(dirname "$0")" || exit
+# Create venv if missing
+if [ ! -x "$VENV_DIR/bin/python" ] && [ ! -x "$VENV_DIR/bin/python3" ]; then
+	echo "[INFO] Creating virtual environment..."
+	# Pick a system Python
+	if command -v python3 >/dev/null 2>&1; then
+		BOOTSTRAP_PY=python3
+	elif command -v python >/dev/null 2>&1; then
+		BOOTSTRAP_PY=python
+	else
+		echo "[FATAL] No python3/python found. Install Python (e.g., via Homebrew)."
+		[ -t 0 ] && read -r -p "[INFO] Press Return to close..." _
+		exit 1
+	fi
 
-# Check if virtual environment exists, if not create it
-if [ ! -d "$VENV_DIR" ]; then
-    echo "[INFO] Creating virtual environment..."
-    python3 -m venv "$VENV_DIR"
+	"$BOOTSTRAP_PY" -m venv "$VENV_DIR" || {
+		echo "[FATAL] venv creation failed."
+		[ -t 0 ] && read -r -p "[INFO] Press Return to close..." _
+		exit 1
+	}
 fi
 
-# Activate the virtual environment
-# shellcheck disable=SC1091
-source "$VENV_DIR/bin/activate"
-
-# Ensure we're using the correct Python inside the virtual environment
-PYTHON_EXEC="$VENV_DIR/bin/python3"
-PIP_EXEC="$VENV_DIR/bin/pip"
-
-# Check if python-osc is already installed
-if ! "$PIP_EXEC" show python-osc > /dev/null 2>&1; then
-    echo "[WARNING] python-osc is not installed. Checking internet connection..."
-
-    # Check internet connection
-    if ! ping -c 1 google.com &> /dev/null; then
-        echo "[FATAL] No internet connection detected. Cannot install missing dependencies."
-        exit 1
-    else
-        echo "Installing python-osc..."
-        "$PIP_EXEC" install --upgrade pip
-        "$PIP_EXEC" install python-osc
-    fi
+# Use Python from the venv
+if [ -x "$VENV_DIR/bin/python3" ]; then
+	PY="$VENV_DIR/bin/python3"
 else
-    echo "[INFO] python-osc is already installed."
+	PY="$VENV_DIR/bin/python"
 fi
 
-# Run TCP2OSC.py script using the virtual environment's Python
-# forwarding all CLI args you passed to the .command
-"$PYTHON_EXEC" tcp_to_osc.py "$@"
+# Activate (optional but nice for PATH/env)
+# shellcheck source=/dev/null
+if [ -f "$VENV_DIR/bin/activate" ]; then
+	. "$VENV_DIR/bin/activate"
+fi
 
-# Deactivate virtual environment
-deactivate
+# Install python-osc if missing (module name: pythonosc)
+"$PY" - <<'PY'
+import importlib.util, sys
+sys.exit(0 if importlib.util.find_spec('pythonosc') else 1)
+PY
+if [ $? -ne 0 ]; then
+	echo "[INFO] python-osc missing; installing..."
+	"$PY" -m pip install --upgrade pip || {
+		echo "[FATAL] pip upgrade failed (offline/proxy?)."
+		[ -t 0 ] && read -r -p "[INFO] Press Return to close..." _
+		exit 1
+	}
+	"$PY" -m pip install python-osc || {
+		echo "[FATAL] python-osc install failed (offline/proxy?)."
+		[ -t 0 ] && read -r -p "[INFO] Press Return to close..." _
+		exit 1
+	}
+fi
 
-# Keep the terminal open to see output
-echo "[INFO] Press Enter to close..."
-read -r
+echo "[INFO] Setup complete, launching tcp_to_osc.py..."
+
+# Run your script, forward all args
+"$PY" tcp_to_osc.py "$@"
+EXITCODE=$?
+
+# Deactivate if we activated
+type deactivate >/dev/null 2>&1 && deactivate
+
+# Keep Terminal open on double-click
+[ -t 0 ] && read -r -p "[INFO] Press Return to close..." _
+
+exit $EXITCODE

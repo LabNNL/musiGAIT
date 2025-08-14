@@ -1,8 +1,8 @@
 from pythonosc.osc_server import BlockingOSCUDPServer
 from pythonosc.udp_client import SimpleUDPClient
 from pythonosc.dispatcher import Dispatcher
+from typing import Callable, Optional
 from collections import deque
-from typing import Callable
 from enum import Enum
 import threading
 import argparse
@@ -25,15 +25,16 @@ osc_client = SimpleUDPClient(OSC_IP, OSC_PORT)
 osc_lock = threading.RLock()
 
 # States
-LAST_STATES: dict | None = None
+LAST_STATES: Optional[dict] = None
 msg_lock = threading.Lock()
 
 # EMG to Delsys server
+EMG_PORTS: list
 EMG_HOST = "127.0.0.1"
 
-CURRENT_SENSORS = []
+CURRENT_SENSORS: list = []
 
-SOCKETS = []
+SOCKETS: list = []
 SOCKETS_TIMEOUT = 1.0  # seconds
 
 IDX_COMMAND = 0  # ports[0] → command port
@@ -417,7 +418,6 @@ def send_command(sock: socket.socket, command: Command) -> bool:
 	return True
 
 
-
 def send_extra_data(cmd_sock: socket.socket, msg_sock: socket.socket, extra_data: dict) -> bool:
 	"""
 	Send the extra JSON on the message socket, then wait for the final ACK on the *command* socket.
@@ -482,7 +482,7 @@ def send_extra_data(cmd_sock: socket.socket, msg_sock: socket.socket, extra_data
 			cmd_sock.settimeout(orig_to)
 
 
-def connect_and_handshake(host: str, ports: list[int]) -> list[socket.socket] | bool:
+def connect_and_handshake(host: str, ports: list) -> Optional[list]:
 	"""
 	Connects to all ports and performs a handshake.
 
