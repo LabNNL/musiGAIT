@@ -33,7 +33,7 @@ EMG_HOST = "127.0.0.1"
 CURRENT_SENSORS = []
 
 SOCKETS = []
-SOCKETS_TIMEOUT = 1.0  # seconds
+SOCKETS_TIMEOUT = 3.0  # seconds
 
 IDX_COMMAND = 0  # ports[0] → command port
 IDX_MESSAGE = 1  # ports[1] → message port
