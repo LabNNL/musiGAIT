@@ -837,7 +837,6 @@ def message_dispatcher(sock: socket.socket, stop_event: threading.Event) -> None
 				continue
 
 			parsed = parse_header(header)
-
 			if parsed.get("error"):
 				log.error(f"Header parse error: {parsed['error']}")
 				continue
@@ -845,15 +844,19 @@ def message_dispatcher(sock: socket.socket, stop_event: threading.Event) -> None
 			# read body if present
 			body = None
 			if parsed["data_type"] != DataType.NONE_TYPE:
-				length_bytes = recv_exact(sock, 8)
-				body_len = parse_data_length(length_bytes)
-				body = recv_exact(sock, body_len)
+				try:
+					length_bytes = recv_exact(sock, 8)
+					body_len = parse_data_length(length_bytes)
+					body = recv_exact(sock, body_len)
+				except socket.timeout:
+					continue
 
 			# pick a handler by server_msg first, then data_type
-			handler = MESSAGE_HANDLERS.get(parsed["server_msg"]) \
-					or MESSAGE_HANDLERS.get(parsed["data_type"]) \
-					or _handle_unexpected
-
+			handler = (
+				MESSAGE_HANDLERS.get(parsed["server_msg"])
+				or MESSAGE_HANDLERS.get(parsed["data_type"])
+				or _handle_unexpected
+			)
 			handler(parsed, body)
 
 		except Exception as e:
