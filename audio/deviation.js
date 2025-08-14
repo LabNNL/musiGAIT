@@ -141,7 +141,10 @@ Sensor.prototype = {
 	compute: function(v) {
 		var minv = this.minVal;
 		var maxv = this.maxVal;
+
 		var span = (maxv !== minv) ? (v - minv) / (maxv - minv) : 0;
+		if (sensorType === "emg") span = Math.abs(span); // EMG: always positive
+
 		var norm = (sensorType === "emg") ? span : span * 2 - 1;
 
 		var useOutMap = this.outMin !== null && this.outMax !== null;
