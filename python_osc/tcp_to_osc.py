@@ -36,11 +36,13 @@ EMG_HOST = "127.0.0.1"
 CURRENT_SENSORS: list = []
 
 SOCKETS: list = []
-SOCKETS_TIMEOUT = 1.0  # seconds
+SOCKETS_TIMEOUT = 1.0       # seconds
+SOCKETS_TIMEOUT_FAST = 0.25  # for short ops
+SOCKETS_TIMEOUT_SLOW = 6.0  # for slow/real ops
 
-IDX_COMMAND = 0  # ports[0] → command port
-IDX_MESSAGE = 1  # ports[1] → message port
-IDX_LIVE_DATA = 2  # ports[2] → live data port
+IDX_COMMAND = 0        # ports[0] → command port
+IDX_MESSAGE = 1        # ports[1] → message port
+IDX_LIVE_DATA = 2      # ports[2] → live data port
 IDX_LIVE_ANALYSES = 3  # ports[3] → analyses port
 
 # OSC to change analyzer configuration
@@ -296,6 +298,18 @@ def parse_data_length(length_bytes: bytes) -> int:
 	return struct.unpack('<Q', length_bytes)[0]
 
 
+def _cmd_hdr_timeout_for(command: Command) -> float:
+	# Data-returning commands: server writes MSG first, then CMD reply.
+	if command in (Command.GET_STATES, Command.GET_LAST_TRIAL_DATA):
+		return max(SOCKETS_TIMEOUT, SOCKETS_TIMEOUT_SLOW)
+
+	# Connecting devices can also be slow on real hardware
+	if command in (Command.CONNECT_DELSYS_EMG, Command.CONNECT_DELSYS_ANALOG, Command.CONNECT_MAGSTIM):
+		return max(SOCKETS_TIMEOUT, SOCKETS_TIMEOUT_SLOW)
+
+	return SOCKETS_TIMEOUT
+
+
 
 # ----------------------------- Socket Communication -----------------------------
 def send_command(sock: socket.socket, command: Command) -> bool:
@@ -325,7 +339,7 @@ def send_command(sock: socket.socket, command: Command) -> bool:
 
 		# Read the first response
 		orig_to = sock.gettimeout()
-		sock.settimeout(SOCKETS_TIMEOUT)
+		sock.settimeout(_cmd_hdr_timeout_for(command))
 		try:
 			try:
 				first_hdr = recv_exact(sock, RESPONSE_HEADER_BYTES)
@@ -386,8 +400,8 @@ def send_command(sock: socket.socket, command: Command) -> bool:
 				return True
 
 			# Otherwise poll briefly for the trailing OK/NOK
-			end = time.time() + SOCKETS_TIMEOUT
-			sock.settimeout(0.15)
+			end = time.time() + SOCKETS_TIMEOUT_SLOW
+			sock.settimeout(SOCKETS_TIMEOUT_FAST)
 			try:
 				while time.time() < end:
 					try:
@@ -444,10 +458,10 @@ def send_extra_data(cmd_sock: socket.socket, msg_sock: socket.socket, extra_data
 	with cmd_lock:
 		# wait for final ACK on the command socket
 		orig_to = cmd_sock.gettimeout()
-		cmd_sock.settimeout(SOCKETS_TIMEOUT)
+		cmd_sock.settimeout(SOCKETS_TIMEOUT_FAST)
 		
 		try:
-			deadline = time.time() + SOCKETS_TIMEOUT
+			deadline = time.time() + SOCKETS_TIMEOUT_SLOW
 			while time.time() < deadline:
 				try:
 					hdr = recv_exact(cmd_sock, RESPONSE_HEADER_BYTES)
@@ -523,7 +537,7 @@ def connect_and_handshake(host: str, ports: list) -> Optional[list]:
 		sockets[IDX_COMMAND].sendall(handshake_message)
 
 		orig = sockets[IDX_COMMAND].gettimeout()
-		sockets[IDX_COMMAND].settimeout(SOCKETS_TIMEOUT)
+		sockets[IDX_COMMAND].settimeout(SOCKETS_TIMEOUT_SLOW)
 		try:
 			response = recv_exact(sockets[IDX_COMMAND], RESPONSE_HEADER_BYTES)
 		finally:
@@ -912,7 +926,7 @@ def message_dispatcher(sock: socket.socket, stop_event: threading.Event) -> None
 
 	while not stop_event.is_set():	
 		if msg_lock.locked():
-			time.sleep(0.05)
+			time.sleep(SOCKETS_TIMEOUT_FAST)
 			continue
 
 		try:
