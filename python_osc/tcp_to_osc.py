@@ -10,6 +10,7 @@ import logging
 import random
 import struct
 import socket
+import select
 import copy
 import json
 import time
@@ -821,12 +822,16 @@ MESSAGE_HANDLERS: dict[Enum, Callable] = {
 
 
 def message_dispatcher(sock: socket.socket, stop_event: threading.Event) -> None:
-	sock.setblocking(True)
-	sock.settimeout(SOCKETS_TIMEOUT)
+	sock.setblocking(False)
 
 	while not stop_event.is_set():	
 		if msg_lock.locked():
 			time.sleep(0.5)
+			continue
+
+		# wait up to 0.1s for data to arrive
+		ready, _, _ = select.select([sock], [], [], 0.1)
+		if not ready:
 			continue
 
 		try:
@@ -859,6 +864,9 @@ def message_dispatcher(sock: socket.socket, stop_event: threading.Event) -> None
 			)
 			handler(parsed, body)
 		
+		except BlockingIOError:
+			continue
+			
 		except Exception as e:
 			log.warning(f"Message dispatcher error: {e}")
 			continue
