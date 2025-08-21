@@ -26,6 +26,3 @@ Logs/
 node_modules/
 package.json
 package-lock.json
-
-# Presets
-*.txt
