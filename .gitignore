@@ -10,7 +10,7 @@ video/Backup
 **/.DS_Store
 **/.idea
 
-# logs
+# Logs
 Logs/
 *.log
 
@@ -26,3 +26,6 @@ Logs/
 node_modules/
 package.json
 package-lock.json
+
+# Presets
+*.txt
