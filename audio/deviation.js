@@ -192,7 +192,6 @@ function msg_float(v) {
 	updateSampleRate();
 
 	var out = ensureSensor(0).handleData(v);
-	post("[Data] " + out + "\n");
 	if (out) {
 		if (sensorType === "emg") {
 			outlet(0, Math.abs(out[0])); // norm always positive
