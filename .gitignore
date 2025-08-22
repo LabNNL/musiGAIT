@@ -1,17 +1,17 @@
 # Video config
 video/config.json
 video/*.toe
-video/Backup
+video/Backup/
 
 # Virtualenv
 .venv/
 
-# MacOS
+# MacOS / IDEs
 **/.DS_Store
 **/.idea
 
 # Logs
-Logs/
+logs/
 *.log
 
 # Shortcut / Alias
@@ -23,6 +23,8 @@ Logs/
 
 # Audiofiles
 *.wav
+
+# Node
 node_modules/
 package.json
 package-lock.json
