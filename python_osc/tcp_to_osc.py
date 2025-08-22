@@ -3,6 +3,7 @@ from pythonosc.udp_client import SimpleUDPClient
 from pythonosc.dispatcher import Dispatcher
 from typing import Callable, Optional
 from collections import deque
+from pathlib import Path
 from enum import Enum
 import threading
 import argparse
@@ -36,9 +37,9 @@ EMG_HOST = "127.0.0.1"
 CURRENT_SENSORS: list = []
 
 SOCKETS: list = []
-SOCKETS_TIMEOUT = 1.0       # seconds
+SOCKETS_TIMEOUT = 2.0        # seconds
 SOCKETS_TIMEOUT_FAST = 0.25  # for short ops
-SOCKETS_TIMEOUT_SLOW = 6.0  # for slow/real ops
+SOCKETS_TIMEOUT_SLOW = 10.0  # for slow ops
 
 IDX_COMMAND = 0        # ports[0] → command port
 IDX_MESSAGE = 1        # ports[1] → message port
@@ -50,6 +51,12 @@ ANALYZER_IP, ANALYZER_PORT = "127.0.0.1", 8001
 
 # Data multiplier
 DATA_MULTIPLIER = 10000
+
+# Logs
+RECORDS_DIR = "../logs"
+RECORDS_DIR = (Path(__file__).parent / RECORDS_DIR).resolve()
+PENDING_TRIAL_SAVE = None
+pending_lock = threading.RLock()
 
 # Analyzer configuration
 ANALYZER_LEFT_CHANNEL = None
@@ -299,8 +306,12 @@ def parse_data_length(length_bytes: bytes) -> int:
 
 
 def _cmd_hdr_timeout_for(command: Command) -> float:
+	# Wait indefinitely for the trial
+	if command == Command.GET_LAST_TRIAL_DATA:
+		return None
+
 	# Data-returning commands: server writes MSG first, then CMD reply.
-	if command in (Command.GET_STATES, Command.GET_LAST_TRIAL_DATA):
+	if command == Command.GET_STATES:
 		return max(SOCKETS_TIMEOUT, SOCKETS_TIMEOUT_SLOW)
 
 	# Connecting devices can also be slow on real hardware
@@ -672,6 +683,7 @@ def start_osc_server() -> tuple[BlockingOSCUDPServer, threading.Thread]:
 	dispatcher.map("/analyzer_channels", analyzer_update_channels)
 	dispatcher.map("/analyzer_thresholds", analyzer_update_thresholds)
 	dispatcher.map("/analyzer_learningrate", analyzer_update_learningrate)
+	dispatcher.map("/record", osc_record_handler)
 
 	server = BlockingOSCUDPServer((ANALYZER_IP, ANALYZER_PORT), dispatcher)
 	thread = threading.Thread(target=server.serve_forever, daemon=True)
@@ -680,7 +692,7 @@ def start_osc_server() -> tuple[BlockingOSCUDPServer, threading.Thread]:
 	return server, thread
 
 
-def send_osc_message(address: str, value: float) -> None:
+def send_osc_message(address: str, value: object) -> None:
 	"""Thread-safe function to send OSC messages."""
 	with osc_lock:
 		osc_client.send_message(address, value)
@@ -762,6 +774,119 @@ def analyzer_update_learningrate(address: str, *args) -> None:
 
 	except (ValueError, IndexError) as e:
 		log.error(f"Error updating ANALYZER_LEARNING_RATE: {e}")
+
+
+def osc_record_handler(address: str, *args) -> None:
+	"""
+	/record 1 [outdir] [basename] -> START_RECORDING
+	/record 0 [outdir] [basename] -> STOP_RECORDING, then GET_LAST_TRIAL_DATA and save CSV
+
+	Defaults:
+	  outdir = RECORDS_DIR
+	  basename = trial_YYYYmmdd_HHMMSS
+	"""
+	global PENDING_TRIAL_SAVE
+
+	if not SOCKETS:
+		log.error("No sockets; cannot (start|stop) recording.")
+		return
+
+	try:
+		state = int(args[0])  # 1 start, 0 stop
+	except Exception:
+		log.error("Usage: /record 1|0 [outdir] [basename]")
+		return
+
+	outdir = str(args[1]) if len(args) >= 2 else RECORDS_DIR
+	if len(args) >= 3:
+		basename = str(args[2])
+	else:
+		basename = time.strftime("trial_%Y%m%d_%H%M%S")
+
+	os.makedirs(outdir, exist_ok=True)
+
+	if state == 1:
+		# START_RECORDING
+		if send_command(SOCKETS[IDX_COMMAND], Command.START_RECORDING):
+			log.info("Recording started.")
+			with osc_lock:
+				osc_client.send_message("/record_state", 1)
+		else:
+			log.error("Failed to start recording.")
+	else:
+		# STOP_RECORDING then request data
+		ok = send_command(SOCKETS[IDX_COMMAND], Command.STOP_RECORDING)
+		if not ok:
+			log.error("Failed to stop recording.")
+			return
+
+		# Set where to save when FULL_TRIAL arrives
+		with pending_lock:
+			PENDING_TRIAL_SAVE = {"outdir": outdir, "basename": basename}
+
+		# Ask for data; the dispatcher will catch FULL_TRIAL and write CSVs
+		if send_command(SOCKETS[IDX_COMMAND], Command.GET_LAST_TRIAL_DATA):
+			log.info("Requested last trial data...")
+		else:
+			log.error("GET_LAST_TRIAL_DATA failed.")
+
+		with osc_lock:
+			osc_client.send_message("/record_state", 0)
+
+
+
+# ----------------------------- CSV Saver -----------------------------
+
+def _sanitize_filename(s: str) -> str:
+	return "".join(c if c.isalnum() or c in "-_." else "_" for c in (s or ""))
+
+
+def save_trial_to_csv(trial_json: dict, outdir: str, basename: str) -> list[str]:
+	"""
+	Writes one CSV per device:
+	  {basename}_{deviceIndex}_{deviceName}.csv
+	Columns: time_us,ch1,ch2,...
+	Returns list of file paths written.
+	"""
+	written = []
+	for dev_idx_str, dev_payload in trial_json.items():
+		try:
+			dev_idx = int(dev_idx_str)
+		except Exception:
+			# keys are usually numeric strings ("0","1",...)
+			dev_idx = _sanitize_filename(dev_idx_str)
+
+		dev_name = _sanitize_filename(dev_payload.get("name", f"device{dev_idx}"))
+		data_block = dev_payload.get("data", {}) or {}
+		rows = data_block.get("data", []) or []
+
+		# Find channel count by inspecting first row
+		ch_count = 0
+		if rows and isinstance(rows[0], list) and len(rows[0]) >= 2 and isinstance(rows[0][1], list):
+			ch_count = len(rows[0][1])
+
+		csv_path = os.path.join(outdir, f"{basename}_{dev_idx}_{dev_name}.csv")
+		with open(csv_path, "w", encoding="utf-8") as f:
+			# header
+			f.write("time_us")
+			for i in range(ch_count):
+				f.write(f",ch{i+1}")
+			f.write("\n")
+
+			# rows
+			for entry in rows:
+				# entry = [INT_TIMESTAMP, [ch1, ch2, ...], null]
+				t_us = entry[0]
+				chans = entry[1] if isinstance(entry[1], list) else []
+				f.write(str(t_us))
+				for v in chans:
+					f.write("," + str(v))
+				f.write("\n")
+
+		written.append(csv_path)
+		log.info(f"Wrote {csv_path}")
+
+	return written
 
 
 
@@ -914,9 +1039,44 @@ def _handle_unexpected(parsed, body) -> None:
 	log.debug(f"No handler for server_msg={parsed['server_msg']} data_type={parsed['data_type']}")
 
 
+def _handle_full_trial(parsed, body) -> None:
+	"""
+	When GET_LAST_TRIAL_DATA arrives on the message socket, dump CSV(s)
+	if a save has been scheduled via /record 0.
+	"""
+	global PENDING_TRIAL_SAVE
+
+	try:
+		if not body:
+			log.error("FULL_TRIAL without body.")
+			return
+
+		with pending_lock:
+			info = PENDING_TRIAL_SAVE
+
+		if not info:
+			log.info("FULL_TRIAL received but no pending save requested; ignoring.")
+			return
+
+		data = json.loads(body.decode("utf-8"))
+		files = save_trial_to_csv(data, info["outdir"], info["basename"])
+
+		# Notify via OSC
+		with osc_lock:
+			osc_client.send_message("/record_saved", files or [""])
+
+		# Clear pending
+		with pending_lock:
+			PENDING_TRIAL_SAVE = None
+
+	except Exception as e:
+		log.error(f"Error handling FULL_TRIAL: {e}")
+
+
 MESSAGE_HANDLERS: dict[Enum, Callable] = {
 	ServerMessage.STATES_CHANGED: _handle_states_changed,
 	DataType.STATES: _handle_states,
+	DataType.FULL_TRIAL: _handle_full_trial,
 }
 
 
@@ -944,12 +1104,16 @@ def message_dispatcher(sock: socket.socket, stop_event: threading.Event) -> None
 			# read body if present
 			body = None
 			if parsed["data_type"] != DataType.NONE_TYPE:
+				orig = sock.gettimeout()
 				try:
+					sock.settimeout(None if parsed["data_type"] == DataType.FULL_TRIAL else SOCKETS_TIMEOUT_SLOW)
 					length_bytes = recv_exact(sock, 8)
 					body_len = parse_data_length(length_bytes)
 					body = recv_exact(sock, body_len)
 				except socket.timeout:
 					continue
+				finally:
+					sock.settimeout(orig)
 
 			# pick a handler by server_msg first, then data_type
 			handler = (
@@ -962,6 +1126,46 @@ def message_dispatcher(sock: socket.socket, stop_event: threading.Event) -> None
 		except Exception as e:
 			log.warning(f"Message dispatcher error: {e}")
 			continue
+
+
+
+# ----------------------------- States Helpers -----------------------------
+
+EMG_DEVICE_KEY = "DelsysEmgDataCollector"
+
+
+def is_emg_connected(states: Optional[dict]) -> bool:
+	devs = (states or {}).get("connected_devices") or {}
+	# exact key wins
+	info = devs.get(EMG_DEVICE_KEY)
+	if info and info.get("is_connected") is True:
+		return True
+	# heuristic fallback
+	for name, info in devs.items():
+		n = str(name).lower()
+		if "delsys" in n and "emg" in n and info.get("is_connected") is True:
+			return True
+	return False
+
+
+def request_states() -> Optional[dict]:
+	"""
+	GET_STATES and wait for dispatcher to refresh LAST_STATES.
+	Dispatcher assigns a new dict object on update.
+	"""
+	global LAST_STATES
+	before = LAST_STATES
+	ok = send_command(SOCKETS[IDX_COMMAND], Command.GET_STATES)
+	if not ok:
+		log.error("GET_STATES failed")
+		return LAST_STATES
+
+	deadline = time.time() + SOCKETS_TIMEOUT_SLOW
+	while time.time() < deadline:
+		if LAST_STATES is not None and LAST_STATES is not before:
+			return LAST_STATES
+		time.sleep(SOCKETS_TIMEOUT_FAST)
+	return LAST_STATES
 
 
 
@@ -1004,16 +1208,20 @@ def main():
 	reader_thread.start()
 
 	# Send CONNECT_DELSYS_EMG command
-	if not send_command(SOCKETS[IDX_COMMAND], Command.CONNECT_DELSYS_EMG):
-		log.error("Failed to send CONNECT_DELSYS_EMG command. Exiting...")
-		stop_event.set()
-		reader_thread.join(timeout=1.0)
-		for sock in SOCKETS:
-			try:
-				sock.close()
-			except Exception:
-				pass
-		return
+	states = request_states() or {}
+	if is_emg_connected(states):
+		log.info("EMG already connected (DelsysEmgDataCollector); skipping CONNECT_DELSYS_EMG.")
+	else:
+		if not send_command(SOCKETS[IDX_COMMAND], Command.CONNECT_DELSYS_EMG):
+			log.error("Failed to send CONNECT_DELSYS_EMG command. Exiting...")
+			stop_event.set()
+			reader_thread.join(timeout=SOCKETS_TIMEOUT)
+			for sock in SOCKETS:
+				try:
+					sock.close()
+				except Exception:
+					pass
+			return
 
 	# Start live data listener thread
 	data_thread = threading.Thread(
