@@ -35,6 +35,7 @@ function initRealtimeLog() {
 	if (!fs.existsSync(logsDir)) fs.mkdirSync(logsDir, { recursive: true });
 
 	realtimeFilePath = path.join(logsDir, name + '_Sensors.csv');
+	Max.outlet('filepath', realtimeFilePath);
 	
 	// check if this file is brand-new or empty
 	const isNewFile = !fs.existsSync(realtimeFilePath) 
@@ -243,6 +244,8 @@ Max.addHandler("save", () => {
 	if (fs.existsSync(oldFile) && name.split('_')[0] !== "Unknown") fs.unlinkSync(oldFile);
 
 	const filePath = path.join(logsDir, name + '.csv');
+	Max.outlet('filepath', filePath);
+	
 	let csvData = generateCSV(savedDict);
 
 	/* ------------------------ Score section ------------------------
@@ -332,6 +335,7 @@ Max.addHandler("set", (dict) => {
 				// reopen on the renamed file so we keep streaming
 				realtimeStream = fs.createWriteStream(newPath, { flags: 'a' });
 				realtimeFilePath = newPath;
+				Max.outlet('filepath', realtimeFilePath);
 			} catch (err) {
 				Max.post(`[WARNING] could not rename sensors file: ${err.message}`);
 			}
