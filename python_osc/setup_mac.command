@@ -49,7 +49,7 @@ import importlib.util, sys
 sys.exit(0 if importlib.util.find_spec('pythonosc') else 1)
 PY
 if [ $? -ne 0 ]; then
-	echo "[INFO] python-osc missing; installing..."
+	echo "[WARNING] python-osc missing; installing..."
 	"$PY" -m pip install --upgrade pip || {
 		echo "[FATAL] pip upgrade failed (offline/proxy?)."
 		[ -t 0 ] && read -r -p "[INFO] Press Return to close..." _

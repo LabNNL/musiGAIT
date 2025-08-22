@@ -16,11 +16,11 @@ if [[ -f "$PIDFILE" ]]; then
 			kill -9 "$PID" >/dev/null 2>&1
 		fi
 	else
-		echo "[WARN] PID $PID from $PIDFILE not running."
+		echo "[WARNING] PID $PID from $PIDFILE not running."
 	fi
 	rm -f "$PIDFILE"
 else
-	echo "[WARN] No tcp_to_osc.py process found ($PIDFILE missing), skipping."
+	echo "[WARNING] No tcp_to_osc.py process found ($PIDFILE missing), skipping."
 fi
 
 # Stop main_server
@@ -39,7 +39,7 @@ while IFS= read -r server_pid; do
 done < <(pgrep -f main_server)
 
 if [[ "$SERVER_FOUND" -eq 0 ]]; then
-	echo "[WARN] No main_server process found, skipping."
+	echo "[WARNING] No main_server process found, skipping."
 fi
 
 echo "[INFO] Process cleanup complete."

@@ -10,7 +10,7 @@ if exist "%PIDFILE%" (
 	taskkill /F /PID !PID! >nul 2>&1
 	del "%PIDFILE%"
 ) else (
-	echo [WARN] No %PIDFILE% found, skipping.
+	echo [WARNING] No %PIDFILE% found, skipping.
 )
 
 REM Stop main_server.exe
@@ -21,7 +21,7 @@ for /f "tokens=2" %%p in ('tasklist ^| findstr main_server') do (
 	set SERVER_KILLED=1
 )
 if "!SERVER_KILLED!"=="0" (
-	echo [WARN] No main_server.exe process found, skipping.
+	echo [WARNING] No main_server.exe process found, skipping.
 )
 
 echo [INFO] Process cleanup complete.
