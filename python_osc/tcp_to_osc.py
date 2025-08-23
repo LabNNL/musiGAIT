@@ -166,6 +166,7 @@ _states_req_inflight = False
 _request_trial_after_stop = False
 _trial_retry_attempts = 0
 _MAX_TRIAL_RETRIES = 2
+_suspend_states_until = 0.0
 
 # one-shot ignore of the very next contradictory STATES after a toggle
 _ignore_next_contradictory_states: Optional[str] = None  # "start" | "stop" | None
@@ -863,8 +864,9 @@ def osc_record_handler(address: str, *args) -> None:
 		PENDING_TRIAL_SAVE = {"outdir": outdir, "basename": basename}
 
 	# Arm the post-stop fetch
-	global _request_trial_after_stop
+	global _request_trial_after_stop, _suspend_states_until
 	_request_trial_after_stop = True
+	_suspend_states_until = time.monotonic() + SOCKETS_TIMEOUT_SLOW
 
 	# Always try to stop; idempotent on the server
 	ok = send_command(SOCKETS[IDX_COMMAND], Command.STOP_RECORDING)
@@ -873,8 +875,7 @@ def osc_record_handler(address: str, *args) -> None:
 		_request_trial_after_stop = False
 		return
 
-	# Nudge states and set a short fallback in case no STATES arrive
-	request_states_throttled(force=True)
+	_request_last_trial("immediately after STOP")
 	threading.Timer(1.0, _fallback_request_last_trial).start()
 
 	_ensure_trial_saved_later(3.0, "post-STOP safeguard")
@@ -1285,7 +1286,7 @@ def _handle_full_trial(parsed, body) -> None:
 			info = PENDING_TRIAL_SAVE
 
 		if not info:
-			log.info("FULL_TRIAL received but no pending save requested; ignoring.")
+			log.warning("FULL_TRIAL received but no pending save requested; ignoring.")
 			return
 
 		data = json.loads(body.decode("utf-8"))
@@ -1295,8 +1296,9 @@ def _handle_full_trial(parsed, body) -> None:
 		with pending_lock:
 			PENDING_TRIAL_SAVE = None
 
-		global _trial_retry_attempts
+		global _trial_retry_attempts, _suspend_states_until
 		_trial_retry_attempts = 0
+		_suspend_states_until = 0.0
 
 		with osc_lock:
 			osc_client.send_message("/record_saved", files or [""])
@@ -1412,21 +1414,25 @@ def _get_emg_is_recording(states: Optional[dict]) -> Optional[bool]:
 
 
 def request_states_throttled(force: bool = False) -> Optional[dict]:
-	"""Send GET_STATES at most every GET_STATES_MIN_INTERVAL, coalescing bursts."""
-	global _last_states_req, _states_req_inflight
-	now = time.monotonic()
-	with _states_lock:
-		if not force and (now - _last_states_req) < GET_STATES_MIN_INTERVAL:
-			return LAST_STATES
-		if _states_req_inflight:
-			return LAST_STATES
-		_states_req_inflight = True
-		_last_states_req = now
-	try:
-		return request_states()  # sends one GET_STATES and waits for dispatcher to update LAST_STATES
-	finally:
-		with _states_lock:
-			_states_req_inflight = False
+    global _last_states_req, _states_req_inflight, _suspend_states_until
+    now = time.monotonic()
+
+    # if we’re inside the export pause window, don’t spam GET_STATES
+    if not force and now < _suspend_states_until:
+        return LAST_STATES
+
+    with _states_lock:
+        if not force and (now - _last_states_req) < GET_STATES_MIN_INTERVAL:
+            return LAST_STATES
+        if _states_req_inflight:
+            return LAST_STATES
+        _states_req_inflight = True
+        _last_states_req = now
+    try:
+        return request_states()
+    finally:
+        with _states_lock:
+            _states_req_inflight = False
 
 
 def request_states() -> Optional[dict]:
