@@ -11,16 +11,16 @@ import logging
 import random
 import struct
 import socket
-import select
 import copy
 import json
 import time
+import glob
 import os
 
 # Server Version
 VERSION = 2
 
-# OSC send to MaxMSP
+# OSC send to Max
 OSC_IP, OSC_PORT = "127.0.0.1", 8000
 osc_client = SimpleUDPClient(OSC_IP, OSC_PORT)
 osc_lock = threading.RLock()
@@ -53,7 +53,7 @@ ANALYZER_IP, ANALYZER_PORT = "127.0.0.1", 8001
 DATA_MULTIPLIER = 10000
 
 # Logs
-RECORDS_DIR = "../logs"
+RECORDS_DIR = "logs"
 RECORDS_DIR = (Path(__file__).parent / RECORDS_DIR).resolve()
 PENDING_TRIAL_SAVE = None
 pending_lock = threading.RLock()
@@ -69,6 +69,8 @@ ANALYZER_LEARNING_RATE = 0.8
 
 ANALYZER_DEVICE = "DelsysEmgDataCollector"
 ANALYZER_REFERENCE = "DelsysEmgDataCollector"
+
+EMG_DEVICE_KEY = "DelsysEmgDevice"
 
 analyzer_config_left = {
 	"name": "foot_cycle_left",
@@ -155,6 +157,22 @@ logging.addLevelName(logging.ERROR, "FATAL")
 
 stop_event = threading.Event()
 
+# --- States throttle & recording state ---
+GET_STATES_MIN_INTERVAL = 1.0  # seconds
+LAST_STATES_TS = 0  # ms since epoch from server headers
+_states_lock = threading.RLock()
+_last_states_req = 0.0
+_states_req_inflight = False
+_request_trial_after_stop = False
+_trial_retry_attempts = 0
+_MAX_TRIAL_RETRIES = 2
+
+# one-shot ignore of the very next contradictory STATES after a toggle
+_ignore_next_contradictory_states: Optional[str] = None  # "start" | "stop" | None
+
+recording_cv = threading.Condition()
+_is_recording = None  # None=unknown, True/False reflect EMG recording state
+
 
 # PID to kill the process
 with open("tcp_to_osc.pid", "w") as f:
@@ -190,6 +208,7 @@ class Command(Enum):
 
 	FAILED = 100
 
+
 # Server messages
 class ServerMessage(Enum):
 	OK = 0
@@ -197,6 +216,7 @@ class ServerMessage(Enum):
 	LISTENING_EXTRA_DATA = 2
 	SENDING_DATA = 10
 	STATES_CHANGED = 20
+
 
 # Data types
 class DataType(Enum):
@@ -306,15 +326,12 @@ def parse_data_length(length_bytes: bytes) -> int:
 
 
 def _cmd_hdr_timeout_for(command: Command) -> float:
-	# Wait indefinitely for the trial
 	if command == Command.GET_LAST_TRIAL_DATA:
-		return None
+		return SOCKETS_TIMEOUT_FAST
 
-	# Data-returning commands: server writes MSG first, then CMD reply.
 	if command == Command.GET_STATES:
-		return max(SOCKETS_TIMEOUT, SOCKETS_TIMEOUT_SLOW)
+		return SOCKETS_TIMEOUT
 
-	# Connecting devices can also be slow on real hardware
 	if command in (Command.CONNECT_DELSYS_EMG, Command.CONNECT_DELSYS_ANALOG, Command.CONNECT_MAGSTIM):
 		return max(SOCKETS_TIMEOUT, SOCKETS_TIMEOUT_SLOW)
 
@@ -342,8 +359,9 @@ def send_command(sock: socket.socket, command: Command) -> bool:
 	with cmd_lock:
 		# Send the 8B command packet
 		try:
-			sock.sendall(to_packet(command.value))
 			log.info(f"Sent command: {command.name} ({command.value})")
+			time.sleep(0.01)  # 10 ms for visual ordering of logs in Max
+			sock.sendall(to_packet(command.value))
 		except socket.error as e:
 			log.error(f"Socket error while sending command: {e}")
 			return False
@@ -357,6 +375,9 @@ def send_command(sock: socket.socket, command: Command) -> bool:
 			finally:
 				sock.settimeout(orig_to)
 		except socket.timeout:
+			if command in (Command.GET_LAST_TRIAL_DATA, Command.GET_STATES):
+				log.warning(f"{command.name}: no command reply yet; continuing (expect data on message socket).")
+				return True
 			log.error("Timeout waiting for command response header")
 			return False
 		except Exception as e:
@@ -368,6 +389,16 @@ def send_command(sock: socket.socket, command: Command) -> bool:
 			log.error(f"Response interpretation error: {parsed['error']}")
 			return False
 
+		if parsed["server_msg"] == ServerMessage.OK and command in (Command.START_RECORDING, Command.STOP_RECORDING):
+			# Optimistic local state so waiters/until-logs are snappy
+			global _is_recording, _ignore_next_contradictory_states
+			with recording_cv:
+				prev = _is_recording
+				_is_recording = (command == Command.START_RECORDING)
+				if _is_recording is not prev:
+					recording_cv.notify_all()
+			_ignore_next_contradictory_states = "start" if command == Command.START_RECORDING else "stop"
+				
 		# Decide behavior by command type
 		is_extra = command in (Command.ADD_ANALYZER, Command.REMOVE_ANALYZER)
 		is_data_returning = command in (Command.GET_STATES, Command.GET_LAST_TRIAL_DATA)
@@ -401,9 +432,13 @@ def send_command(sock: socket.socket, command: Command) -> bool:
 			try:
 				if parsed["data_type"] != DataType.NONE_TYPE:
 					length = parse_data_length(recv_exact(sock, 8))
-					_ = recv_exact(sock, length)
-			except Exception:
-				# Non-fatal; data should be on the message socket anyway
+					body = recv_exact(sock, length)
+					if command == Command.GET_LAST_TRIAL_DATA and parsed["data_type"] == DataType.FULL_TRIAL:
+						log.info(f"FULL_TRIAL arrived on command socket (len={length}); processing inline.")
+						_handle_full_trial(parsed, body)
+
+			except Exception as e:
+				log.warning(f"Optional command-socket body drain failed: {e}")
 				pass
 
 			# If we already got OK, we're done
@@ -557,6 +592,11 @@ def connect_and_handshake(host: str, ports: list) -> Optional[list]:
 		parsed = parse_header(response)
 		if parsed.get("error") or parsed["server_msg"] != ServerMessage.OK:
 			log.error(f"Handshake error: {parsed.get('error') or parsed['server_msg']}")
+			for s in sockets:
+				try:
+					s.close()
+				except Exception as e:
+					pass
 			return False
 
 	log.info("Handshake successful")
@@ -677,7 +717,7 @@ def listen_to_live_analyses(sock: socket.socket, stop_event: threading.Event) ->
 # ----------------------------- OSC Communication -----------------------------
 
 def start_osc_server() -> tuple[BlockingOSCUDPServer, threading.Thread]:
-	"""Starts an OSC server to listen for threshold and channel updates from Max/MSP."""
+	"""Starts an OSC server to listen for threshold and channel updates from Max."""
 	dispatcher = Dispatcher()
 	dispatcher.map("/sensors", change_current_sensors)
 	dispatcher.map("/analyzer_channels", analyzer_update_channels)
@@ -803,90 +843,233 @@ def osc_record_handler(address: str, *args) -> None:
 	else:
 		basename = time.strftime("trial_%Y%m%d_%H%M%S")
 
+	basename = _strip_csv_ext(basename)
 	os.makedirs(outdir, exist_ok=True)
 
 	if state == 1:
 		# START_RECORDING
 		if send_command(SOCKETS[IDX_COMMAND], Command.START_RECORDING):
-			log.info("Recording started.")
-			with osc_lock:
-				osc_client.send_message("/record_state", 1)
+			if wait_for_recording():
+				log.info("Recording started.")
+			else:
+				log.warning("Recording flag did not turn True within timeout (will update when STATES arrives)")
 		else:
 			log.error("Failed to start recording.")
-	else:
-		# STOP_RECORDING then request data
-		ok = send_command(SOCKETS[IDX_COMMAND], Command.STOP_RECORDING)
-		if not ok:
-			log.error("Failed to stop recording.")
-			return
+		return
+	
+	# --- state == 0 (stop) ---
+	# Schedule the save info
+	with pending_lock:
+		PENDING_TRIAL_SAVE = {"outdir": outdir, "basename": basename}
 
-		# Set where to save when FULL_TRIAL arrives
-		with pending_lock:
-			PENDING_TRIAL_SAVE = {"outdir": outdir, "basename": basename}
+	# Arm the post-stop fetch
+	global _request_trial_after_stop
+	_request_trial_after_stop = True
 
-		# Ask for data; the dispatcher will catch FULL_TRIAL and write CSVs
-		if send_command(SOCKETS[IDX_COMMAND], Command.GET_LAST_TRIAL_DATA):
-			log.info("Requested last trial data...")
-		else:
-			log.error("GET_LAST_TRIAL_DATA failed.")
+	# Always try to stop; idempotent on the server
+	ok = send_command(SOCKETS[IDX_COMMAND], Command.STOP_RECORDING)
+	if not ok:
+		log.error("Failed to stop recording.")
+		_request_trial_after_stop = False
+		return
 
-		with osc_lock:
-			osc_client.send_message("/record_state", 0)
+	# Nudge states and set a short fallback in case no STATES arrive
+	request_states_throttled(force=True)
+	threading.Timer(1.0, _fallback_request_last_trial).start()
+
+	_ensure_trial_saved_later(3.0, "post-STOP safeguard")
 
 
 
 # ----------------------------- CSV Saver -----------------------------
 
+def is_recording_now(force: bool = False) -> Optional[bool]:
+	"""Return current EMG recording state (True/False) or None if unknown."""
+	st = (LAST_STATES if not force else request_states_throttled(force=True)) or {}
+	return _get_emg_is_recording(st)
+
+
+def wait_for_recording() -> bool:
+	deadline = time.time() + SOCKETS_TIMEOUT_SLOW
+	request_states_throttled(force=True)
+	
+	while time.time() < deadline:
+		with recording_cv:
+			if _is_recording is True:
+				return True
+		
+		request_states_throttled(force=True)
+		time.sleep(SOCKETS_TIMEOUT_FAST)
+	
+	return False
+
+
+def wait_for_not_recording() -> bool:
+	"""Wait until _is_recording becomes False, using the condition set in _handle_states."""
+	deadline = time.time() + SOCKETS_TIMEOUT_SLOW
+	request_states_throttled(force=True)
+	
+	while time.time() < deadline:
+		with recording_cv:
+			if _is_recording is False:
+				return True
+		
+		# proactively re-check; covers the case where server didn’t emit another STATES_CHANGED
+		request_states_throttled(force=True)
+		time.sleep(SOCKETS_TIMEOUT_FAST)
+	
+	return False
+
+
+def _request_last_trial(reason: str) -> None:
+	"""Fire GET_LAST_TRIAL_DATA once, without blocking the message reader."""
+	global _request_trial_after_stop
+
+	if not SOCKETS or not _request_trial_after_stop:
+		return
+
+	# Prevent double-fire (also stops the fallback timer from re-firing)
+	_request_trial_after_stop = False
+
+	def _go():
+		if send_command(SOCKETS[IDX_COMMAND], Command.GET_LAST_TRIAL_DATA):
+			log.info(f"Requested last trial data ({reason})...")
+			_ensure_trial_saved_later(2.0, reason)
+		else:
+			log.error("GET_LAST_TRIAL_DATA failed.")
+
+	threading.Thread(target=_go, daemon=True).start()
+
+
+def _fallback_request_last_trial():
+	"""Called shortly after STOP in case no STATES showing not-recording arrive."""
+	_request_last_trial("fallback timer")
+
+
 def _sanitize_filename(s: str) -> str:
-	return "".join(c if c.isalnum() or c in "-_." else "_" for c in (s or ""))
+	return "".join(c if c not in '\\/:*?"<>|' else "_" for c in (s or "")) or "Unknown"
 
 
-def save_trial_to_csv(trial_json: dict, outdir: str, basename: str) -> list[str]:
+def _split_basename(basename: str) -> tuple[str, str]:
+	# returns (patient, rest) where rest is everything after the first "_"
+	parts = (basename or "").split("_", 1)
+	patient = _sanitize_filename((parts[0] or "Unknown").strip() or "Unknown")
+	rest = parts[1] if len(parts) > 1 else ""
+	return patient, rest
+
+
+def _relocate_unknown_if_needed(outdir: str, basename: str) -> None:
 	"""
-	Writes one CSV per device:
-	  {basename}_{deviceIndex}_{deviceName}.csv
-	Columns: time_us,ch1,ch2,...
-	Returns list of file paths written.
+	If basename is like 'Alice_YYYY-MM-DD_HH-MM-SS' and we previously saved files as
+	'Unknown_YYYY-MM-DD_HH-MM-SS_*' under logs/Unknown, move/rename them to logs/Alice.
+	Removes the 'Unknown' folder if it becomes empty.
 	"""
-	written = []
-	for dev_idx_str, dev_payload in trial_json.items():
+	patient, rest = _split_basename(basename)
+	if patient == "Unknown" or not rest:
+		return  # nothing to relocate
+
+	unknown_dir = os.path.join(outdir, "Unknown")
+	if not os.path.isdir(unknown_dir):
+		return
+
+	target_dir = os.path.join(outdir, patient)
+	os.makedirs(target_dir, exist_ok=True)
+
+	# Move anything for the same timestamp (both params csv and device csvs)
+	pattern = os.path.join(unknown_dir, f"Unknown_{rest}_*.csv")
+	moved_any = False
+	for old_path in glob.glob(pattern):
+		new_name = os.path.basename(old_path).replace("Unknown_", f"{patient}_", 1)
+		new_path = os.path.join(target_dir, new_name)
 		try:
-			dev_idx = int(dev_idx_str)
-		except Exception:
-			# keys are usually numeric strings ("0","1",...)
-			dev_idx = _sanitize_filename(dev_idx_str)
+			os.replace(old_path, new_path)  # atomic; overwrites if exists
+			moved_any = True
+			log.info(f"Relocated '{old_path}' -> '{new_path}'")
+		except Exception as e:
+			log.warning(f"Failed to relocate '{old_path}': {e}")
 
-		dev_name = _sanitize_filename(dev_payload.get("name", f"device{dev_idx}"))
-		data_block = dev_payload.get("data", {}) or {}
-		rows = data_block.get("data", []) or []
+	# Clean up Unknown folder if empty
+	if moved_any:
+		try:
+			if not os.listdir(unknown_dir):
+				os.rmdir(unknown_dir)
+				log.info(f"Removed empty folder '{unknown_dir}'")
+		except Exception as e:
+			log.debug(f"Unknown folder cleanup skipped: {e}")
 
-		# Find channel count by inspecting first row
-		ch_count = 0
-		if rows and isinstance(rows[0], list) and len(rows[0]) >= 2 and isinstance(rows[0][1], list):
-			ch_count = len(rows[0][1])
 
-		csv_path = os.path.join(outdir, f"{basename}_{dev_idx}_{dev_name}.csv")
-		with open(csv_path, "w", encoding="utf-8") as f:
-			# header
-			f.write("time_us")
-			for i in range(ch_count):
-				f.write(f",ch{i+1}")
+def save_trial_to_csv(trial_json: dict, outdir: str, basename: str, 
+	target_device: str = ANALYZER_DEVICE) -> list[str]:
+	"""
+	Write a single CSV for the target device (default: DelsysEmgDataCollector):
+	  <basename>_<deviceName>.csv
+	CSVs are saved in subfolders named by patient (prefix before first '_').
+	Columns: time (s),channel0,channel1,...
+	"""
+	# --- relocate any previous 'Unknown_<datetime>_*' files to patient folder ---
+	_relocate_unknown_if_needed(outdir, basename)
+	
+	# Try to find the target device by name
+	dev_payload = None
+	for _, payload in (trial_json or {}).items():
+		if isinstance(payload, dict) and payload.get("name") == target_device:
+			dev_payload = payload
+			break
+
+	# Fallback: first device if target not found
+	if dev_payload is None:
+		for _, payload in (trial_json or {}).items():
+			dev_payload = payload
+			break
+		if dev_payload is None:
+			log.error("No devices found in trial_json; nothing to write.")
+			return []
+
+	dev_name = _sanitize_filename(dev_payload.get("name", "device"))
+	data_block = dev_payload.get("data", {}) or {}
+	rows = data_block.get("data", []) or []
+
+	# Determine channel count
+	ch_count = 0
+	if rows and isinstance(rows[0], list) and len(rows[0]) >= 2 and isinstance(rows[0][1], list):
+		ch_count = len(rows[0][1])
+
+	# --- patient subfolder ---
+	patient_name = basename.split("_", 1)[0]  # everything before first "_"
+	patient_dir = os.path.join(outdir, patient_name)
+	os.makedirs(patient_dir, exist_ok=True)
+
+	csv_path = os.path.join(patient_dir, f"{basename}_{dev_name}.csv")
+	with open(csv_path, "w", encoding="utf-8", newline="") as f:
+		# header
+		f.write("time (s)")
+		for i in range(ch_count):
+			f.write(f",channel{i}")
+		f.write("\n")
+
+		# rows
+		for entry in rows:
+			# entry = [INT_TIMESTAMP, [ch1, ch2, ...], null]
+			timestamp = entry[0]
+			chans = entry[1] if isinstance(entry[1], list) else []
+
+			# convert to seconds and pretty-format
+			ts = timestamp / 1_000_000.0
+			ts_str = f"{ts:.6f}".rstrip("0").rstrip(".")
+
+			f.write(ts_str)
+			for v in chans:
+				v_str = f"{v:.6f}".rstrip("0").rstrip(".")
+				f.write("," + v_str)
 			f.write("\n")
 
-			# rows
-			for entry in rows:
-				# entry = [INT_TIMESTAMP, [ch1, ch2, ...], null]
-				t_us = entry[0]
-				chans = entry[1] if isinstance(entry[1], list) else []
-				f.write(str(t_us))
-				for v in chans:
-					f.write("," + str(v))
-				f.write("\n")
+	log.info(f"Wrote {csv_path}")
+	return [csv_path]
 
-		written.append(csv_path)
-		log.info(f"Wrote {csv_path}")
 
-	return written
+def _strip_csv_ext(name: str) -> str:
+	root, _ = os.path.splitext(name or "")
+	return root
 
 
 
@@ -925,7 +1108,7 @@ def _remove_analyzer(side: str, cmd_sock: socket.socket, msg_sock: socket.socket
 		return False
 
 	if not send_extra_data(cmd_sock, msg_sock, {"analyzer": config["name"]}):
-		log.error(f"Failed to send configuraiton for {side} analyzer")
+		log.error(f"Failed to send configuration for {side} analyzer")
 		return False
 
 	log.info(f"Removed {side} analyzer '{config['name']}'")
@@ -986,11 +1169,11 @@ def send_analyzer_config() -> None:
 					entry["active"] = False
 					entry["config"] = None
 			else:
-				log.debug(f"No {side} analyzer to remove; skipping.")
+				log.warning(f"No {side} analyzer to remove; skipping.")
 			continue
 
 		if was_active and last_config == config:
-			log.debug(f"No change in {side} analyzer; skipping.")
+			log.warning(f"No change in {side} analyzer; skipping.")
 			continue
 
 		if was_active:
@@ -1006,37 +1189,84 @@ def send_analyzer_config() -> None:
 # ----------------------------- Message Dispatcher -----------------------------
 
 def _handle_states_changed(parsed, body) -> None:
-	log.info("Detected STATES_CHANGED: requesting GET_STATES")
-	if not send_command(SOCKETS[IDX_COMMAND], Command.GET_STATES):
-		log.error("GET_STATES request failed")
+	# If server bundled STATES, use it right away
+	if parsed.get("data_type") == DataType.STATES and body:
+		_handle_states(parsed, body)
+		return
+	
+	# Otherwise fall back to a poll
+	log.info("Detected STATES_CHANGED")
+	request_states_throttled(force=True)
+
+
+def _is_effectively_empty(d: dict) -> bool:
+	devs = d.get("connected_devices")
+	anas = d.get("connected_analyzers")
+	devs_empty = not (isinstance(devs, dict) and len(devs) > 0)
+	anas_empty = not (isinstance(anas, dict) and len(anas) > 0)
+	return devs_empty and anas_empty
 
 
 def _handle_states(parsed, body) -> None:
-	"""
-	Forwards a STATES response (JSON) to Max/MSP via OSC at /states,
-	but only if it has changed since the last forward.
-	"""
-	global LAST_STATES
-
+	global LAST_STATES, _is_recording, LAST_STATES_TS, _ignore_next_contradictory_states
+	
 	try:
+		ts = parsed.get("timestamp", 0)  # ms
+		if ts < LAST_STATES_TS:
+			log.warning(f"Dropping stale STATES (ts={ts} < last={LAST_STATES_TS})")
+			return
+		
+		# parse body
 		json_str = body.decode("utf-8")
 		data = json.loads(json_str)
 
-		if LAST_STATES is not None and data == LAST_STATES:
-			log.debug("States unchanged; skipping forward")
-			return
+		rec = _get_emg_is_recording(data)
 		
+		# --- one-shot DROP of the very next contradictory STATES after START/STOP ---
+		if isinstance(rec, bool) and _ignore_next_contradictory_states:
+			cmd = _ignore_next_contradictory_states
+			contradictory = ((cmd == "start" and rec is False) or
+							 (cmd == "stop"  and rec is True))
+			# consume the one-shot flag either way
+			_ignore_next_contradictory_states = None
+			if contradictory:
+				log.debug(f"Dropping contradictory STATES right after {cmd.upper()} (rec={rec})")
+				return
+
+		# Keep local mirror updated when it's a legit STATES
+		if isinstance(rec, bool):
+			with recording_cv:
+				prev = _is_recording
+				_is_recording = rec
+				# wake any waiters if we transitioned to not-recording
+				if rec is False and prev is not False:
+					recording_cv.notify_all()
+
+		if rec is False and _request_trial_after_stop:
+			_request_last_trial("on not-recording STATES")
+		
+		prev_states = LAST_STATES
 		LAST_STATES = data
+		LAST_STATES_TS = ts
+
+		if _is_effectively_empty(data):
+			log.warning("Suppressing empty STATES (no devices & no analyzers).")
+			return
+
+		if prev_states is not None and data == prev_states:
+			log.warning("States unchanged; skipping forward")
+			return
+
 		with osc_lock:
 			osc_client.send_message("/states", json_str)
-		log.info("Forwarded /states to Max/MSP")
-
+		log.info("Forwarded /states to Max")
+	
 	except Exception as e:
-		log.error(f"Error forwarding STATES to Max/MSP: {e}")
+		log.error(f"Error forwarding STATES to Max: {e}")
 
 
 def _handle_unexpected(parsed, body) -> None:
-	log.debug(f"No handler for server_msg={parsed['server_msg']} data_type={parsed['data_type']}")
+	log.info(f"No handler for server_msg={parsed['server_msg']} data_type={parsed['data_type']}")
 
 
 def _handle_full_trial(parsed, body) -> None:
@@ -1061,16 +1291,30 @@ def _handle_full_trial(parsed, body) -> None:
 		data = json.loads(body.decode("utf-8"))
 		files = save_trial_to_csv(data, info["outdir"], info["basename"])
 
-		# Notify via OSC
-		with osc_lock:
-			osc_client.send_message("/record_saved", files or [""])
-
 		# Clear pending
 		with pending_lock:
 			PENDING_TRIAL_SAVE = None
 
+		global _trial_retry_attempts
+		_trial_retry_attempts = 0
+
+		with osc_lock:
+			osc_client.send_message("/record_saved", files or [""])
+
 	except Exception as e:
 		log.error(f"Error handling FULL_TRIAL: {e}")
+
+
+def _ensure_trial_saved_later(delay_s: float, reason: str):
+    def _check():
+        global _trial_retry_attempts
+        with pending_lock:
+            pending = PENDING_TRIAL_SAVE is not None
+        if not pending or _trial_retry_attempts >= _MAX_TRIAL_RETRIES:
+            return
+        _trial_retry_attempts += 1
+        _request_last_trial(f"retry #{_trial_retry_attempts} after {reason}")
+    threading.Timer(delay_s, _check).start()
 
 
 MESSAGE_HANDLERS: dict[Enum, Callable] = {
@@ -1106,11 +1350,16 @@ def message_dispatcher(sock: socket.socket, stop_event: threading.Event) -> None
 			if parsed["data_type"] != DataType.NONE_TYPE:
 				orig = sock.gettimeout()
 				try:
-					sock.settimeout(None if parsed["data_type"] == DataType.FULL_TRIAL else SOCKETS_TIMEOUT_SLOW)
+					sock.settimeout(SOCKETS_TIMEOUT_SLOW)
 					length_bytes = recv_exact(sock, 8)
 					body_len = parse_data_length(length_bytes)
+					
+					if parsed["data_type"] == DataType.FULL_TRIAL:
+						log.info(f"FULL_TRIAL header on message socket (len={body_len})")
+
 					body = recv_exact(sock, body_len)
 				except socket.timeout:
+					log.warning(f"Timed out reading {parsed['data_type'].name} body; dropping packet")
 					continue
 				finally:
 					sock.settimeout(orig)
@@ -1131,9 +1380,6 @@ def message_dispatcher(sock: socket.socket, stop_event: threading.Event) -> None
 
 # ----------------------------- States Helpers -----------------------------
 
-EMG_DEVICE_KEY = "DelsysEmgDataCollector"
-
-
 def is_emg_connected(states: Optional[dict]) -> bool:
 	devs = (states or {}).get("connected_devices") or {}
 	# exact key wins
@@ -1146,6 +1392,41 @@ def is_emg_connected(states: Optional[dict]) -> bool:
 		if "delsys" in n and "emg" in n and info.get("is_connected") is True:
 			return True
 	return False
+
+
+def _get_emg_is_recording(states: Optional[dict]) -> Optional[bool]:
+	devs = (states or {}).get("connected_devices") or {}
+	info = devs.get(EMG_DEVICE_KEY)
+	
+	if isinstance(info, dict) and isinstance(info.get("is_recording"), bool):
+		return info["is_recording"]
+	
+	for name, info in devs.items():
+		n = str(name).lower()
+		if "delsys" in n and "emg" in n and isinstance(info, dict):
+			v = info.get("is_recording")
+			if isinstance(v, bool):
+				return v
+	
+	return None
+
+
+def request_states_throttled(force: bool = False) -> Optional[dict]:
+	"""Send GET_STATES at most every GET_STATES_MIN_INTERVAL, coalescing bursts."""
+	global _last_states_req, _states_req_inflight
+	now = time.monotonic()
+	with _states_lock:
+		if not force and (now - _last_states_req) < GET_STATES_MIN_INTERVAL:
+			return LAST_STATES
+		if _states_req_inflight:
+			return LAST_STATES
+		_states_req_inflight = True
+		_last_states_req = now
+	try:
+		return request_states()  # sends one GET_STATES and waits for dispatcher to update LAST_STATES
+	finally:
+		with _states_lock:
+			_states_req_inflight = False
 
 
 def request_states() -> Optional[dict]:
@@ -1210,7 +1491,7 @@ def main():
 	# Send CONNECT_DELSYS_EMG command
 	states = request_states() or {}
 	if is_emg_connected(states):
-		log.info("EMG already connected (DelsysEmgDataCollector); skipping CONNECT_DELSYS_EMG.")
+		log.info(f"EMG already connected ({EMG_DEVICE_KEY}); skipping connect.")
 	else:
 		if not send_command(SOCKETS[IDX_COMMAND], Command.CONNECT_DELSYS_EMG):
 			log.error("Failed to send CONNECT_DELSYS_EMG command. Exiting...")

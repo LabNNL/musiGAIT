@@ -42,6 +42,23 @@
 				"box" : 				{
 					"fontface" : 1,
 					"fontsize" : 16.0,
+					"id" : "obj-11",
+					"linecount" : 2,
+					"maxclass" : "comment",
+					"numinlets" : 1,
+					"numoutlets" : 0,
+					"patching_rect" : [ 68.0, 169.0, 122.0, 43.0 ],
+					"presentation" : 1,
+					"presentation_rect" : [ 24.0, 97.0, 256.0, 25.0 ],
+					"text" : "LOGGING TO CSV",
+					"textjustification" : 2
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"fontface" : 1,
+					"fontsize" : 16.0,
 					"hidden" : 1,
 					"id" : "obj-8",
 					"maxclass" : "comment",
