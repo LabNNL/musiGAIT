@@ -4423,7 +4423,7 @@
 						}
 ,
 						"classnamespace" : "box",
-						"rect" : [ 145.0, 667.0, 229.0, 222.0 ],
+						"rect" : [ 366.0, 257.0, 229.0, 222.0 ],
 						"bglocked" : 0,
 						"openinpresentation" : 1,
 						"default_fontsize" : 12.0,
@@ -4532,9 +4532,9 @@
 									"maxclass" : "comment",
 									"numinlets" : 1,
 									"numoutlets" : 0,
-									"patching_rect" : [ 367.0, 109.0, 158.0, 24.0 ],
+									"patching_rect" : [ 367.0, 109.0, 158.0, 25.0 ],
 									"presentation" : 1,
-									"presentation_rect" : [ 1.0, 2.0, 226.0, 24.0 ],
+									"presentation_rect" : [ 1.0, 2.0, 226.0, 25.0 ],
 									"textjustification" : 1
 								}
 
@@ -5510,7 +5510,7 @@
 									"numoutlets" : 1,
 									"outlettype" : [ "bang" ],
 									"patching_rect" : [ 649.0, 316.0, 55.0, 22.0 ],
-									"text" : "del 1000"
+									"text" : "del 3000"
 								}
 
 							}
@@ -5570,7 +5570,7 @@
 									"numoutlets" : 1,
 									"outlettype" : [ "bang" ],
 									"patching_rect" : [ 336.0, 316.0, 55.0, 22.0 ],
-									"text" : "del 1000"
+									"text" : "del 2000"
 								}
 
 							}
@@ -13000,7 +13000,7 @@
 									"numoutlets" : 1,
 									"outlettype" : [ "bang" ],
 									"patching_rect" : [ 510.0, 237.0, 55.0, 22.0 ],
-									"text" : "del 1000"
+									"text" : "del 2000"
 								}
 
 							}
@@ -16766,7 +16766,7 @@
 						}
 ,
 						"classnamespace" : "box",
-						"rect" : [ 406.0, 221.0, 229.0, 222.0 ],
+						"rect" : [ 270.0, 261.0, 229.0, 222.0 ],
 						"bglocked" : 0,
 						"openinpresentation" : 1,
 						"default_fontsize" : 12.0,
@@ -16875,9 +16875,9 @@
 									"maxclass" : "comment",
 									"numinlets" : 1,
 									"numoutlets" : 0,
-									"patching_rect" : [ 367.0, 109.0, 158.0, 24.0 ],
+									"patching_rect" : [ 367.0, 109.0, 158.0, 25.0 ],
 									"presentation" : 1,
-									"presentation_rect" : [ 1.0, 2.0, 226.0, 24.0 ],
+									"presentation_rect" : [ 1.0, 2.0, 226.0, 25.0 ],
 									"textjustification" : 1
 								}
 
@@ -17853,7 +17853,7 @@
 									"numoutlets" : 1,
 									"outlettype" : [ "bang" ],
 									"patching_rect" : [ 649.0, 316.0, 55.0, 22.0 ],
-									"text" : "del 1000"
+									"text" : "del 3000"
 								}
 
 							}
@@ -17913,7 +17913,7 @@
 									"numoutlets" : 1,
 									"outlettype" : [ "bang" ],
 									"patching_rect" : [ 336.0, 316.0, 55.0, 22.0 ],
-									"text" : "del 1000"
+									"text" : "del 2000"
 								}
 
 							}
