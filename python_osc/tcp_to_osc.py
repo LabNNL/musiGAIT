@@ -1308,15 +1308,15 @@ def _handle_full_trial(parsed, body) -> None:
 
 
 def _ensure_trial_saved_later(delay_s: float, reason: str):
-    def _check():
-        global _trial_retry_attempts
-        with pending_lock:
-            pending = PENDING_TRIAL_SAVE is not None
-        if not pending or _trial_retry_attempts >= _MAX_TRIAL_RETRIES:
-            return
-        _trial_retry_attempts += 1
-        _request_last_trial(f"retry #{_trial_retry_attempts} after {reason}")
-    threading.Timer(delay_s, _check).start()
+	def _check():
+		global _trial_retry_attempts
+		with pending_lock:
+			pending = PENDING_TRIAL_SAVE is not None
+		if not pending or _trial_retry_attempts >= _MAX_TRIAL_RETRIES:
+			return
+		_trial_retry_attempts += 1
+		_request_last_trial(f"retry #{_trial_retry_attempts} after {reason}")
+	threading.Timer(delay_s, _check).start()
 
 
 MESSAGE_HANDLERS: dict[Enum, Callable] = {
@@ -1414,25 +1414,25 @@ def _get_emg_is_recording(states: Optional[dict]) -> Optional[bool]:
 
 
 def request_states_throttled(force: bool = False) -> Optional[dict]:
-    global _last_states_req, _states_req_inflight, _suspend_states_until
-    now = time.monotonic()
+	global _last_states_req, _states_req_inflight, _suspend_states_until
+	now = time.monotonic()
 
-    # if we’re inside the export pause window, don’t spam GET_STATES
-    if not force and now < _suspend_states_until:
-        return LAST_STATES
+	# if we’re inside the export pause window, don’t spam GET_STATES
+	if not force and now < _suspend_states_until:
+		return LAST_STATES
 
-    with _states_lock:
-        if not force and (now - _last_states_req) < GET_STATES_MIN_INTERVAL:
-            return LAST_STATES
-        if _states_req_inflight:
-            return LAST_STATES
-        _states_req_inflight = True
-        _last_states_req = now
-    try:
-        return request_states()
-    finally:
-        with _states_lock:
-            _states_req_inflight = False
+	with _states_lock:
+		if not force and (now - _last_states_req) < GET_STATES_MIN_INTERVAL:
+			return LAST_STATES
+		if _states_req_inflight:
+			return LAST_STATES
+		_states_req_inflight = True
+		_last_states_req = now
+	try:
+		return request_states()
+	finally:
+		with _states_lock:
+			_states_req_inflight = False
 
 
 def request_states() -> Optional[dict]:
