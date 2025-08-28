@@ -521,7 +521,7 @@
 									"numoutlets" : 1,
 									"outlettype" : [ "" ],
 									"patching_rect" : [ 25.0, 188.0, 85.0, 22.0 ],
-									"text" : "2. 1. 891. 583."
+									"text" : "2. 1. 890. 583."
 								}
 
 							}
@@ -582,7 +582,7 @@
 									"numinlets" : 2,
 									"numoutlets" : 1,
 									"outlettype" : [ "" ],
-									"patching_rect" : [ 260.0, 142.0, 100.0, 0.0 ],
+									"patching_rect" : [ 260.0, 142.0, 100.0, 22.0 ],
 									"saved_object_attributes" : 									{
 										"filename" : "windowSize.js",
 										"parameter_enable" : 0
