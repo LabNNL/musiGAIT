@@ -82,7 +82,8 @@ https://derivative.ca/download
 1. Power and pair **Delsys Trigno** sensors (Windows)  
 	 _Skip this step if using MOCK mode_
 2. Launch `00_MUSIGAIT.maxpat` with **Max 8**
-3. (Optional) To enable MOCK mode before starting the server, press the keys `m` + `o` + `c` + `k` **at the same time**  
+3. (Optional) To enable MOCK mode before starting the server:
+	 * Press the keys `m` + `o` + `c` + `k` **at the same time**  
    You should see `Mock server enabled` in the Max console
 3. **Server:** click **Start Server**
 4. **Sensors/Analyzers:** choose sensors and enable analyzers
