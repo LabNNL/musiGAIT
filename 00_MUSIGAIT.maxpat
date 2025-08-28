@@ -4,13 +4,13 @@
 		"appversion" : 		{
 			"major" : 8,
 			"minor" : 6,
-			"revision" : 4,
+			"revision" : 5,
 			"architecture" : "x64",
 			"modernui" : 1
 		}
 ,
 		"classnamespace" : "box",
-		"rect" : [ 752.0, 103.0, 893.0, 585.0 ],
+		"rect" : [ 291.0, 184.0, 893.0, 585.0 ],
 		"bglocked" : 0,
 		"openinpresentation" : 1,
 		"default_fontsize" : 12.0,
@@ -62,7 +62,7 @@
 						"appversion" : 						{
 							"major" : 8,
 							"minor" : 6,
-							"revision" : 4,
+							"revision" : 5,
 							"architecture" : "x64",
 							"modernui" : 1
 						}
@@ -342,7 +342,7 @@
 						"appversion" : 						{
 							"major" : 8,
 							"minor" : 6,
-							"revision" : 4,
+							"revision" : 5,
 							"architecture" : "x64",
 							"modernui" : 1
 						}
@@ -575,6 +575,24 @@
 								}
 
 							}
+, 							{
+								"box" : 								{
+									"id" : "obj-2",
+									"maxclass" : "newobj",
+									"numinlets" : 2,
+									"numoutlets" : 1,
+									"outlettype" : [ "" ],
+									"patching_rect" : [ 260.0, 142.0, 100.0, 0.0 ],
+									"saved_object_attributes" : 									{
+										"filename" : "windowSize.js",
+										"parameter_enable" : 0
+									}
+,
+									"text" : "js windowSize.js",
+									"varname" : "windowSize"
+								}
+
+							}
  ],
 						"lines" : [ 							{
 								"patchline" : 								{
@@ -615,6 +633,13 @@
 								"patchline" : 								{
 									"destination" : [ "obj-13", 0 ],
 									"source" : [ "obj-14", 1 ]
+								}
+
+							}
+, 							{
+								"patchline" : 								{
+									"destination" : [ "obj-1", 0 ],
+									"source" : [ "obj-2", 0 ]
 								}
 
 							}
@@ -662,6 +687,13 @@
 							}
 , 							{
 								"patchline" : 								{
+									"destination" : [ "obj-2", 0 ],
+									"source" : [ "obj-33", 1 ]
+								}
+
+							}
+, 							{
+								"patchline" : 								{
 									"destination" : [ "obj-25", 0 ],
 									"source" : [ "obj-33", 0 ]
 								}
@@ -678,6 +710,13 @@
 								"patchline" : 								{
 									"destination" : [ "obj-14", 0 ],
 									"source" : [ "obj-4", 0 ]
+								}
+
+							}
+, 							{
+								"patchline" : 								{
+									"destination" : [ "obj-2", 1 ],
+									"source" : [ "obj-40", 0 ]
 								}
 
 							}
@@ -710,7 +749,6 @@
 					"outlettype" : [ "", "" ],
 					"parameter_enable" : 1,
 					"patching_rect" : [ 820.0, 246.0, 20.0, 20.0 ],
-					"pictures" : [ "D:/musiGAIT/audio/sr-arrow-down-11x11.svg", "D:/musiGAIT/audio/sr-arrow-right-11x11.svg" ],
 					"presentation" : 1,
 					"presentation_rect" : [ 864.0, 2.0, 25.0, 38.0 ],
 					"remapsvgcolors" : 1,
@@ -813,7 +851,7 @@
 						"appversion" : 						{
 							"major" : 8,
 							"minor" : 6,
-							"revision" : 4,
+							"revision" : 5,
 							"architecture" : "x64",
 							"modernui" : 1
 						}
@@ -1164,17 +1202,10 @@
 		}
 ,
 		"dependency_cache" : [ 			{
-				"name" : "sr-arrow-down-11x11.svg",
-				"bootpath" : "D:/musiGAIT/audio",
+				"name" : "windowSize.js",
+				"bootpath" : "~/onSite/musiGAIT/audio",
 				"patcherrelativepath" : "./audio",
-				"type" : "svg",
-				"implicit" : 1
-			}
-, 			{
-				"name" : "sr-arrow-right-11x11.svg",
-				"bootpath" : "D:/musiGAIT/audio",
-				"patcherrelativepath" : "./audio",
-				"type" : "svg",
+				"type" : "TEXT",
 				"implicit" : 1
 			}
  ],
