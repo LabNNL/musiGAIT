@@ -999,6 +999,17 @@ def _relocate_unknown_if_needed(outdir: str, basename: str) -> None:
 			log.debug(f"Unknown folder cleanup skipped: {e}")
 
 
+def _unique_path(path: str) -> str:
+	"""If path exists, append _001, _002, etc. until free."""
+	root, ext = os.path.splitext(path)
+	i = 1
+	candidate = path
+	while os.path.exists(candidate):
+		candidate = f"{root}_{i:03d}{ext}"
+		i += 1
+		return candidate
+
+
 def save_trial_to_csv(trial_json: dict, outdir: str, basename: str, 
 	target_device: str = ANALYZER_DEVICE) -> list[str]:
 	"""
@@ -1041,6 +1052,8 @@ def save_trial_to_csv(trial_json: dict, outdir: str, basename: str,
 	os.makedirs(patient_dir, exist_ok=True)
 
 	csv_path = os.path.join(patient_dir, f"{basename}_{dev_name}.csv")
+	csv_path = _unique_path(csv_path)
+	
 	with open(csv_path, "w", encoding="utf-8", newline="") as f:
 		# header
 		f.write("time (s)")
