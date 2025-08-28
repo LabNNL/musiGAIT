@@ -1000,14 +1000,25 @@ def _relocate_unknown_if_needed(outdir: str, basename: str) -> None:
 
 
 def _unique_path(path: str) -> str:
-	"""If path exists, append _001, _002, etc. until free."""
+	"""
+	Atomically reserve a unique path by creating an empty file with O_EXCL.
+	Returns the reserved path. Safe when multiple processes write to the same folder.
+	NOTE: This creates a 0-byte placeholder; your subsequent open(..., 'w') will
+	overwrite it. If you bail out before writing, you'll leave an empty stub.
+	"""
 	root, ext = os.path.splitext(path)
-	i = 1
-	candidate = path
-	while os.path.exists(candidate):
-		candidate = f"{root}_{i:03d}{ext}"
-		i += 1
-		return candidate
+	
+	for i in range(1000):
+		candidate = path if i == 0 else f"{root}_{i:03d}{ext}"
+		try:
+			# Reserve the name atomically; fail if it already exists.
+			fd = os.open(candidate, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o666)
+			os.close(fd)
+			return candidate
+		
+		except FileExistsError:
+			continue
+	raise RuntimeError("Could not reserve a unique filename after 1000 attempts")
 
 
 def save_trial_to_csv(trial_json: dict, outdir: str, basename: str, 
@@ -1053,7 +1064,7 @@ def save_trial_to_csv(trial_json: dict, outdir: str, basename: str,
 
 	csv_path = os.path.join(patient_dir, f"{basename}_{dev_name}.csv")
 	csv_path = _unique_path(csv_path)
-	
+
 	with open(csv_path, "w", encoding="utf-8", newline="") as f:
 		# header
 		f.write("time (s)")
