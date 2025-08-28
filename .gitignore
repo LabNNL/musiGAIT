@@ -1,6 +1,3 @@
-# Video config
-video/Backup/
-
 # Virtualenv
 .venv/
 
@@ -21,6 +18,9 @@ logs/
 
 # Audiofiles
 *.wav
+
+# Video backups
+video/Backup/
 
 # Node
 node_modules/
