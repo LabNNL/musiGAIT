@@ -103,8 +103,10 @@ Sensor.prototype = {
 
 			log("#" + this.idx + " SET MIN → " + this.minVal + "\n");
 			this.minSamples.length = 0;
-			if (this.maxVal < this.minVal) { var t = this.minVal; this.minVal = this.maxVal; this.maxVal = t; }
-			if ((this.maxVal - this.minVal) < 1e-9) this.maxVal = this.minVal + 1e-3;
+			
+			// epsilon fix that preserves the user's ordering
+			var eps = 1e-3;
+			this.maxVal = _signedEpsilonFix(this.minVal, this.maxVal, eps);
 		}
 	},
 
@@ -122,8 +124,10 @@ Sensor.prototype = {
 
 			log("#" + this.idx + " SET MAX → " + this.maxVal + "\n");
 			this.maxSamples.length = 0;
-			if (this.maxVal < this.minVal) { var t = this.minVal; this.minVal = this.maxVal; this.maxVal = t; }
-			if ((this.maxVal - this.minVal) < 1e-9) this.maxVal = this.minVal + 1e-3;
+			
+			// epsilon fix that preserves the user's ordering
+			var eps = 1e-3;
+			this.maxVal = _signedEpsilonFix(this.minVal, this.maxVal, eps);
 		}
 	},
 
@@ -388,3 +392,12 @@ function trimmedMean(arr, trimFrac) {
 	var s = 0; for (var i=0;i<b.length;i++) s += b[i];
 	return s / Math.max(1, b.length);
 }
+
+function _signedEpsilonFix(minv, maxv, eps){
+	var d = maxv - minv;
+	if (Math.abs(d) < 1e-9) {
+		return (d < 0) ? (minv - eps) : (minv + eps);
+	}
+	return maxv;
+}
+
