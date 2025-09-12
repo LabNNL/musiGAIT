@@ -37,9 +37,9 @@ EMG_HOST = "127.0.0.1"
 CURRENT_SENSORS: list = []
 
 SOCKETS: list = []
-SOCKETS_TIMEOUT = 2.0        # seconds
-SOCKETS_TIMEOUT_FAST = 0.25  # for short ops
-SOCKETS_TIMEOUT_SLOW = 10.0  # for slow ops
+SOCKETS_TIMEOUT = 5.0        # seconds
+SOCKETS_TIMEOUT_FAST = 0.5  # for short ops
+SOCKETS_TIMEOUT_SLOW = 12.0  # for slow ops
 
 IDX_COMMAND = 0        # ports[0] → command port
 IDX_MESSAGE = 1        # ports[1] → message port
@@ -567,7 +567,7 @@ def connect_and_handshake(host: str, ports: list) -> Optional[list]:
 	# Attempt to connect to all ports
 	for port in ports:
 		try:
-			sock = socket.create_connection((host, port))
+			sock = socket.create_connection((host, port), timeout=SOCKETS_TIMEOUT)
 			sockets.append(sock)
 			log.info(f"Connected to {host}:{port}")
 			sock.sendall(packet_id)
