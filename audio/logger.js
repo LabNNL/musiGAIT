@@ -31,10 +31,10 @@ function initRealtimeLog() {
 	if (realtimeStream) realtimeStream.end();
 
 	const { name } = generateFilename();
-	const logsDir = path.join(__dirname, '..', 'logs');
-	if (!fs.existsSync(logsDir)) fs.mkdirSync(logsDir, { recursive: true });
+	const logsDir = getPatientDirFromName(name);
 
 	realtimeFilePath = path.join(logsDir, name + '_Sensors.csv');
+	Max.outlet('filepath', realtimeFilePath);
 	
 	// check if this file is brand-new or empty
 	const isNewFile = !fs.existsSync(realtimeFilePath) 
@@ -160,6 +160,14 @@ function sanitizeFilename(filename) {
 	return sanitized === "_" ? "Unknown" : sanitized;
 }
 
+// Get patient dir
+function getPatientDirFromName(name) {
+	const patient = sanitizeFilename((name.split('_', 1)[0] || 'Unknown').trim() || 'Unknown');
+	const dir = path.join(__dirname, '..', 'logs', patient);
+	if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+	return dir;
+}
+
 // Generate filename
 function generateFilename() {
 	let id = savedDict?.Infos?.ID || "Unknown";
@@ -234,15 +242,15 @@ Max.addHandler("save", () => {
 	if (!savedDict) return Max.post("[ERROR] No dictionary data available to save.");
 
 	const { name, dateTime } = generateFilename();
-	const logsDir = path.join(__dirname, '..', 'logs');
-
-	if (!fs.existsSync(logsDir)) fs.mkdirSync(logsDir, { recursive: true });
+	const logsDir = getPatientDirFromName(name);
 
 	// Remove old file with same dateTime but different ID
 	const oldFile = path.join(logsDir, `Unknown_${dateTime}.csv`);
 	if (fs.existsSync(oldFile) && name.split('_')[0] !== "Unknown") fs.unlinkSync(oldFile);
 
 	const filePath = path.join(logsDir, name + '.csv');
+	Max.outlet('filepath', filePath);
+	
 	let csvData = generateCSV(savedDict);
 
 	/* ------------------------ Score section ------------------------
@@ -322,7 +330,7 @@ Max.addHandler("set", (dict) => {
 	
 	// if we’re already logging, move the old _Sensors.csv to the new name
 	if (realtimeStream && realtimeFilePath) {
-		const logsDir = path.join(__dirname, '..', 'logs');
+		const logsDir = getPatientDirFromName(name);
 		const newPath = path.join(logsDir, name + '_Sensors.csv');
 
 		// End the current stream, then rename, then re-open
@@ -332,6 +340,7 @@ Max.addHandler("set", (dict) => {
 				// reopen on the renamed file so we keep streaming
 				realtimeStream = fs.createWriteStream(newPath, { flags: 'a' });
 				realtimeFilePath = newPath;
+				Max.outlet('filepath', realtimeFilePath);
 			} catch (err) {
 				Max.post(`[WARNING] could not rename sensors file: ${err.message}`);
 			}

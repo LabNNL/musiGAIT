@@ -1,10 +1,28 @@
+# Virtualenv
+.venv/
+
+# MacOS / IDEs
 **/.DS_Store
 **/.idea
 
-# logs
+# Logs
 logs/
+*.log
 
-# Binary and config files of the video folder
-video/config.json
-video/*.toe
-video/Backup
+# Shortcut / Alias
+*.alias
+*.lnk
+
+# PID file
+*.pid
+
+# Audiofiles
+*.wav
+
+# Video backups
+video/Backup/
+
+# Node
+node_modules/
+package.json
+package-lock.json
